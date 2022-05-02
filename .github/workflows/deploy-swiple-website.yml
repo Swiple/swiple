@@ -1,0 +1,41 @@
+# https://www.automat-it.com/post/using-github-actions-with-aws-iam-roles
+name: Deploy Swiple Website
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy_swiple_website:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_DEFAULT_REGION: us-east-1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - run: npm install --prefix ./docs/
+      - run: npm run build --prefix ./docs/
+      - name: configureawscredentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/swiple-website-github-actions
+          role-session-name: rolesession
+          aws-region: ${{env.AWS_DEFAULT_REGION}}
+      - name: Deploy Swiple Website
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: swiple-website
+          template: .github/templates/website.yaml
+          no-fail-on-empty-changeset: "1"
+          parameter-overrides: "BucketName=${{ secrets.SWIPLE_S3_BUCKET }},HostedZoneId=${{ secrets.AWS_HOSTED_ZONE_ID }},DomainName=swiple.io"
+
+      - name: Sync Website with S3
+        run: |
+          aws s3 sync ./docs/build/ s3://${{ secrets.SWIPLE_S3_BUCKET }}/

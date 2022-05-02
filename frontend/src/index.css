@@ -1,0 +1,227 @@
+body {
+  margin: 0;
+  background-color: #f0f2f5 !important;
+  font-family: 'Helvetica Neue',
+  sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  monospace;
+}
+
+.ant-popover-inner {
+  border-radius: 15px;
+}
+
+.trigger {
+  padding: 0 24px;
+  font-size: 18px;
+  line-height: 64px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+.login-logo {
+  height: 50px;
+  margin: 0 0 16px 0;
+  background: rgba(51, 51, 51, 0.3);
+}
+
+.site-layout .site-layout-background {
+  background: transparent;
+}
+
+.ant-typography {
+  color: #2D3748
+}
+
+.section {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ant-statistic-title {
+  white-space: nowrap;
+}
+
+.text-editor {
+  padding-top: 10px;
+  box-shadow: rgba(9, 30, 66, 0.25) 0px 2px 2px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
+  border-radius: 8px;
+  margin-left: 1px;
+  margin-right: 1px;
+  margin-bottom: 1px;
+}
+
+.overflow-guard {
+  border-radius: 8px;
+}
+
+
+
+.card-list-header {
+  margin-top: 1rem;
+  margin-bottom: 1rem !important;
+}
+
+.card-list {
+  border-radius: 15px;
+}
+
+
+.ant-modal-content {
+  border-radius: 15px;
+  overflow: auto;
+}
+
+.ant-input {
+  border-radius: 8px;
+}
+
+.ant-form-large .ant-form-item-label > label {
+  height: 0
+}
+
+.ant-select-dropdown {
+  border-radius: 8px;
+  padding: 0;
+}
+
+.ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-radius: 8px;
+}
+
+.wrapper-class {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.ant-select-selection-item .ant-row {
+  margin-left: 4px;
+}
+.select-option {
+  vertical-align: middle;
+  padding: 0 5px 0 5px;
+  height: 100%;
+  text-align: center;
+  color: white
+}
+
+.select-option p {
+  line-height: 26px;
+  position: relative;
+}
+
+.code-editor-wrapper {
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+}
+
+/*!* padding between the gutter and code *!*/
+/*.monaco-editor .view-line {*/
+/*  padding-left: 10px;*/
+/*}*/
+
+/*!* fix cursor location *!*/
+/*.monaco-editor .cursor {*/
+/*  margin-left: 10px;*/
+/*}*/
+
+/*.monaco-editor .inputarea {*/
+/*  margin-left: 10px;*/
+/*}*/
+
+/*!* fix highlighted text selection *!*/
+/*.monaco-editor .selectionHighlight {*/
+/*  margin-left: 10px;*/
+/*  padding-left: 10px;*/
+/*}*/
+
+/*!* fix highlighted brackets *!*/
+/*.monaco-editor .bracket-match {*/
+/*  margin-left: 10px;*/
+/*}*/
+
+/*!* fix multiline text selection *!*/
+/*.monaco-editor .cslr.selected-text {*/
+/*  margin-left: 10px;*/
+/*}*/
+
+/*!* fix multiline text selection *!*/
+/*.monaco-editor .bottom-left-radius, .monaco-editor .top-left-radius {*/
+/*  margin-left: 10px;*/
+/*}*/
+
+.center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 50px;
+  text-align: center;
+  background: white;
+  border: 1px solid #dedede;
+  border-radius: 4px;
+  width: 400px;
+}
+
+.login-form {
+  margin-top: 20px;
+  width: 100%;
+}
+.login-form-forgot {
+  float: right;
+}
+.ant-col-rtl .login-form-forgot {
+  float: left;
+}
+.login-form-button {
+  width: 100%;
+}
+
+.auth-methods {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.select-with-text-wrap {
+  white-space: normal !important;
+}
+
+.select-option-border-bottom {
+  padding: 12px;
+  border-bottom: 1px solid #EFF2F5;
+}
+
+/* Ant-D Page Header */
+.ant-page-header-footer .ant-tabs>.ant-tabs-nav:before {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.expectation-documentation {
+  max-height: 100px;
+  overflow: scroll;
+  white-space: normal;
+  padding-right: 10px;
+}
+
+.ant-table-cell-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  word-break: keep-all;
+  max-width: 200px !important;
+}
+
+
+.slogo span {
+  margin-left: 2px !important;
+}

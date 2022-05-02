@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  DomainName:
+    Type: String
+    Default: swiple.io
+Resources:
+  Certificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: !Ref DomainName
+      ValidationMethod: DNS
+      SubjectAlternativeNames:
+        - !Sub "www.${DomainName}"
+Outputs:
+  CertificateARN:
+    Value: !Ref Certificate
+    Export:
+      Name: SwipleCertificateArn

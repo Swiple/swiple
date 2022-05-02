@@ -1,0 +1,94 @@
+version: '3.9'
+services:
+  swiple_api:
+    container_name: swiple_api
+    image: swiple-api:latest
+    ports:
+      - '8000:8000'
+    volumes:
+      - $PWD/backend/app/config/:/code/app/config/
+    depends_on:
+      opensearch-node1:
+        condition: service_healthy
+  swiple_ui:
+    container_name: swiple_ui
+    image: swiple-ui:latest
+    ports:
+      - 3000:3000
+    depends_on:
+      - "swiple_api"
+  setup:
+    container_name: setup
+    image: swiple-api:latest
+    command: bash -c "
+        python3 /sample_data/load_data.py
+        && export PYTHONPATH=$PYTHONPATH:/code
+        && python3 /code/app/scripts/setup_opensearch.py
+        && python3 /code/app/scripts/create_admin_user.py
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+      opensearch-node1:
+        condition: service_healthy
+    volumes:
+      - ./backend/sample_data/:/sample_data/
+  postgres:
+    container_name: postgresql
+    image: postgres:10.5
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: /usr/bin/pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./docker/postgres-data:/var/lib/postgresql/data
+  opensearch-node1:
+    image: opensearchproject/opensearch:1.3.1
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      - "discovery.type=single-node" # disables bootstrap checks that are enabled when network.host is set to a non-loopback address
+      - "plugins.security.audit.type=internal_opensearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -XGET https://localhost:9200/_cluster/health -u "admin:admin" --silent --insecure || exit 1',
+        ]
+      interval: 5s
+      timeout: 30s
+      retries: 10
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:1.3.0
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["https://opensearch-node1:9200"]'
+
+volumes:
+  opensearch-data1:

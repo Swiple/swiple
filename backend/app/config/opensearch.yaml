@@ -1,0 +1,130 @@
+user:
+  index_name: user
+  mappings:
+    properties:
+      oauth_accounts:
+        type: nested
+
+datasoure:
+  index_name: datasource
+  mappings:
+    properties:
+      account_name:
+        type: keyword
+      create_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date
+      created_by:
+        type: keyword
+      database:
+        type: keyword
+      dataset:
+        type: keyword
+      datasource_name:
+        fielddata: true
+        fields:
+          keyword:
+            type: keyword
+        type: text
+      description:
+        type: text
+      engine:
+        type: keyword
+      gcp_project:
+        type: keyword
+      host:
+        type: keyword
+      modified_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date
+      password:
+        type: keyword
+      port:
+        type: integer
+      region:
+        type: keyword
+      role_name:
+        type: keyword
+      s3_staging_dir:
+        type: keyword
+      schema_name:
+        type: keyword
+      ssl_mode:
+        type: boolean
+      username:
+        type: keyword
+      warehouse:
+        type: keyword
+dataset:
+  index_name: dataset
+  mappings:
+    properties:
+      create_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date
+      created_by:
+        type: keyword
+      data_asset_name:
+        fielddata: true
+        fields:
+          keyword:
+            type: keyword
+        type: text
+      dataset_name:
+        fielddata: true
+        fields:
+          keyword:
+            type: keyword
+        type: text
+      datasource_id:
+        type: keyword
+      modified_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date
+      runtime_parameters:
+        properties:
+          query:
+            type: keyword
+          schema:
+            type: keyword
+        type: object
+expectation:
+  index_name: expectation
+  mappings:
+    properties:
+      create_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date
+      dataset_id:
+        type: keyword
+      datasource_id:
+        type: keyword
+      expectation_type:
+        type: keyword
+      kwargs:
+        type: text
+      modified_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date
+suggestion:
+  index_name: suggestion
+  mappings:
+    properties:
+      create_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date
+      dataset_id:
+        type: keyword
+      datasource_id:
+        type: keyword
+      expectation_type:
+        type: keyword
+      kwargs:
+        type: text
+validation:
+  index_name: validation
+  mappings:
+    properties:
+      run_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date

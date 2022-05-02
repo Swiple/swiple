@@ -1,0 +1,246 @@
+from typing import Dict, Any
+
+from sqlalchemy import create_engine
+from app.config.settings import settings
+import datetime
+from re import search
+import emails
+from emails.template import JinjaTemplate
+from pathlib import Path
+import sqlalchemy
+import json
+import pytz
+
+
+def connect(url):
+    try:
+        create_engine(url).connect()
+    except sqlalchemy.exc.OperationalError as ex:
+        return str(ex.orig)
+
+
+def test_sqlalchemy_connection(datasource):
+    return connect(datasource.connection_string())
+
+
+def current_time():
+    return str(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
+
+
+def string_to_utc_time(date_string):
+    return datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f%z")
+
+
+def days_between_dates(start_date: datetime, end_date: datetime):
+    return (end_date - start_date).days
+
+
+def string_to_military_time(date_string):
+    """
+    Converts a date string in the format
+    2021-10-11 09:10:44.330614+00:00
+    to
+    2021-10-11T09:10:44.330614Z
+    """
+    return datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f%z").strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
+def get_sample_query(query, url):
+    # remove semi-colon from query
+    query = query.replace(";", "")
+
+    try:
+        with create_engine(url).connect() as con:
+            query = add_limit_clause(query)
+
+            execution = con.execute(query)
+
+            # TODO neaten up
+            result_set = []
+            columns = list(execution.keys())
+
+            for i, row in enumerate(execution.all()):
+                temp_row = {"key": i}
+                row = list(row)
+
+                for key in columns:
+                    for value in row:
+                        if isinstance(value, datetime.datetime):
+                            temp_row[key] = value.__str__()
+                        else:
+                            temp_row[key] = value
+
+                        row.remove(value)
+                        break
+
+                result_set.append(temp_row)
+
+            if len(columns) == 0:
+                return {
+                    "error": "No columns included in statement."
+                }
+
+            return {
+                "rows": result_set,
+                "columns": columns
+            }
+
+    except sqlalchemy.exc.ProgrammingError as ex:
+        print(ex.orig.pgerror)
+        return {"exception": ex.orig.pgerror}
+    except sqlalchemy.exc.OperationalError as ex:
+        return {"exception": str(ex.orig)}
+
+
+def add_limit_clause(query):
+    query = query.strip().replace(";", "")
+
+    if not search("limit", query):
+        query = query + " limit 10;"
+
+    return query
+
+
+def json_schema_to_single_doc(schema):
+    max_tries = 100
+
+    for i in range(max_tries):
+        if '$ref' not in json.dumps(schema):
+            break
+        schema = replace_value_in_dict(schema.copy(), schema.copy())
+
+    if schema.get("definitions"):
+        del schema['definitions']
+
+    return schema
+
+
+def replace_value_in_dict(item, original_schema):
+    if isinstance(item, list):
+        return [replace_value_in_dict(i, original_schema) for i in item]
+    elif isinstance(item, dict):
+        if list(item.keys()) == ['$ref']:
+            definitions = item['$ref'][2:].split('/')
+            res = original_schema.copy()
+            for definition in definitions:
+                res = res[definition]
+            return res
+        else:
+            return {key: replace_value_in_dict(i, original_schema) for key, i in item.items()}
+    else:
+        return item
+
+
+def list_to_string_mapper(d, sep="."):
+    def recurse(t, parent_key=""):
+        if isinstance(t, list):
+            for i in range(len(t)):
+                recurse(t[i], parent_key + sep + str(i) if parent_key else str(i))
+        if isinstance(t, dict):
+            for k, v in t.items():
+                if isinstance(v, list):
+                    t[k] = json.dumps(v)
+                else:
+                    recurse(v, parent_key + sep + k if parent_key else k)
+        elif isinstance(t, (str, bool, int, float, type(None))):
+            pass
+        else:
+            raise NotImplementedError(f't is of type, {type(t)}, which is not implemented.')
+    recurse(d)
+    return d
+
+
+def send_email(
+    email_to: str,
+    subject_template: str = "",
+    html_template: str = "",
+    environment: Dict[str, Any] = {},
+) -> None:
+    assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
+    message = emails.Message(
+        subject=JinjaTemplate(subject_template),
+        html=JinjaTemplate(html_template),
+        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
+    )
+    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
+    if settings.SMTP_TLS:
+        smtp_options["tls"] = True
+    if settings.SMTP_USER:
+        smtp_options["user"] = settings.SMTP_USER
+    if settings.SMTP_PASSWORD:
+        smtp_options["password"] = settings.SMTP_PASSWORD
+    response = message.send(to=email_to, render=environment, smtp=smtp_options)
+    print(f"Send email result: {str(response)}.")
+
+
+def send_test_email(email_to: str) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Test email"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "test_email.html") as f:
+        template_str = f.read()
+    send_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={"project_name": settings.PROJECT_NAME, "email": email_to},
+    )
+
+
+def send_reset_password_email(email_to: str, email: str, token: str) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Password recovery for user {email}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "reset_password.html") as f:
+        template_str = f.read()
+    server_host = settings.SERVER_HOST
+    link = f"{server_host}/reset-password?token={token}"
+    send_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": settings.PROJECT_NAME,
+            "username": email,
+            "email": email_to,
+            "valid_hours": settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
+            "link": link,
+        },
+    )
+
+
+def send_new_account_email(email_to: str, username: str, password: str) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - New account for user {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST
+    send_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": settings.PROJECT_NAME,
+            "username": username,
+            "password": password,
+            "email": email_to,
+            "link": link,
+        },
+    )
+
+
+# def generate_password_reset_token(email: str) -> str:
+#     delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
+#     now = datetime.datetime.utcnow()
+#     expires = now + delta
+#     exp = expires.timestamp()
+#     encoded_jwt = jwt.encode(
+#         {"exp": exp, "nbf": now, "sub": email}, settings.SECRET_KEY, algorithm="HS256",
+#     )
+#     return encoded_jwt
+
+#
+# def verify_password_reset_token(token: str) -> Optional[str]:
+#     try:
+#         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+#         return decoded_token["email"]
+#     except jwt.JWTError:
+#         return None
