@@ -5,11 +5,11 @@ sidebar_position: 2
 # Install From Scratch
 
 
-## 1. Setup Docker Engine and Docker Compose
+### 1. Setup Docker Engine and Docker Compose
 
 Complete steps 1 & 2 of [Running Locally With Docker](../../docs/installation/run-locally-with-docker) guide.
 
-## 2. Install `make`
+### 2. Install `make`
 
 `make` allows us to bundle multiple commands into one making development easier.
 
@@ -28,7 +28,7 @@ brew install make
 
 
 
-## 3. Setup Python Virtual Environment
+### 3. Setup Python Virtual Environment
 
 :::note Note
 Swiple has only been tested using **Python 3.9**. If you do not have Python virtual environments setup, please follow [Setup with Anaconda](#setup-with-anaconda)
@@ -78,7 +78,7 @@ python3 -m venv ./backend/venv
 pip install -r ./backend/requirements.txt
 ```
 
-## 4. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD`
+### 4. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD`
 
 The user/password authentication method is used by default but it cannot be integrated with your organization's current auth system. For production use cases, it is recommended to use OAuth. 
 
@@ -93,7 +93,7 @@ The admin user is created/updated in the `setup` docker container. Changing `ADM
 
 [See Authentication to use OAuth.](../configuration/authentication.md)
 
-## 5. Generate and set `SECRET_KEY`
+### 5. Generate and set `SECRET_KEY`
 
 Run the following snippet to create a Fernet Key and set `SECRET_KEY` to it.
 ```python
@@ -108,14 +108,14 @@ At this time, changing `SECRET_KEY` after data sources have been added will caus
 :::
 
 
-## 6. Setup Swiple UI
+### 6. Setup Swiple UI
 ```bash
 # Install Dependecies
 npm install --prefix ./frontend/
 ```
 
 
-## 7. Run Docker Containers
+### 7. Run Docker Containers
 
 Run Opensearch, Opensearch Dashboards, Setup, and Postgres docker containers with the following:
 
@@ -123,7 +123,7 @@ Run Opensearch, Opensearch Dashboards, Setup, and Postgres docker containers wit
 make bundled_dev
 ```
 
-## 8. Start Swiple API
+### 8. Start Swiple API
 Update `OPENSEARCH_HOST` in `./backend/app/config/config.py` from 
 
 ```python
@@ -139,13 +139,13 @@ Start Swiple API.
 python3 ./backend/main.py
 ```
 
-## 9. Start Swiple UI
+### 9. Start Swiple UI
 
 ```bash
 npm start --preifx ./frontend/
 ```
 
-## 10. Navigate to [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
+### 10. Navigate to [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
 
 :::note Note
 Please do not open Swiple on `localhost`. You will encounter errors.

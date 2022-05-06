@@ -6,7 +6,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './index.module.css';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import SupportedDatabases from '@site/src/components/SupportedDatabases';
-
+import ExpectationsList from '../components/Expectations';
 
 
 function HomepageHeader() {
@@ -38,6 +38,7 @@ export default function Home() {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
+        <ExpectationsList />
         <SupportedDatabases />
       </main>
     </Layout>
