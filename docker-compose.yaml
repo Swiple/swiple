@@ -90,5 +90,19 @@ services:
     environment:
       - 'OPENSEARCH_HOSTS=["https://opensearch-node1:9200"]'
 
+  redis:
+    image: "redis:7.0.0-alpine"
+    container_name: redis
+    command: redis-server --requirepass sOmE_sEcUrE_pAsS
+    ports:
+      - "6379:6379"
+    volumes:
+      - $PWD/redis-data:/var/lib/redis
+#        - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_REPLICATION_MODE=master
+#    networks:
+#      node_net:
+#        ipv4_address: 172.28.1.4
 volumes:
   opensearch-data1:
