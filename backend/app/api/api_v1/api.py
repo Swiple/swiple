@@ -10,6 +10,7 @@ from app.api.api_v1.endpoints import (
     introspect,
     validation,
     suggestion,
+    scheduler,
 )
 from app.core.users import fastapi_users, cookie_backend
 from httpx_oauth.clients.github import GitHubOAuth2
@@ -28,6 +29,7 @@ router.include_router(validation.router, prefix="/validation", tags=["Validation
 router.include_router(suggestion.router, prefix="/suggestion", tags=["Suggestions"])
 router.include_router(introspect.router, prefix="/introspect", tags=["Introspect"])
 router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
+router.include_router(scheduler.router, prefix="/scheduler", tags=["Scheduler"])
 
 router.include_router(
     fastapi_users.get_users_router(),
