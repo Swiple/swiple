@@ -74,6 +74,3 @@ def to_dict(job: Job):
 def function():
     print("wooo")
 
-
-jobs = scheduler.get_jobs()
-print(jobs)

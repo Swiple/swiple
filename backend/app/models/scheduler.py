@@ -71,13 +71,14 @@ class Job(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    dataset_id: str
     trigger: Union[
         CronTrigger,
         IntervalTrigger,
         DateTrigger
     ] = Field(discriminator="trigger")
-    misfire_grace_time: Optional[int] = Field(description=c.MISFIRE_GRACE_TIME)
-    max_instances: Optional[int] = Field(description=c.MAX_INSTANCES)
+    misfire_grace_time: Optional[int] = Field(default=300, description=c.MISFIRE_GRACE_TIME)
+    max_instances: Optional[int] = Field(default=1, description=c.MAX_INSTANCES)
 
 
 # TODO change undefined

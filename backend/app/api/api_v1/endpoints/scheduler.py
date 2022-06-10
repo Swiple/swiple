@@ -4,14 +4,26 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 
+from app.config.settings import settings
 from app.core.users import current_active_user
+from app.db.client import client
+from opensearchpy import NotFoundError
 from app.models.scheduler import Job
 from app.core.schduler import scheduler, to_dict, function
 
 
 router = APIRouter(
-    dependencies=[Depends(current_active_user)]
+    # dependencies=[Depends(current_active_user)]
 )
+
+
+@router.get("/json_schema")
+def json_schema():
+    schema = Job.schema()
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=schema,
+    )
 
 
 @router.get("")
@@ -48,6 +60,7 @@ def get_job(job_id: str):
 def add_job(
         job: Job,
 ):
+    _resource_exists(job.dataset_id)
     job = scheduler.add_job(
         func=function,
         misfire_grace_time=job.misfire_grace_time,
@@ -107,3 +120,16 @@ def delete_job(
         status_code=status.HTTP_200_OK,
         content="Success"
     )
+
+
+def _resource_exists(key: str):
+    try:
+        return client.get(
+            index=settings.DATASET_INDEX,
+            id=key
+        )
+    except NotFoundError:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=f"Dataset with id '{key}' does not exist"
+        )

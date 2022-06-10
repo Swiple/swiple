@@ -157,6 +157,41 @@ export const deleteDataset = (key) => axios.delete(`${BASE_URL}/dataset/${key}`)
   .catch((error) => errorHandler(error));
 
 // ========================================================
+// Schedule
+// ========================================================
+export const getSchedulesJsonSchema = () => axios.get(`${BASE_URL}/scheduler/json_schema`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const getSchedules = () => axios.get(
+  `${BASE_URL}/scheduler`,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const getSchedule = (key) => axios.get(`${BASE_URL}/scheduler/${key}`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const postSchedule = (data) => axios.post(
+  `${BASE_URL}/scheduler`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const putSchedule = (key, data) => axios.put(
+  `${BASE_URL}/scheduler/${key}`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const deleteSchedule = (key) => axios.delete(`${BASE_URL}/scheduler/${key}`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+// ========================================================
 // Introspect
 // ========================================================
 

@@ -41,6 +41,7 @@ import {
   postRunnerProfileDataset,
   putSample,
   getQuerySample,
+  getSchedules,
 } from '../../Api';
 import Section from '../../components/Section';
 import CodeEditor from './components/CodeEditor';
@@ -53,6 +54,7 @@ import {
 } from '../../static/images';
 import AsyncButton from '../../components/AsyncButton';
 import ExpectationModal, { CREATE_TYPE, UPDATE_TYPE } from './components/ExpectationModal';
+import ScheduleModal from './components/ScheduleModal';
 import splitDatasetResource from '../../Utils';
 
 const { Content } = Layout;
@@ -75,12 +77,15 @@ const Dataset = withRouter(() => {
   const [suggestions, setSuggestions] = useState([]);
   const [refreshExpectations, setRefreshExpectations] = useState(true);
   const [expectations, setExpectations] = useState([]);
+  const [refreshSchedules, setRefreshSchedules] = useState(true);
+  const [schedules, setSchedules] = useState([]);
   const [requestInProgress, setRequestInProgress] = useState(false);
   const [validationStats, setValidationStats] = useState({});
   const [refreshValidationStats, setRefreshValidationStats] = useState(true);
   const [activeTab, setActiveTab] = useState('1');
 
   const [expectationModal, setExpectationModal] = useState({ visible: false, type: '', dataset: null });
+  const [scheduleModal, setScheduleModal] = useState({ visible: false, type: '', editedSchedule: null });
 
   const history = useHistory();
 
@@ -125,6 +130,20 @@ const Dataset = withRouter(() => {
         });
     }
   }, [refreshDataset, setRefreshDataset, datasetId]);
+
+  useEffect(() => {
+    if (refreshSchedules && datasetId) {
+      getSchedules()
+        .then((response) => {
+          if (response.status === 200) {
+            setSchedules(response.data);
+          } else {
+            message.error('An error occurred while retrieving schedules.', 5);
+          }
+          setRefreshDataset(false);
+        });
+    }
+  }, [refreshSchedules, setRefreshSchedules, datasetId]);
 
   useEffect(() => {
     if (refreshExpectations && datasetId) {
@@ -198,13 +217,26 @@ const Dataset = withRouter(() => {
     }).catch(() => reject());
   });
 
-  const openDataSourceModal = (modalType, record = null) => {
+  const openExpectationModal = (modalType, record = null) => {
     let expectation;
     if (modalType === UPDATE_TYPE) {
       [expectation] = expectations.filter((item) => item.key === record.key);
     }
     setExpectationModal({
       visible: true, type: modalType, expectation, dataset,
+    });
+  };
+
+  const openScheduleModal = (modalType, record = null) => {
+    let schedule;
+    console.log(schedules);
+    console.log(record);
+    if (modalType === UPDATE_TYPE) {
+      [schedule] = schedules.filter((item) => item.id === record.id);
+    }
+    console.log(schedule);
+    setScheduleModal({
+      visible: true, type: modalType, schedule, trigger: schedule?.trigger?.trigger,
     });
   };
 
@@ -288,12 +320,31 @@ const Dataset = withRouter(() => {
     });
   };
 
-  const actionMenu = (record) => (
+  const expectationActionMenu = (record) => (
     <Menu>
       <Menu.Item
         key="1"
         icon={<EditFilled />}
-        onClick={() => openDataSourceModal(UPDATE_TYPE, record)}
+        onClick={() => openExpectationModal(UPDATE_TYPE, record)}
+      >
+        Edit
+      </Menu.Item>
+      <Menu.Item
+        key="2"
+        onClick={() => showDeleteModal(record)}
+        icon={<DeleteFilled style={{ color: 'red' }} />}
+      >
+        Delete
+      </Menu.Item>
+    </Menu>
+  );
+
+  const scheduleActionMenu = (record) => (
+    <Menu>
+      <Menu.Item
+        key="1"
+        icon={<EditFilled />}
+        onClick={() => openScheduleModal(UPDATE_TYPE, record)}
       >
         Edit
       </Menu.Item>
@@ -361,7 +412,49 @@ const Dataset = withRouter(() => {
       render: (text, record) => (
         <Dropdown
           trigger={['click']}
-          overlay={() => actionMenu(record)}
+          overlay={() => expectationActionMenu(record)}
+          placement="bottomRight"
+          arrow
+        >
+          <Button
+            type="text"
+            icon={<EllipsisOutlined rotate={90} style={{ fontWeight: 'bold', fontSize: '25px' }} />}
+          />
+        </Dropdown>
+      ),
+    },
+  ];
+
+  const scheduleColumns = [
+    {
+      title: 'TRIGGER',
+      dataIndex: 'trigger',
+      render: (record) => (
+        record.trigger
+      ),
+    },
+    {
+      title: 'MISFIRE GRACE TIME',
+      dataIndex: 'misfire_grace_time',
+    },
+    {
+      title: 'MAX INSTANCES',
+      dataIndex: 'max_instances',
+    },
+    {
+      title: 'NEXT RUN TIME',
+      dataIndex: 'next_run_time',
+      render: (text, record) => (
+        moment(text).local().format('llll')
+      ),
+    },
+    {
+      title: '',
+      dataIndex: 'action',
+      render: (text, record) => (
+        <Dropdown
+          trigger={['click']}
+          overlay={() => scheduleActionMenu(record)}
           placement="bottomRight"
           arrow
         >
@@ -409,6 +502,17 @@ const Dataset = withRouter(() => {
     };
   });
 
+  // const schedulesList = schedules.map((item) => ({
+  //   key: item.id,
+  //   trigger: item.trigger.trigger,
+  //   misfire_grace_time: item.misfire_grace_time,
+  //   max_instances: item.max_instances,
+  //   next_run_time:
+  //   // create_date: moment(item.create_date).local().fromNow(),
+  // }));
+
+  // console.log(schedulesList)
+
   const analyzeDataset = () => new Promise((resolve) => {
     const data = { datasource_id: datasource.key, dataset_id: datasetId };
     postRunnerValidateDataset(data).then(() => {
@@ -439,7 +543,7 @@ const Dataset = withRouter(() => {
                 type="primary"
                 icon={<PlusOutlined />}
                 size="medium"
-                onClick={() => openDataSourceModal(CREATE_TYPE)}
+                onClick={() => openExpectationModal(CREATE_TYPE)}
               >
                 Expectation
               </Button>
@@ -483,6 +587,22 @@ const Dataset = withRouter(() => {
             >
               Generate Suggestions
             </AsyncButton>
+          )
+          : null
+      }
+      {
+        activeTab === '5'
+          ? (
+            <Button
+              className="card-list-button-dark"
+              style={{ fontWeight: 'bold' }}
+              type="primary"
+              icon={<PlusOutlined />}
+              size="medium"
+              onClick={() => openScheduleModal(CREATE_TYPE)}
+            >
+              Schedule
+            </Button>
           )
           : null
       }
@@ -678,6 +798,38 @@ const Dataset = withRouter(() => {
                   <Table
                     columns={suggestionsColumns}
                     dataSource={suggestionsList}
+                    loading={requestInProgress}
+                    pagination={{ position: ['bottomRight'] }}
+                    rowKey={() => uuidv4()}
+                  />
+                </TabPane>
+                <TabPane tab="Schedules" key="5">
+                  <Row
+                    align="space-between"
+                    style={{ alignItems: 'center' }}
+                  >
+                    <ScheduleModal
+                      visible={scheduleModal.visible}
+                      type={scheduleModal.type}
+                      editedSchedule={scheduleModal.schedule}
+                      trigger={scheduleModal.trigger}
+                      datasetId={datasetId}
+                      onCancel={() => {
+                        setScheduleModal({
+                          visible: false, type: '', schedule: null, trigger: '',
+                        });
+                      }}
+                      onFormSubmit={() => {
+                        setScheduleModal({
+                          visible: false, type: '', schedule: null, trigger: '',
+                        });
+                        setRefreshSchedules(true);
+                      }}
+                    />
+                  </Row>
+                  <Table
+                    columns={scheduleColumns}
+                    dataSource={schedules}
                     loading={requestInProgress}
                     pagination={{ position: ['bottomRight'] }}
                     rowKey={() => uuidv4()}

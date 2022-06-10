@@ -19,6 +19,9 @@ export const UPDATE_TYPE = 'UPDATE';
 function ExpectationModal({
   visible, type, editedExpectation, dataset, onCancel, onFormSubmit,
 }) {
+  if (!visible) {
+    return null;
+  }
   const [expectationsJsonSchema, setExpectationsJsonSchema] = useState([]);
   const [refreshExpectationsJsonSchema, setRefreshExpectationsJsonSchema] = useState(true);
   const [selectedExpectation, setSelectedExpectation] = useState(null);
