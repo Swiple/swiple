@@ -9,7 +9,7 @@ from app.config.settings import settings
 from app import utils
 from typing import Optional
 from opensearchpy import RequestError
-from app.core import security
+from app.core import security, scheduler
 from app.models import datasource as datasourcee
 from fastapi.param_functions import Depends
 import uuid
@@ -161,6 +161,7 @@ def _delete_datasource(key: str):
 	client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
 	client.delete_by_query(index=settings.EXPECTATION_INDEX, body=body)
 	client.delete_by_query(index=settings.DATASET_INDEX, body=body)
+	scheduler.delete_by_datasource(key)
 
 	client.delete(index=settings.DATASOURCE_INDEX, id=key, refresh="wait_for")
 	return JSONResponse(

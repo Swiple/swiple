@@ -41,7 +41,8 @@ import {
   postRunnerProfileDataset,
   putSample,
   getQuerySample,
-  getSchedules,
+  getSchedulesForDataset,
+  deleteSchedule,
 } from '../../Api';
 import Section from '../../components/Section';
 import CodeEditor from './components/CodeEditor';
@@ -55,7 +56,7 @@ import {
 import AsyncButton from '../../components/AsyncButton';
 import ExpectationModal, { CREATE_TYPE, UPDATE_TYPE } from './components/ExpectationModal';
 import ScheduleModal from './components/ScheduleModal';
-import splitDatasetResource from '../../Utils';
+import { splitDatasetResource } from '../../Utils';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -133,14 +134,14 @@ const Dataset = withRouter(() => {
 
   useEffect(() => {
     if (refreshSchedules && datasetId) {
-      getSchedules()
+      getSchedulesForDataset(datasetId)
         .then((response) => {
           if (response.status === 200) {
             setSchedules(response.data);
           } else {
             message.error('An error occurred while retrieving schedules.', 5);
           }
-          setRefreshDataset(false);
+          setRefreshSchedules(false);
         });
     }
   }, [refreshSchedules, setRefreshSchedules, datasetId]);
@@ -151,7 +152,6 @@ const Dataset = withRouter(() => {
       getExpectations(datasetId, true)
         .then((response) => {
           if (response.status === 200) {
-            // console.log(response.data);
             setExpectations(response.data);
           } else {
             message.error('An error occurred while retrieving expectations.', 5);
@@ -168,7 +168,6 @@ const Dataset = withRouter(() => {
       getSuggestions(datasetId, true)
         .then((response) => {
           if (response.status === 200) {
-            // console.log(response.data);
             setSuggestions(response.data);
           } else {
             message.error('An error occurred while retrieving suggestions.', 5);
@@ -229,12 +228,9 @@ const Dataset = withRouter(() => {
 
   const openScheduleModal = (modalType, record = null) => {
     let schedule;
-    console.log(schedules);
-    console.log(record);
     if (modalType === UPDATE_TYPE) {
       [schedule] = schedules.filter((item) => item.id === record.id);
     }
-    console.log(schedule);
     setScheduleModal({
       visible: true, type: modalType, schedule, trigger: schedule?.trigger?.trigger,
     });
@@ -305,7 +301,7 @@ const Dataset = withRouter(() => {
     }).catch(() => reject());
   });
 
-  const showDeleteModal = (record) => {
+  const showExpectationDeleteModal = (record) => {
     confirm({
       title: 'Delete Expectation',
       icon: <ExclamationCircleOutlined />,
@@ -331,7 +327,7 @@ const Dataset = withRouter(() => {
       </Menu.Item>
       <Menu.Item
         key="2"
-        onClick={() => showDeleteModal(record)}
+        onClick={() => showExpectationDeleteModal(record)}
         icon={<DeleteFilled style={{ color: 'red' }} />}
       >
         Delete
@@ -339,6 +335,27 @@ const Dataset = withRouter(() => {
     </Menu>
   );
 
+  const removeSchedule = (record) => new Promise((resolve, reject) => {
+    deleteSchedule(record.id).then(() => {
+      setSchedules(schedules.filter((item) => item.id !== record.id));
+      resolve();
+    }).catch(() => reject());
+  });
+
+  const showScheduleDeleteModal = (record) => {
+    confirm({
+      title: 'Delete Schedule',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Are you sure you want to delete this schedule?',
+      okText: 'Delete',
+      okType: 'danger',
+      onOk() {
+        return removeSchedule(record);
+      },
+      onCancel() {
+      },
+    });
+  };
   const scheduleActionMenu = (record) => (
     <Menu>
       <Menu.Item
@@ -350,7 +367,7 @@ const Dataset = withRouter(() => {
       </Menu.Item>
       <Menu.Item
         key="2"
-        onClick={() => showDeleteModal(record)}
+        onClick={() => showScheduleDeleteModal(record)}
         icon={<DeleteFilled style={{ color: 'red' }} />}
       >
         Delete
@@ -427,11 +444,15 @@ const Dataset = withRouter(() => {
 
   const scheduleColumns = [
     {
-      title: 'TRIGGER',
+      title: 'SCHEDULE TYPE',
       dataIndex: 'trigger',
       render: (record) => (
         record.trigger
       ),
+    },
+    {
+      title: 'EXPRESSION',
+      dataIndex: 'expression',
     },
     {
       title: 'MISFIRE GRACE TIME',
@@ -444,8 +465,8 @@ const Dataset = withRouter(() => {
     {
       title: 'NEXT RUN TIME',
       dataIndex: 'next_run_time',
-      render: (text, record) => (
-        moment(text).local().format('llll')
+      render: (text) => (
+        moment(text).local().format('ddd, D MMM YYYY HH:mm:ss Z')
       ),
     },
     {
@@ -501,17 +522,6 @@ const Dataset = withRouter(() => {
       modified_date: moment(item.modified_date).local().fromNow(),
     };
   });
-
-  // const schedulesList = schedules.map((item) => ({
-  //   key: item.id,
-  //   trigger: item.trigger.trigger,
-  //   misfire_grace_time: item.misfire_grace_time,
-  //   max_instances: item.max_instances,
-  //   next_run_time:
-  //   // create_date: moment(item.create_date).local().fromNow(),
-  // }));
-
-  // console.log(schedulesList)
 
   const analyzeDataset = () => new Promise((resolve) => {
     const data = { datasource_id: datasource.key, dataset_id: datasetId };

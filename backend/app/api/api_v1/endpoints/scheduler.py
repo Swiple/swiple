@@ -1,3 +1,6 @@
+import datetime
+from typing import Optional
+
 from apscheduler.jobstores.base import JobLookupError
 from fastapi import APIRouter, status
 from fastapi.encoders import jsonable_encoder
@@ -8,9 +11,14 @@ from app.config.settings import settings
 from app.core.users import current_active_user
 from app.db.client import client
 from opensearchpy import NotFoundError
-from app.models.scheduler import Job
-from app.core.schduler import scheduler, to_dict, function
 
+from app.models.runner import DatasetRun
+from app.models.scheduler import Job
+from app.core.scheduler import scheduler, to_dict, list_jobs
+from app.api.api_v1.endpoints.runner import run_dataset
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.cron import CronTrigger
+import uuid
 
 router = APIRouter(
     # dependencies=[Depends(current_active_user)]
@@ -27,13 +35,21 @@ def json_schema():
 
 
 @router.get("")
-def list_jobs():
-    jobs = scheduler.get_jobs("default")
-    jobs_as_dict = []
+def list_all_jobs():
+    jobs_as_dict = list_jobs()
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=jsonable_encoder(jobs_as_dict),
+    )
 
-    for job in jobs:
-        jobs_as_dict.append(to_dict(job))
 
+@router.get("/{dataset_id}")
+def list_jobs_for_dataset(
+        dataset_id: Optional[str]
+):
+    jobs_as_dict = list_jobs(
+        dataset_id=dataset_id,
+    )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=jsonable_encoder(jobs_as_dict),
@@ -56,13 +72,63 @@ def get_job(job_id: str):
     )
 
 
-@router.post("")
-def add_job(
+@router.post("/next_run_times")
+def get_next_job_run_times(
         job: Job,
 ):
-    _resource_exists(job.dataset_id)
+    if job.trigger.trigger == "cron":
+        trigger_type = CronTrigger
+    elif job.trigger.trigger == "interval":
+        trigger_type = IntervalTrigger
+    else:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=f"{job.trigger.trigger} cannot generate next run times"
+        )
+
+    next_run_times = []
+
+    trigger_as_dict = job.trigger.dict(exclude_none=True)
+    del trigger_as_dict["trigger"]
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+
+    if job.trigger.start_date and job.trigger.start_date > now:
+        next_run_time = job.trigger.start_date
+    else:
+        next_run_time = now
+
+    for _ in range(9):
+        next_run_time = trigger_type(
+            **trigger_as_dict
+        ).get_next_fire_time(next_run_time, next_run_time)
+
+        if not next_run_time:
+            break
+        next_run_times.append(next_run_time)
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=jsonable_encoder(next_run_times),
+    )
+
+
+@router.post("/{dataset_id}")
+def add_job(
+        dataset_id: str,
+        job: Job,
+):
+    dataset = _resource_exists(dataset_id)
+    datasource_id = dataset["_source"]["datasource_id"]
+    dataset_run = DatasetRun(
+        dataset_id=dataset_id,
+        datasource_id=datasource_id
+    )
+
     job = scheduler.add_job(
-        func=function,
+        id=f"{dataset_id}__{uuid.uuid4()}",
+        func=run_dataset,
+        kwargs={'dataset_run': dataset_run},
         misfire_grace_time=job.misfire_grace_time,
         max_instances=job.max_instances,
         **job.trigger.dict(exclude_none=True)

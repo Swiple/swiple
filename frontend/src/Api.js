@@ -163,8 +163,8 @@ export const getSchedulesJsonSchema = () => axios.get(`${BASE_URL}/scheduler/jso
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const getSchedules = () => axios.get(
-  `${BASE_URL}/scheduler`,
+export const getSchedulesForDataset = (datasetId) => axios.get(
+  `${BASE_URL}/scheduler/${datasetId}`,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
@@ -173,14 +173,14 @@ export const getSchedule = (key) => axios.get(`${BASE_URL}/scheduler/${key}`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const postSchedule = (data) => axios.post(
-  `${BASE_URL}/scheduler`,
+export const postSchedule = (data, datasetId) => axios.post(
+  `${BASE_URL}/scheduler/${datasetId}`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const putSchedule = (key, data) => axios.put(
+export const putSchedule = (data, key) => axios.put(
   `${BASE_URL}/scheduler/${key}`,
   data,
 )
@@ -188,6 +188,13 @@ export const putSchedule = (key, data) => axios.put(
   .catch((error) => errorHandler(error));
 
 export const deleteSchedule = (key) => axios.delete(`${BASE_URL}/scheduler/${key}`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const postGenerateNextRunTimes = (data) => axios.post(
+  `${BASE_URL}/scheduler/next_run_times`,
+  data,
+)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 

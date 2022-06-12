@@ -16,6 +16,7 @@ from app.models.datasource import get_datasource
 from app.core.runner import Runner
 from app.models.users import UserDB
 from app.core.dataset import split_dataset_resource
+from app.core import scheduler
 import uuid
 
 router = APIRouter(
@@ -193,10 +194,11 @@ def delete_dataset(
 ):
     try:
         body = {"query": {"match": {"dataset_id": key}}}
+
         client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
         client.delete_by_query(index=settings.EXPECTATION_INDEX, body=body)
-
-        client.delete(index=settings.DATASET_INDEX, id=key, refresh="wait_for", )
+        scheduler.delete_by_dataset(key)
+        client.delete(index=settings.DATASET_INDEX, id=key, refresh="wait_for")
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -41,5 +41,11 @@ OKTA_OAUTH_CLIENT_ID = None
 OKTA_OAUTH_SECRET = None
 OKTA_OAUTH_BASE_URL = None
 
+SCHEDULER_EXECUTOR_MAX_WORKERS = 10
+SCHEDULER_EXECUTOR_KWARGS = None
+SCHEDULER_REDIS_DB = 0
 
+# list of Redis connection properties e.g. host, port, password
+# https://github.com/redis/redis-py/blob/bedf3c82a55b4b67eed93f686cb17e82f7ab19cd/redis/client.py#L899
+SCHEDULER_REDIS_KWARGS = {}
 

@@ -55,7 +55,7 @@ DATE = "date"
 
 # Scheduler Descriptions
 MAX_INSTANCES = "The maximum number of concurrently executing instances allowed for this job"
-MISFIRE_GRACE_TIME = "The time (in seconds) how much this job’s execution is allowed to be late"
+MISFIRE_GRACE_TIME = "The amount of time (in seconds) that this job’s execution is allowed to be late"
 
 START_DATE = "Earliest possible date/time to trigger on (inclusive)"
 END_DATE = "Latest possible date/time to trigger on (inclusive)"

@@ -1,48 +1,58 @@
-from apscheduler.triggers.cron import BaseField, MonthField, WeekField, DayOfMonthField, DayOfWeekField
+from apscheduler.triggers.cron import (
+    BaseField,
+    MonthField,
+    WeekField,
+    DayOfMonthField,
+    DayOfWeekField,
+)
 from pydantic import validator, Field, Extra
-import app.constants as c
-from app.models.base_model import BaseModel
 from typing import Literal, Union, Optional
 from datetime import datetime
-from apscheduler.triggers.interval import IntervalTrigger as APSchedulerIntervalTrigger
-from apscheduler.triggers.date import DateTrigger as APSchedulerDateTrigger
-from apscheduler.triggers.cron import CronTrigger as APSchedulerCronTrigger
+from app.models.base_model import BaseModel
+import app.constants as c
 
 
 class IntervalTrigger(BaseModel):
+    class Config:
+        title = "Interval"
+
     trigger: Literal["interval"]
     start_date: Optional[datetime] = Field(description=c.START_DATE)
     end_date: Optional[datetime] = Field(description=c.END_DATE)
-    seconds: Optional[int] = Field(ge=1, description=c.SECONDS)
-    minutes: Optional[int] = Field(ge=1, description=c.MINUTES)
-    hours: Optional[int] = Field(ge=1, description=c.HOURS)
-    weeks: Optional[int] = Field(ge=1, description=c.WEEKS)
+    seconds: Optional[int] = Field(description=c.SECONDS)
+    minutes: Optional[int] = Field(description=c.MINUTES)
+    hours: Optional[int] = Field(description=c.HOURS)
+    days: Optional[int] = Field(description=c.DAYS)
+    weeks: Optional[int] = Field(description=c.WEEKS)
 
-    @validator("seconds", "minutes", "hours", "weeks")
-    def only_one(cls, v, values, field):
-        for key, value in values.items():
-            if value is not None and key not in ["start_date", "end_date", "trigger"]:
-                raise ValueError(f"unexpected property '{field.name}', '{key}' already present")
+    @validator("end_date")
+    def start_date_before_end_date(cls, v, values):
+        if v and values['start_date'] and v < values['start_date']:
+            raise ValueError('end_date should not be before start_date')
         return v
-
-    def instance(self):
-        return APSchedulerIntervalTrigger(
-            **self.dict(exclude={"trigger"})
-        )
 
 
 class CronTrigger(BaseModel):
+    class Config:
+        title = "Cron"
+
     trigger: Literal["cron"]
     start_date: Optional[datetime] = Field(description=c.START_DATE)
     end_date: Optional[datetime] = Field(description=c.END_DATE)
-    second: Optional[Union[int, str]] = Field(description=c.SECOND)
-    minute: Optional[Union[int, str]] = Field(description=c.MINUTE)
-    hour: Optional[Union[int, str]] = Field(description=c.HOUR)
-    day: Optional[Union[int, str]] = Field(description=c.DAY)
-    week: Optional[Union[int, str]] = Field(description=c.WEEK)
-    day_of_week: Optional[Union[int, str]] = Field(description=c.DAY_OF_WEEK)
-    month: Optional[Union[int, str]] = Field(description=c.MONTH)
-    year: Optional[Union[int, str]] = Field(ge=datetime.now().year, description=c.YEAR)
+    second: Optional[str] = Field(description=c.SECOND)
+    minute: Optional[str] = Field(description=c.MINUTE)
+    hour: Optional[str] = Field(description=c.HOUR)
+    day: Optional[str] = Field(description=c.DAY)
+    week: Optional[str] = Field(description=c.WEEK)
+    day_of_week: Optional[str] = Field(description=c.DAY_OF_WEEK)
+    month: Optional[str] = Field(description=c.MONTH)
+    year: Optional[str] = Field(description=c.YEAR)
+
+    @validator("end_date")
+    def start_date_before_end_date(cls, v, values):
+        if v and values['start_date'] and v < values['start_date']:
+            raise ValueError('end_date should not be before start_date')
+        return v
 
     @validator("year", "month", "day_of_week", "week", "day", "hour", "minute", "second")
     def valid_expressions(cls, v, field):
@@ -63,6 +73,9 @@ class CronTrigger(BaseModel):
 
 
 class DateTrigger(BaseModel):
+    class Config:
+        title = "Date"
+
     trigger: Literal["date"]
     run_date: Union[datetime] = Field(description=c.RUN_DATE)
 
@@ -71,7 +84,6 @@ class Job(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    dataset_id: str
     trigger: Union[
         CronTrigger,
         IntervalTrigger,
@@ -79,6 +91,3 @@ class Job(BaseModel):
     ] = Field(discriminator="trigger")
     misfire_grace_time: Optional[int] = Field(default=300, description=c.MISFIRE_GRACE_TIME)
     max_instances: Optional[int] = Field(default=1, description=c.MAX_INSTANCES)
-
-
-# TODO change undefined

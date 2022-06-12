@@ -16,7 +16,7 @@ import {
 } from '../../Api';
 import Section from '../../components/Section';
 import DatasetModal, { CREATE_TYPE, UPDATE_TYPE } from './components/DatasetModal';
-import splitDatasetResource from '../../Utils';
+import { splitDatasetResource } from '../../Utils';
 
 const { Content } = Layout;
 const { Title } = Typography;
