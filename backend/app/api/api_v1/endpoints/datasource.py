@@ -1,5 +1,5 @@
 from copy import deepcopy
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from app.models.datasource import (
 	engine_types, Athena, PostgreSQL, MySQL, Redshift, Snowflake, DatasourceCommon
@@ -9,12 +9,13 @@ from app.config.settings import settings
 from app import utils
 from typing import Optional
 from opensearchpy import RequestError
-from app.core import security, scheduler
+from app.core import security
 from app.models import datasource as datasourcee
 from fastapi.param_functions import Depends
 import uuid
 from app.core.users import current_active_user
 from app.models.users import UserDB
+import requests
 
 router = APIRouter(
 	dependencies=[Depends(current_active_user)]
@@ -156,13 +157,20 @@ def _test_datasource(datasource: DatasourceCommon):
 		)
 
 
-def _delete_datasource(key: str):
+def _delete_datasource(
+		key: str,
+		request: Request,
+):
 	body = {"query": {"match": {"datasource_id": key}}}
 	client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
 	client.delete_by_query(index=settings.EXPECTATION_INDEX, body=body)
 	client.delete_by_query(index=settings.DATASET_INDEX, body=body)
-	scheduler.delete_by_datasource(key)
-
+	requests.delete(
+		url=f"{settings.SCHEDULER_HOST}/api/v1/schedules",
+		params={"datasource_id": key},
+		headers=request.headers,
+		cookies=request.cookies,
+	)
 	client.delete(index=settings.DATASOURCE_INDEX, id=key, refresh="wait_for")
 	return JSONResponse(
 		status_code=status.HTTP_200_OK,

@@ -159,40 +159,38 @@ export const deleteDataset = (key) => axios.delete(`${BASE_URL}/dataset/${key}`)
 // ========================================================
 // Schedule
 // ========================================================
-export const getSchedulesJsonSchema = () => axios.get(`${BASE_URL}/scheduler/json_schema`)
+export const getSchedulesJsonSchema = () => axios.get(`${BASE_URL}/schedules/json_schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const getSchedulesForDataset = (datasetId) => axios.get(
-  `${BASE_URL}/scheduler/${datasetId}`,
+  `${BASE_URL}/schedules`,
+  { params: { dataset_id: datasetId } },
 )
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
-export const getSchedule = (key) => axios.get(`${BASE_URL}/scheduler/${key}`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const postSchedule = (data, datasetId) => axios.post(
-  `${BASE_URL}/scheduler/${datasetId}`,
+  `${BASE_URL}/schedules`,
+  data,
+  { params: { dataset_id: datasetId } },
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const putSchedule = (data, scheduleId) => axios.put(
+  `${BASE_URL}/schedules/${scheduleId}`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const putSchedule = (data, key) => axios.put(
-  `${BASE_URL}/scheduler/${key}`,
-  data,
-)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
-export const deleteSchedule = (key) => axios.delete(`${BASE_URL}/scheduler/${key}`)
+export const deleteSchedule = (key) => axios.delete(`${BASE_URL}/schedules/${key}`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const postGenerateNextRunTimes = (data) => axios.post(
-  `${BASE_URL}/scheduler/next_run_times`,
+  `${BASE_URL}/schedules/next_run_times`,
   data,
 )
   .then((response) => response)

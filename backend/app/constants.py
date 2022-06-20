@@ -1,3 +1,7 @@
+# APP Env
+APP_SWIPLE_API = "SWIPLE_API"
+APP_SCHEDULER = "SCHEDULER"
+
 # Expectation Descriptions
 COLUMN = "The column to be analyzed."
 VALUE_SET = "A comma separated set of values. Remove all unnecessary whitespace."
@@ -54,8 +58,8 @@ CRON = "cron"
 DATE = "date"
 
 # Scheduler Descriptions
-MAX_INSTANCES = "The maximum number of concurrently executing instances allowed for this job"
-MISFIRE_GRACE_TIME = "The amount of time (in seconds) that this job’s execution is allowed to be late"
+MAX_INSTANCES = "The maximum number of concurrently executing instances allowed for this schedule"
+MISFIRE_GRACE_TIME = "The amount of time (in seconds) that this schedule’s execution is allowed to be late"
 
 START_DATE = "Earliest possible date/time to trigger on (inclusive)"
 END_DATE = "Latest possible date/time to trigger on (inclusive)"
@@ -78,4 +82,4 @@ DAYS = "Number of days to wait"
 WEEKS = "Number of weeks to wait"
 
 # DateTrigger
-RUN_DATE = "The date/time to run the job at"
+RUN_DATE = "The date/time to run the schedule at"

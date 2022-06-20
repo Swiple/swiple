@@ -6,6 +6,9 @@ from app.config import config
 class Settings(BaseSettings):
     PROJECT_NAME: str = config.PROJECT_NAME
     API_VERSION: str = config.API_VERSION
+    APP: str = config.APP
+
+    SCHEDULER_HOST: str = config.SCHEDULER_HOST
 
     AUTH_LIFETIME_IN_SECONDS: int = config.AUTH_LIFETIME_IN_SECONDS
     SECRET_KEY: str = config.SECRET_KEY
@@ -36,7 +39,6 @@ class Settings(BaseSettings):
     SCHEDULER_EXECUTOR_KWARGS: dict = config.SCHEDULER_EXECUTOR_KWARGS
     SCHEDULER_REDIS_DB: int = config.SCHEDULER_REDIS_DB
     SCHEDULER_REDIS_KWARGS: dict = config.SCHEDULER_REDIS_KWARGS
-
 
     OPENSEARCH_HOST: str = config.OPENSEARCH_HOST
     OPENSEARCH_PORT: str = config.OPENSEARCH_PORT

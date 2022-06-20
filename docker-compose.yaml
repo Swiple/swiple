@@ -7,9 +7,26 @@ services:
       - '8000:8000'
     volumes:
       - $PWD/backend/app/config/:/code/app/config/
+    environment:
+      - APP=SWIPLE_API
     depends_on:
       opensearch-node1:
         condition: service_healthy
+
+  scheduler:
+    container_name: scheduler
+    image: swiple-api:latest
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+    ports:
+      - '8001:8001'
+    volumes:
+      - $PWD/backend/app/config/:/code/app/config/
+    environment:
+      - APP=SCHEDULER
+    depends_on:
+      opensearch-node1:
+        condition: service_healthy
+
   swiple_ui:
     container_name: swiple_ui
     image: swiple-ui:latest
@@ -98,11 +115,7 @@ services:
       - "6379:6379"
     volumes:
       - $PWD/redis-data:/var/lib/redis
-#        - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
-#    networks:
-#      node_net:
-#        ipv4_address: 172.28.1.4
 volumes:
   opensearch-data1:

@@ -1,5 +1,10 @@
+import os
+
 PROJECT_NAME = "DataQuality"
 API_VERSION = "/api/v1"
+APP = os.getenv("APP")
+
+SCHEDULER_HOST = "http://localhost:8001"
 
 # Lifetime of HTTP Cookie
 # Default: 8 hrs
@@ -11,7 +16,7 @@ SECRET_KEY = "jSE9Q7_5g1MDpCz7wU1xmcmz27RhSo8nRXCPRjjE6dg="
 
 API_HOST_URL = "http://127.0.0.1:8000"
 UI_HOST_URL = "http://127.0.0.1:3000"
-BACKEND_CORS_ORIGINS = [UI_HOST_URL]
+BACKEND_CORS_ORIGINS = [UI_HOST_URL, "http://127.0.0.1:8000"]
 
 OPENSEARCH_HOST = "localhost"
 # OPENSEARCH_HOST = "opensearch-node1"

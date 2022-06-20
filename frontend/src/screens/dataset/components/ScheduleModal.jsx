@@ -91,7 +91,7 @@ function ScheduleModal({
         if (complete) {
           const data = form.getFieldsValue(true);
           data.trigger.trigger = selectedTrigger;
-
+          console.log(data);
           postGenerateNextRunTimes(data)
             .then((response) => {
               if (response.status === 200) {
@@ -499,7 +499,6 @@ function ScheduleModal({
                     name={['trigger', 'start_date']}
                     label="Start Date (Local time zone)"
                     tooltip="Earliest possible date/time to trigger on (inclusive)"
-                    // initialValue={moment('2022-06-12T13:56:27.883000+00:00')}
                   >
                     <DatePicker
                       showTime
@@ -509,17 +508,17 @@ function ScheduleModal({
                     name={['trigger', 'end_date']}
                     label="End Date (Local time zone)"
                     tooltip="Latest possible date/time to trigger on (inclusive)"
-                    // rules={[
-                    //   {
-                    //     validator: async (rule, value) => {
-                    //       const values = form.getFieldsValue(true);
-                    //       if (value && values.trigger.start_date
-                    //         && value < values.trigger.start_date) {
-                    //         throw new Error('End Date should not be before Start Date');
-                    //       }
-                    //     },
-                    //   },
-                    // ]}
+                    rules={[
+                      {
+                        validator: async (rule, value) => {
+                          const values = form.getFieldsValue(true);
+                          if (value && values.trigger.start_date
+                            && value < values.trigger.start_date) {
+                            throw new Error('End Date should not be before Start Date');
+                          }
+                        },
+                      },
+                    ]}
                   >
                     <DatePicker
                       showTime

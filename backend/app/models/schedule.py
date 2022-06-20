@@ -80,7 +80,7 @@ class DateTrigger(BaseModel):
     run_date: Union[datetime] = Field(description=c.RUN_DATE)
 
 
-class Job(BaseModel):
+class Schedule(BaseModel):
     class Config:
         extra = Extra.forbid
 

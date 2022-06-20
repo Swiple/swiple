@@ -1,36 +1,12 @@
 from fastapi import APIRouter
-
-from app.api.api_v1.endpoints import (
-    auth,
-    dataset,
-    dashboard,
-    datasource,
-    expectation,
-    runner,
-    introspect,
-    validation,
-    suggestion,
-    scheduler,
-)
-from app.core.users import fastapi_users, cookie_backend
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
 from httpx_oauth.clients.microsoft import MicrosoftGraphOAuth2
 from httpx_oauth.clients.okta import OktaOAuth2
+from app.core.users import fastapi_users, cookie_backend
 from app.config.settings import settings
 
 router = APIRouter()
-router.include_router(auth.router, prefix="/auth", tags=["Auth"])
-router.include_router(datasource.router, prefix="/datasource", tags=["Data Sources"])
-router.include_router(dataset.router, prefix="/dataset", tags=["Datasets"])
-router.include_router(expectation.router, prefix="/expectation", tags=["Expectations"])
-router.include_router(runner.router, prefix="/runner", tags=["Runner"])
-router.include_router(validation.router, prefix="/validation", tags=["Validations"])
-router.include_router(suggestion.router, prefix="/suggestion", tags=["Suggestions"])
-router.include_router(introspect.router, prefix="/introspect", tags=["Introspect"])
-router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
-router.include_router(scheduler.router, prefix="/scheduler", tags=["Scheduler"])
-
 router.include_router(
     fastapi_users.get_users_router(),
     prefix="/user",
@@ -42,23 +18,23 @@ if settings.USERNAME_AND_PASSWORD_ENABLED:
     router.include_router(
         fastapi_users.get_auth_router(cookie_backend),
         prefix="/auth",
-        tags=["auth"]
+        tags=["Auth"],
     )
 
     router.include_router(
         fastapi_users.get_register_router(),
         prefix="/auth",
-        tags=["auth"]
+        tags=["Auth"]
     )
     router.include_router(
         fastapi_users.get_reset_password_router(),
         prefix="/auth",
-        tags=["auth"],
+        tags=["Auth"],
     )
     router.include_router(
         fastapi_users.get_verify_router(),
         prefix="/auth",
-        tags=["auth"],
+        tags=["Auth"],
     )
 
 if settings.GITHUB_OAUTH_ENABLED:
@@ -73,7 +49,7 @@ if settings.GITHUB_OAUTH_ENABLED:
             redirect_url=f"{settings.REDIRECT_URL}?provider=github",
         ),
         prefix="/auth/github",
-        tags=["auth"],
+        tags=["Auth"],
     )
 
 if settings.GOOGLE_OAUTH_ENABLED:
@@ -88,7 +64,7 @@ if settings.GOOGLE_OAUTH_ENABLED:
             redirect_url=f"{settings.REDIRECT_URL}?provider=google",
         ),
         prefix="/auth/google",
-        tags=["auth"],
+        tags=["Auth"],
     )
 
 if settings.MICROSOFT_OAUTH_ENABLED:
@@ -107,7 +83,7 @@ if settings.MICROSOFT_OAUTH_ENABLED:
             redirect_url=f"{settings.REDIRECT_URL}?provider=microsoft",
         ),
         prefix="/auth/microsoft",
-        tags=["auth"],
+        tags=["Auth"],
     )
 
 if settings.OKTA_OAUTH_ENABLED:
@@ -126,5 +102,5 @@ if settings.OKTA_OAUTH_ENABLED:
             redirect_url=f"{settings.REDIRECT_URL}?provider=okta",
         ),
         prefix="/auth/okta",
-        tags=["auth"],
+        tags=["Auth"],
     )
