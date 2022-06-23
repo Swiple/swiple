@@ -23,7 +23,7 @@ brew install make
 ```
 
 
-**Window**
+**Windows**
 
 
 
@@ -78,75 +78,36 @@ python3 -m venv ./backend/venv
 pip install -r ./backend/requirements.txt
 ```
 
-### 4. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD`
 
-The user/password authentication method is used by default but it cannot be integrated with your organization's current auth system. For production use cases, it is recommended to use OAuth. 
-
-Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `./backend/app/config/config.py`
-
-```python
-ADMIN_EMAIL = "email@something.com"
-ADMIN_PASSWORD = "---Redacted---"
-```
-
-The admin user is created/updated in the `setup` docker container. Changing `ADMIN_EMAIL` will result in another admin user being created.
-
-[See Authentication to use OAuth.](../configuration/authentication.md)
-
-### 5. Generate and set `SECRET_KEY`
-
-Run the following snippet to create a Fernet Key and set `SECRET_KEY` to it.
-```python
-from cryptography.fernet import Fernet
-
-fernet_key = Fernet.generate_key()
-print(fernet_key.decode())  # your fernet_key, keep it in secured place!
-```
-
-:::note Note
-At this time, changing `SECRET_KEY` after data sources have been added will cause connections to them to fail. Secret rotation is on the roadmap.
-:::
-
-
-### 6. Setup Swiple UI
+### 4. Setup Swiple UI
 ```bash
 # Install Dependecies
 npm install --prefix ./frontend/
 ```
 
 
-### 7. Run Docker Containers
+### 5. Run Docker Containers
 
-Run Opensearch, Opensearch Dashboards, Setup, and Postgres docker containers with the following:
-
-```bash
-make bundled_dev
-```
-
-### 8. Start Swiple API
-Update `OPENSEARCH_HOST` in `./backend/app/config/config.py` from 
-
-```python
-OPENSEARCH_HOST = "opensearch-node1"
-```
-to
-```python
-OPENSEARCH_HOST = "localhost"
-```
-
-Start Swiple API.
-```bash
-python3 ./backend/main.py
-```
-
-### 9. Start Swiple UI
+Run docker containers. Changes made to code will trigger a reload.
 
 ```bash
-npm start --preifx ./frontend/
+make
 ```
 
-### 10. Navigate to [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
+Running `make` does the following for you:
+1. Builds the Docker Images for `swiple-api` and `swiple-ui`.
+2. Runs `docker-compose up`, starting all services needed to run Swiple.
 
 :::note Note
-Please do not open Swiple on `localhost`. You will encounter errors.
+Changes to `requirements.txt` and `node_modules will require stopping containers and re-running step 5.
+:::
+
+
+### 4. Sign in to Swiple at [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
+Sign in with the following credentials:
+- **Username**: admin@email.com
+- **Password**: admin
+
+:::note Note
+`ADMIN_EMAIL` and `ADMIN_PASSWORD` can be set in `./backend/app/config/config.py` 
 :::

@@ -1,9 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
 from httpx_oauth.clients.microsoft import MicrosoftGraphOAuth2
 from httpx_oauth.clients.okta import OktaOAuth2
-from app.core.users import fastapi_users, cookie_backend
+from app.core.users import fastapi_users, cookie_backend, current_active_superuser
 from app.config.settings import settings
 
 router = APIRouter()
@@ -24,7 +24,8 @@ if settings.USERNAME_AND_PASSWORD_ENABLED:
     router.include_router(
         fastapi_users.get_register_router(),
         prefix="/auth",
-        tags=["Auth"]
+        tags=["Auth"],
+        dependencies=[Depends(current_active_superuser)]
     )
     router.include_router(
         fastapi_users.get_reset_password_router(),

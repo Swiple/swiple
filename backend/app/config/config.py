@@ -10,6 +10,7 @@ AUTH_LIFETIME_IN_SECONDS = "28800"
 
 # SECRET_KEY, OAUTH_CLIENT_ID, OAUTH_SECRET, ADMIN_PASSWORD should be stored in a Secret Store
 # like AWS Parameter Store or AWS Secrets Manager
+# https://swiple.io/docs/configuration/how-to-update-SECRET_KEY
 SECRET_KEY = "jSE9Q7_5g1MDpCz7wU1xmcmz27RhSo8nRXCPRjjE6dg="
 
 SWIPLE_API_URL = "http://swiple_api:8000"
@@ -34,6 +35,7 @@ OPENSEARCH_USERNAME = "admin"
 OPENSEARCH_PASSWORD = "admin"
 
 USERNAME_AND_PASSWORD_ENABLED = True
+# changing ADMIN_EMAIL does not remove the previous user.
 ADMIN_EMAIL = "admin@email.com"
 ADMIN_PASSWORD = "admin"
 

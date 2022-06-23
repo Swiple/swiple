@@ -9,6 +9,7 @@ Swiple is the data observability web application that allows teams to quickly un
 ## Features
 * Measure the data quality of a **SQL query**, **table**, or **view**.
 * Generate data expectations using **Automated Data Profiling**.
+* **Schedule** validations to run on any recurrence interval.
 * **Automated Data Docs**
 * Add **SLA's** for your data.
 

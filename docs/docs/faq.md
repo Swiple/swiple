@@ -14,6 +14,10 @@ When running locally, make sure you are using [http://127.0.0.1:3000/login](http
 
 Browsers require at least 2 dots in the url when setting the cookie; hence why the cookie is not being set for `localhost`.
 
-#### Solution 2 (OAuth)
+#### Solution 2
+
+At this time, **Safari** is not a supported browser. Please try **Chrome**, **Firefox**, or **Brave**.
+
+#### Solution 3 (OAuth)
 
 Redirect URL's do not match.
