@@ -2,6 +2,7 @@ import os
 
 PROJECT_NAME = "DataQuality"
 API_VERSION = "/api/v1"
+# "SWIPLE_API" or "SCHEDULER"
 APP = os.getenv("APP")
 
 # Lifetime of HTTP Cookie

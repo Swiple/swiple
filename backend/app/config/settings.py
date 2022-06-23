@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Literal
 from pydantic import (
     AnyHttpUrl,
     HttpUrl,
@@ -13,7 +13,7 @@ from app.config import config
 class Settings(BaseSettings):
     PROJECT_NAME: str = config.PROJECT_NAME
     API_VERSION: str = config.API_VERSION
-    APP: str = config.APP
+    APP: Literal["SWIPLE_API", "SCHEDULER"] = config.APP
 
     SWIPLE_API_URL: AnyHttpUrl = config.SWIPLE_API_URL
     UI_URL: AnyHttpUrl = config.UI_URL
