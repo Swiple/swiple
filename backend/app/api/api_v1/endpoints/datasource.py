@@ -138,8 +138,11 @@ def update_snowflake_datasource(datasource: Snowflake, key: str, test: Optional[
 
 
 @router.delete("/{datasource_id}")
-def delete_datasource(datasource_id: str):
-	return _delete_datasource(datasource_id)
+def delete_datasource(
+		datasource_id: str,
+		request: Request,
+):
+	return _delete_datasource(datasource_id, request)
 
 
 def _test_datasource(datasource: DatasourceCommon):
@@ -166,7 +169,7 @@ def _delete_datasource(
 	client.delete_by_query(index=settings.EXPECTATION_INDEX, body=body)
 	client.delete_by_query(index=settings.DATASET_INDEX, body=body)
 	requests.delete(
-		url=f"{settings.SCHEDULER_HOST}/api/v1/schedules",
+		url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
 		params={"datasource_id": key},
 		headers=request.headers,
 		cookies=request.cookies,

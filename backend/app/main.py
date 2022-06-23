@@ -4,7 +4,7 @@ from app.api.api_v1 import auth_router
 from app.config.settings import settings
 from app.db.client import client, async_client
 import app.constants as c
-from app.core.scheduler import scheduler
+from app.core.schedulers.scheduler import scheduler
 
 app = FastAPI(
     openapi_url=f"{settings.API_VERSION}/openapi.json"

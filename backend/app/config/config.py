@@ -4,8 +4,6 @@ PROJECT_NAME = "DataQuality"
 API_VERSION = "/api/v1"
 APP = os.getenv("APP")
 
-SCHEDULER_HOST = "http://localhost:8001"
-
 # Lifetime of HTTP Cookie
 # Default: 8 hrs
 AUTH_LIFETIME_IN_SECONDS = "28800"
@@ -14,18 +12,29 @@ AUTH_LIFETIME_IN_SECONDS = "28800"
 # like AWS Parameter Store or AWS Secrets Manager
 SECRET_KEY = "jSE9Q7_5g1MDpCz7wU1xmcmz27RhSo8nRXCPRjjE6dg="
 
-API_HOST_URL = "http://127.0.0.1:8000"
-UI_HOST_URL = "http://127.0.0.1:3000"
-BACKEND_CORS_ORIGINS = [UI_HOST_URL, "http://127.0.0.1:8000"]
+SWIPLE_API_URL = "http://swiple_api:8000"
+SCHEDULER_API_URL = "http://scheduler:8001"
+UI_URL = "http://127.0.0.1:3000"
 
-OPENSEARCH_HOST = "localhost"
-# OPENSEARCH_HOST = "opensearch-node1"
+BACKEND_CORS_ORIGINS = [UI_URL, SCHEDULER_API_URL]
+
+SCHEDULER_EXECUTOR_MAX_WORKERS = 10
+SCHEDULER_EXECUTOR_KWARGS = None
+SCHEDULER_REDIS_DB = 0
+
+# list of Redis connection properties e.g. host, port, password
+# https://github.com/redis/redis-py/blob/bedf3c82a55b4b67eed93f686cb17e82f7ab19cd/redis/client.py#L899
+SCHEDULER_REDIS_KWARGS = {
+    "host": "redis"
+}
+
+OPENSEARCH_HOST = "opensearch-node1"
 OPENSEARCH_PORT = "9200"
 OPENSEARCH_USERNAME = "admin"
 OPENSEARCH_PASSWORD = "admin"
 
 USERNAME_AND_PASSWORD_ENABLED = True
-ADMIN_EMAIL = "email@something.com"
+ADMIN_EMAIL = "admin@email.com"
 ADMIN_PASSWORD = "admin"
 
 GITHUB_OAUTH_ENABLED = False
@@ -45,12 +54,3 @@ OKTA_OAUTH_ENABLED = False
 OKTA_OAUTH_CLIENT_ID = None
 OKTA_OAUTH_SECRET = None
 OKTA_OAUTH_BASE_URL = None
-
-SCHEDULER_EXECUTOR_MAX_WORKERS = 10
-SCHEDULER_EXECUTOR_KWARGS = None
-SCHEDULER_REDIS_DB = 0
-
-# list of Redis connection properties e.g. host, port, password
-# https://github.com/redis/redis-py/blob/bedf3c82a55b4b67eed93f686cb17e82f7ab19cd/redis/client.py#L899
-SCHEDULER_REDIS_KWARGS = {}
-

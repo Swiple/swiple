@@ -1,13 +1,13 @@
 FROM node:16-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json /app
 
 RUN npm install
 
-COPY . .
+COPY . /app
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start_docker"]
+CMD ["npm", "run", "start_docker_dev"]

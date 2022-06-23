@@ -91,7 +91,6 @@ function ScheduleModal({
         if (complete) {
           const data = form.getFieldsValue(true);
           data.trigger.trigger = selectedTrigger;
-          console.log(data);
           postGenerateNextRunTimes(data)
             .then((response) => {
               if (response.status === 200) {

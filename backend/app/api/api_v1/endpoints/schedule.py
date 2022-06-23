@@ -6,8 +6,9 @@ from fastapi.responses import JSONResponse
 from fastapi import Request
 from app.config.settings import settings
 from app.core.users import current_active_user
-from app.models.schedule import Schedule
+from app.core.schedulers.scheduler import Schedule
 import requests
+import json
 
 router = APIRouter(
     dependencies=[Depends(current_active_user)]
@@ -36,7 +37,7 @@ def list_schedules(
         )
 
     response = requests.get(
-        url=f"{settings.SCHEDULER_HOST}/api/v1/schedules",
+        url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={
             "dataset_id": dataset_id,
             "datasource_id": datasource_id
@@ -56,10 +57,9 @@ def create_schedule(
         schedule: Schedule,
         request: Request,
 ):
-    import json
     payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
     response = requests.post(
-        url=f"{settings.SCHEDULER_HOST}/api/v1/schedules",
+        url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"dataset_id": dataset_id},
         data=payload,
         headers=request.headers,
@@ -77,7 +77,7 @@ def get_schedule(
         request: Request,
 ):
     response = requests.get(
-        url=f"{settings.SCHEDULER_HOST}/api/v1/schedules/{schedule_id}",
+        url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
         headers=request.headers,
         cookies=request.cookies,
     )
@@ -93,9 +93,10 @@ def update_schedule(
         schedule: Schedule,
         request: Request,
 ):
+    payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
     response = requests.put(
-        url=f"{settings.SCHEDULER_HOST}/api/v1/schedules/{schedule_id}",
-        data=jsonable_encoder(schedule.dict()),
+        url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
+        data=payload,
         headers=request.headers,
         cookies=request.cookies,
     )
@@ -111,7 +112,7 @@ def delete_schedule(
         request: Request,
 ):
     response = requests.delete(
-        url=f"{settings.SCHEDULER_HOST}/api/v1/schedules/{schedule_id}",
+        url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
         headers=request.headers,
         cookies=request.cookies,
     )
@@ -143,14 +144,14 @@ def delete_schedules(
 
     if dataset_id:
         response = requests.delete(
-            url=f"{settings.SCHEDULER_HOST}/api/v1/schedules",
+            url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
             params={"dataset_id": dataset_id},
             headers=request.headers,
             cookies=request.cookies,
         )
     elif datasource_id:
         response = requests.delete(
-            url=f"{settings.SCHEDULER_HOST}/api/v1/schedules",
+            url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
             params={"datasource_id": datasource_id},
             headers=request.headers,
             cookies=request.cookies,
@@ -167,9 +168,10 @@ def get_next_schedule_run_times(
         schedule: Schedule,
         request: Request,
 ):
+    payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
     response = requests.post(
-        url=f"{settings.SCHEDULER_HOST}/api/v1/schedules/next_run_times",
-        data=jsonable_encoder(schedule.dict()),
+        url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/next_run_times",
+        data=payload,
         headers=request.headers,
         cookies=request.cookies,
     )

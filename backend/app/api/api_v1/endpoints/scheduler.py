@@ -1,10 +1,5 @@
-import datetime
-import uuid
 from typing import Optional
-
 from apscheduler.jobstores.base import JobLookupError
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.cron import CronTrigger
 from opensearchpy import NotFoundError
 from fastapi import APIRouter, status, HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -15,9 +10,7 @@ from app.config.settings import settings
 from app.core.users import current_active_user
 from app.db.client import client
 from app.models.runner import DatasetRun
-from app.models.schedule import Schedule
-from app.core.scheduler import scheduler
-from app.api.api_v1.endpoints.runner import run_dataset
+from app.core.schedulers.scheduler import scheduler, Schedule
 
 router = APIRouter(
     dependencies=[Depends(current_active_user)]
@@ -70,17 +63,14 @@ def create_schedule(
     )
 
     schedule = scheduler.add_schedule(
-        id=f"{dataset_id}__{uuid.uuid4()}",
-        func=run_dataset,
-        kwargs={'dataset_run': dataset_run},
-        misfire_grace_time=schedule.misfire_grace_time,
-        max_instances=schedule.max_instances,
-        **schedule.trigger.dict(exclude_none=True)
+        schedule=schedule,
+        dataset_run=dataset_run,
     )
-    job_as_dict = scheduler.to_dict(schedule)
+    schedule_as_dict = scheduler.to_dict(schedule)
+
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(job_as_dict),
+        content=jsonable_encoder(schedule_as_dict),
     )
 
 
@@ -107,11 +97,11 @@ def update_schedule(
 ):
     try:
         schedule_as_dict = schedule.trigger.dict(exclude_none=True)
-        rescheduled_job = scheduler.reschedule_schedule(
+        modified_schedule = scheduler.modify_schedule(
             schedule_id=schedule_id,
             **schedule_as_dict
         )
-        schedule_as_dict = scheduler.to_dict(rescheduled_job)
+        schedule_as_dict = scheduler.to_dict(modified_schedule)
     except AttributeError as ex:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -192,36 +182,9 @@ def delete_schedules(
 def get_next_schedule_run_times(
         schedule: Schedule,
 ):
-    if schedule.trigger.trigger == "cron":
-        trigger_type = CronTrigger
-    elif schedule.trigger.trigger == "interval":
-        trigger_type = IntervalTrigger
-    else:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=f"{schedule.trigger.trigger} cannot generate next run times"
-        )
-
-    next_run_times = []
-
-    trigger_as_dict = schedule.trigger.dict(exclude_none=True)
-    del trigger_as_dict["trigger"]
-
-    now = datetime.datetime.now(datetime.timezone.utc)
-
-    if schedule.trigger.start_date and schedule.trigger.start_date > now:
-        next_run_time = schedule.trigger.start_date
-    else:
-        next_run_time = now
-
-    for _ in range(9):
-        next_run_time = trigger_type(
-            **trigger_as_dict
-        ).get_next_fire_time(next_run_time, next_run_time)
-
-        if not next_run_time:
-            break
-        next_run_times.append(next_run_time)
+    next_run_times = scheduler.next_schedule_run_times(
+        schedule=schedule
+    )
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,

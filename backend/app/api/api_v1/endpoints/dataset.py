@@ -199,7 +199,7 @@ def delete_dataset(
         client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
         client.delete_by_query(index=settings.EXPECTATION_INDEX, body=body)
         requests.delete(
-            url=f"{settings.SCHEDULER_HOST}/api/v1/schedules",
+            url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
             params={"dataset_id": key},
             headers=request.headers,
             cookies=request.cookies,
