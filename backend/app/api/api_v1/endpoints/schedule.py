@@ -124,9 +124,9 @@ def delete_schedule(
 
 @router.delete("")
 def delete_schedules(
-        dataset_id: Optional[str],
-        datasource_id: Optional[str],
         request: Request,
+        dataset_id: Optional[str] = None,
+        datasource_id: Optional[str] = None,
 ):
     if dataset_id and datasource_id:
         raise HTTPException(
