@@ -19,6 +19,9 @@ export const UPDATE_TYPE = 'UPDATE';
 function ExpectationModal({
   visible, type, editedExpectation, dataset, onCancel, onFormSubmit,
 }) {
+  if (!visible) {
+    return null;
+  }
   const [expectationsJsonSchema, setExpectationsJsonSchema] = useState([]);
   const [refreshExpectationsJsonSchema, setRefreshExpectationsJsonSchema] = useState(true);
   const [selectedExpectation, setSelectedExpectation] = useState(null);
@@ -45,7 +48,6 @@ function ExpectationModal({
         .then((response) => {
           if (response.status === 200) {
             const { data } = response;
-            console.log(data);
             setExpectationsJsonSchema(data);
             setRefreshExpectationsJsonSchema(false);
           } else {
@@ -289,10 +291,7 @@ function ExpectationModal({
         <AsyncButton
           key="submit"
           type="primary"
-          onClick={() => {
-            console.log('submit');
-            return onFormSubmitInternal();
-          }}
+          onClick={() => onFormSubmitInternal()}
         >
           {type === CREATE_TYPE ? 'Create' : 'Update'}
         </AsyncButton>,
@@ -314,7 +313,6 @@ function ExpectationModal({
             showSearch
             placeholder={`Select an expectation (${expectationOptions.length})`}
             onChange={(value) => {
-              // console.log(value);
               setSelectedExpectation(value);
             }}
           >

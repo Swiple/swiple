@@ -1,4 +1,4 @@
-docker/postgres-data/**
+docker/**
 docs/.docusaurus
 
 # Byte-compiled / optimized / DLL files

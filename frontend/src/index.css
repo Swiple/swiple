@@ -125,41 +125,6 @@ code {
   border-radius: 8px;
 }
 
-/*!* padding between the gutter and code *!*/
-/*.monaco-editor .view-line {*/
-/*  padding-left: 10px;*/
-/*}*/
-
-/*!* fix cursor location *!*/
-/*.monaco-editor .cursor {*/
-/*  margin-left: 10px;*/
-/*}*/
-
-/*.monaco-editor .inputarea {*/
-/*  margin-left: 10px;*/
-/*}*/
-
-/*!* fix highlighted text selection *!*/
-/*.monaco-editor .selectionHighlight {*/
-/*  margin-left: 10px;*/
-/*  padding-left: 10px;*/
-/*}*/
-
-/*!* fix highlighted brackets *!*/
-/*.monaco-editor .bracket-match {*/
-/*  margin-left: 10px;*/
-/*}*/
-
-/*!* fix multiline text selection *!*/
-/*.monaco-editor .cslr.selected-text {*/
-/*  margin-left: 10px;*/
-/*}*/
-
-/*!* fix multiline text selection *!*/
-/*.monaco-editor .bottom-left-radius, .monaco-editor .top-left-radius {*/
-/*  margin-left: 10px;*/
-/*}*/
-
 .center {
   position: absolute;
   left: 50%;

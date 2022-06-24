@@ -28,7 +28,6 @@ const Dashboard = withRouter(() => {
       getDashboardMetrics()
         .then((response) => {
           if (response.status === 200) {
-            console.log(response.data);
             setMetricData(response.data);
           } else {
             message.error('An error occurred while retrieving data sources schema.', 5);

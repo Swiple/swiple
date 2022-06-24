@@ -1,7 +1,7 @@
 import json
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 
@@ -17,6 +17,7 @@ from app.core.runner import Runner
 from app.models.users import UserDB
 from app.core.dataset import split_dataset_resource
 import uuid
+import requests
 
 router = APIRouter(
     dependencies=[Depends(current_active_user)]
@@ -189,14 +190,21 @@ def update_dataset(
 
 @router.delete("/{key}")
 def delete_dataset(
-        key: str
+        key: str,
+        request: Request
 ):
     try:
         body = {"query": {"match": {"dataset_id": key}}}
+
         client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
         client.delete_by_query(index=settings.EXPECTATION_INDEX, body=body)
-
-        client.delete(index=settings.DATASET_INDEX, id=key, refresh="wait_for", )
+        requests.delete(
+            url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
+            params={"dataset_id": key},
+            headers=request.headers,
+            cookies=request.cookies,
+        )
+        client.delete(index=settings.DATASET_INDEX, id=key, refresh="wait_for")
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

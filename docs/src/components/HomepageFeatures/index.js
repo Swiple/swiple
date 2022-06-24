@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import styles from './styles.module.css';
 
-const FeatureList = [
+const FeatureRow1 = [
   {
     title: 'Automated Data Profiling',
     Svg: require('@site/static/img/automated-profiling.svg').default,
@@ -32,6 +32,18 @@ const FeatureList = [
   },
 ];
 
+const FeatureRow2 = [
+  {
+    title: 'Scheduling',
+    Svg: require('@site/static/img/scheduling.svg').default,
+    description: (
+      <>
+        Built-in scheduling functionality allows for automatic data validations on any recurrence interval.
+      </>
+    ),
+  },
+];
+
 function Feature({Svg, title, description}) {
   return (
     <div className={clsx('col col--4')}>
@@ -51,7 +63,13 @@ export default function HomepageFeatures() {
     <section className={styles.features}>
       <div className="container">
         <div className="row">
-          {FeatureList.map((props, idx) => (
+          {FeatureRow1.map((props, idx) => (
+            <Feature key={idx} {...props} />
+          ))}
+        </div>
+        <div className="margin-bottom--lg" />
+        <div className="row" style={{ justifyContent: "center" }}>
+          {FeatureRow2.map((props, idx) => (
             <Feature key={idx} {...props} />
           ))}
         </div>

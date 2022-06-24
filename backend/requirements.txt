@@ -3,9 +3,11 @@ aiosignal==1.2.0
 altair==4.2.0
 anyio==3.5.0
 appnope==0.1.2
+APScheduler==3.9.1
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 asgiref==3.5.0
+asn1crypto==1.5.1
 asttokens==2.0.5
 async-timeout==4.0.2
 attrs==21.4.0
@@ -13,6 +15,8 @@ backcall==0.2.0
 bcrypt==3.2.0
 black==21.12b0
 bleach==4.1.0
+boto3==1.24.7
+botocore==1.27.7
 cachetools==5.0.0
 certifi==2021.10.8
 cffi==1.15.0
@@ -101,6 +105,7 @@ pytz==2021.3
 pytz-deprecation-shim==0.1.0.post0
 PyYAML==6.0
 pyzmq==22.3.0
+redis==4.3.3
 requests==2.27.1
 rfc3986==1.5.0
 rsa==4.8

@@ -57,9 +57,15 @@ const config = {
           },
           // {to: '/blog', label: 'Blog', position: 'left'},
           {
+            href: 'https://join.slack.com/t/swiple/shared_invite/zt-19pzbjekw-Qgy~rjWVorrdqhxOgazyhw',
+            label: 'Slack',
+            position: 'right',
+          },
+          {
             href: 'https://github.com/Swiple/swiple',
             label: 'GitHub',
             position: 'right',
+            image: '',
           },
         ],
       },
@@ -84,7 +90,7 @@ const config = {
               },
               {
                 label: 'Slack',
-                href: 'https://join.slack.com/t/swiple/shared_invite/zt-17dw8xl43-5ac0VGPW0Jz~4SOmkO6wkg',
+                href: 'https://join.slack.com/t/swiple/shared_invite/zt-19pzbjekw-Qgy~rjWVorrdqhxOgazyhw',
               },
               // {
               //   label: 'Twitter',
@@ -106,7 +112,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Swiple, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Swiple, Ltd. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,

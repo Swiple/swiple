@@ -1,3 +1,7 @@
+# APP Type
+APP_SWIPLE_API = "SWIPLE_API"
+APP_SCHEDULER = "SCHEDULER"
+
 # Expectation Descriptions
 COLUMN = "The column to be analyzed."
 VALUE_SET = "A comma separated set of values. Remove all unnecessary whitespace."
@@ -47,3 +51,35 @@ EXPECT_COLUMN_PAIR_VALUES_TO_BE_EQUAL = "expect_column_pair_values_to_be_equal"
 COLUMN_MAP_EXPECTATION = "column_map_expectation"
 COLUMN_AGGREGATE_EXPECTATION = "column_aggregate_expectation"
 EXPECTATION = "expectation"
+
+# Scheduler Triggers
+INTERVAL = "interval"
+CRON = "cron"
+DATE = "date"
+
+# Scheduler Descriptions
+MAX_INSTANCES = "The maximum number of concurrently executing instances allowed for this schedule"
+MISFIRE_GRACE_TIME = "The amount of time (in seconds) that this schedule’s execution is allowed to be late"
+
+START_DATE = "Earliest possible date/time to trigger on (inclusive)"
+END_DATE = "Latest possible date/time to trigger on (inclusive)"
+
+# CronTrigger
+SECOND = "second (0-59)"
+MINUTE = "minute (0-59)"
+HOUR = "hour (0-23)"
+DAY_OF_WEEK = "Number or name of weekday (0-5 or mon,tue,wed,thu,fri,sat,sun)"
+WEEK = "ISO week (1-53)"
+DAY = "day of month (1-12)"
+MONTH = "month (1-12)"
+YEAR = "4-digit year"
+
+# IntervalTrigger
+SECONDS = "Number of seconds to wait"
+MINUTES = "Number of minutes to wait"
+HOURS = "Number of hours to wait"
+DAYS = "Number of days to wait"
+WEEKS = "Number of weeks to wait"
+
+# DateTrigger
+RUN_DATE = "The date/time to run the schedule at"

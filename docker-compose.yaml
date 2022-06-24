@@ -1,20 +1,41 @@
-version: '3.9'
+version: "3.9"
 services:
   swiple_api:
     container_name: swiple_api
     image: swiple-api:latest
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
-      - '8000:8000'
+      - "8000:8000"
     volumes:
-      - $PWD/backend/app/config/:/code/app/config/
+      - $PWD/backend/app/:/code/app/
+    environment:
+      - APP=SWIPLE_API
     depends_on:
       opensearch-node1:
         condition: service_healthy
+
+  scheduler:
+    container_name: scheduler
+    image: swiple-api:latest
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+    ports:
+      - "8001:8001"
+    volumes:
+      - $PWD/backend/app/:/code/app/
+    environment:
+      - APP=SCHEDULER
+    depends_on:
+      opensearch-node1:
+        condition: service_healthy
+
   swiple_ui:
     container_name: swiple_ui
     image: swiple-ui:latest
+    command: ["npm", "run", "start_docker_dev"]
+    volumes:
+      - $PWD/frontend/:/app/
     ports:
-      - 3000:3000
+      - "3000:3000"
     depends_on:
       - "swiple_api"
   setup:
@@ -33,6 +54,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend/sample_data/:/sample_data/
+      - ./backend/app/config/:/code/app/config/
   postgres:
     container_name: postgresql
     image: postgres:10.5
@@ -46,7 +68,7 @@ services:
       timeout: 10s
       retries: 10
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - ./docker/postgres-data:/var/lib/postgresql/data
   opensearch-node1:
@@ -69,8 +91,8 @@ services:
     volumes:
       - opensearch-data1:/usr/share/opensearch/data
     ports:
-      - 9200:9200
-      - 9600:9600 # required for Performance Analyzer
+      - "9200:9200"
+      - "9600:9600" # required for Performance Analyzer
     healthcheck:
       test:
         [
@@ -84,11 +106,23 @@ services:
     image: opensearchproject/opensearch-dashboards:1.3.0
     container_name: opensearch-dashboards
     ports:
-      - 5601:5601
+      - "5601:5601"
     expose:
       - "5601"
     environment:
       - 'OPENSEARCH_HOSTS=["https://opensearch-node1:9200"]'
 
+  redis:
+    image: "redis:7.0.0-alpine"
+    container_name: redis
+    command: redis-server
+    ports:
+      - "6379:6379"
+    expose:
+      - "6379"
+    volumes:
+      - ./docker/redis-data:/var/lib/redis
+    environment:
+      - REDIS_REPLICATION_MODE=master
 volumes:
   opensearch-data1:

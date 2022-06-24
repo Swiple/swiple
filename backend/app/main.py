@@ -1,9 +1,10 @@
 from starlette.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-
-from app.api.api_v1.api import router
+from app.api.api_v1 import auth_router
 from app.config.settings import settings
 from app.db.client import client, async_client
+import app.constants as c
+from app.core.schedulers.scheduler import scheduler
 
 app = FastAPI(
     openapi_url=f"{settings.API_VERSION}/openapi.json"
@@ -19,15 +20,27 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
+app.include_router(auth_router.router, prefix=settings.API_VERSION)
 
-@router.on_event("startup")
+if settings.APP == c.APP_SWIPLE_API:
+    from app.api.api_v1 import swiple_router
+    app.include_router(swiple_router.router, prefix=settings.API_VERSION)
+
+if settings.APP == c.APP_SCHEDULER:
+    from app.api.api_v1 import scheduler_router
+    app.include_router(scheduler_router.router, prefix=settings.API_VERSION)
+
+
+@app.router.on_event("startup")
 async def startup():
-    pass
+    if settings.APP == c.APP_SCHEDULER:
+        scheduler.start()
 
 
-@router.on_event("shutdown")
+@app.router.on_event("shutdown")
 async def shutdown():
     await async_client.close()
     client.close()
 
-app.include_router(router, prefix=settings.API_VERSION)
+    if settings.APP == c.APP_SCHEDULER:
+        scheduler.shutdown()

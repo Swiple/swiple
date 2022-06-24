@@ -274,10 +274,7 @@ function DatasourceModal({
         <AsyncButton
           key="submit"
           type="primary"
-          onClick={() => {
-            console.log('submit');
-            return onFormSubmitInternal();
-          }}
+          onClick={() => onFormSubmitInternal()}
         >
           {type === CREATE_TYPE ? 'Create' : 'Update'}
         </AsyncButton>,

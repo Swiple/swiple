@@ -1,11 +1,27 @@
-from typing import List, Union
-from pydantic import AnyHttpUrl, HttpUrl, BaseSettings, EmailStr, validator, root_validator
+from typing import List, Union, Literal
+from pydantic import (
+    AnyHttpUrl,
+    HttpUrl,
+    BaseSettings,
+    EmailStr,
+    validator,
+    root_validator,
+)
 from app.config import config
 
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = config.PROJECT_NAME
     API_VERSION: str = config.API_VERSION
+    APP: Literal["SWIPLE_API", "SCHEDULER"] = config.APP
+
+    SWIPLE_API_URL: AnyHttpUrl = config.SWIPLE_API_URL
+    UI_URL: AnyHttpUrl = config.UI_URL
+    SCHEDULER_API_URL: str = config.SCHEDULER_API_URL
+
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = config.BACKEND_CORS_ORIGINS
+
+    REDIRECT_URL: AnyHttpUrl = f"{UI_URL}/login"
 
     AUTH_LIFETIME_IN_SECONDS: int = config.AUTH_LIFETIME_IN_SECONDS
     SECRET_KEY: str = config.SECRET_KEY
@@ -32,6 +48,11 @@ class Settings(BaseSettings):
     OKTA_OAUTH_SECRET: str = config.OKTA_OAUTH_SECRET
     OKTA_OAUTH_BASE_URL: str = config.OKTA_OAUTH_BASE_URL
 
+    SCHEDULER_EXECUTOR_MAX_WORKERS: int = config.SCHEDULER_EXECUTOR_MAX_WORKERS
+    SCHEDULER_EXECUTOR_KWARGS: dict = config.SCHEDULER_EXECUTOR_KWARGS
+    SCHEDULER_REDIS_DB: int = config.SCHEDULER_REDIS_DB
+    SCHEDULER_REDIS_KWARGS: dict = config.SCHEDULER_REDIS_KWARGS
+
     OPENSEARCH_HOST: str = config.OPENSEARCH_HOST
     OPENSEARCH_PORT: str = config.OPENSEARCH_PORT
     OPENSEARCH_USERNAME: str = config.OPENSEARCH_USERNAME
@@ -46,10 +67,6 @@ class Settings(BaseSettings):
     USER_INDEX: str = "user"
 
     TOKEN_URL: str = "/api/v1/token"
-    API_HOST_URL: HttpUrl = config.API_HOST_URL
-    UI_HOST_URL: HttpUrl = config.UI_HOST_URL
-    REDIRECT_URL: HttpUrl = f"{UI_HOST_URL}/login"
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = config.BACKEND_CORS_ORIGINS
 
     @root_validator
     def check_auth_methods(cls, values):
