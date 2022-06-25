@@ -7,7 +7,7 @@ import Editor from '@uiw/react-textarea-code-editor';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import AsyncButton from '../../../components/AsyncButton';
 import {
-  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon,
+  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
 } from '../../../static/images';
 import {
   getDataSources, getSchemas, getTables, getQuerySample, postDataset, putDataset,
@@ -187,16 +187,17 @@ function DatasetModal({
 
   const datasourceOptions = () => {
     const datasourceImgMap = {
-      postgres: PostgresqlIcon,
+      postgresql: PostgresqlIcon,
       redshift: RedshiftIcon,
       snowflake: SnowflakeIcon,
       mysql: MysqlIcon,
       bigquery: BigqueryIcon,
       athena: AthenaIcon,
+      trino: TrinoIcon,
     };
 
     return dataSources.map((item) => {
-      const imgPath = datasourceImgMap[item.database];
+      const imgPath = datasourceImgMap[item.engine.toLowerCase()];
       return (
         <Option
           key={item.key}

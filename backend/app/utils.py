@@ -7,20 +7,9 @@ from re import search
 import emails
 from emails.template import JinjaTemplate
 from pathlib import Path
-import sqlalchemy
+from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
 import pytz
-
-
-def connect(url):
-    try:
-        create_engine(url).connect()
-    except sqlalchemy.exc.OperationalError as ex:
-        return str(ex.orig)
-
-
-def test_sqlalchemy_connection(datasource):
-    return connect(datasource.connection_string())
 
 
 def current_time():
@@ -47,7 +36,8 @@ def string_to_military_time(date_string):
 
 def get_sample_query(query, url):
     # remove semi-colon from query
-    query = query.replace(";", "")
+    query = query.replace(";", "").strip()
+    query = query + " limit 10"
 
     try:
         with create_engine(url).connect() as con:
@@ -85,10 +75,10 @@ def get_sample_query(query, url):
                 "columns": columns
             }
 
-    except sqlalchemy.exc.ProgrammingError as ex:
+    except ProgrammingError as ex:
         print(ex.orig.pgerror)
         return {"exception": ex.orig.pgerror}
-    except sqlalchemy.exc.OperationalError as ex:
+    except OperationalError as ex:
         return {"exception": str(ex.orig)}
 
 

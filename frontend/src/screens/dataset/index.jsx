@@ -51,7 +51,7 @@ import SLAHitRate from './components/SLAHitRate';
 import DataSample from './components/DataSample';
 import {
   AthenaIcon, BigqueryIcon, MysqlIcon,
-  PostgresqlIcon, RedshiftIcon, SnowflakeIcon,
+  PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
 } from '../../static/images';
 import AsyncButton from '../../components/AsyncButton';
 import ExpectationModal, { CREATE_TYPE, UPDATE_TYPE } from './components/ExpectationModal';
@@ -627,6 +627,7 @@ const Dataset = withRouter(() => {
       mysql: MysqlIcon,
       bigquery: BigqueryIcon,
       athena: AthenaIcon,
+      trino: TrinoIcon,
     };
     return datasourceImgMap[engine.toLowerCase()];
   };

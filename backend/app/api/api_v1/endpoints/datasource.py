@@ -1,8 +1,17 @@
 from copy import deepcopy
 from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.responses import JSONResponse
+from sqlalchemy import create_engine
+from sqlalchemy.exc import DBAPIError
 from app.models.datasource import (
-	engine_types, Athena, PostgreSQL, MySQL, Redshift, Snowflake, DatasourceCommon
+	engine_types,
+	Athena,
+	PostgreSQL,
+	MySQL,
+	Redshift,
+	Snowflake,
+	Trino,
+	DatasourceCommon,
 )
 from app.db.client import client
 from app.config.settings import settings
@@ -61,7 +70,8 @@ def list_datasources(
 	for doc in docs:
 		if doc["_source"].get("password"):
 			doc["_source"]["password"] = "*****"
-			doc["_source"]["key"] = doc["_id"]
+
+		doc["_source"]["key"] = doc["_id"]
 		docs_response.append(
 			dict(**doc["_source"])
 		)
@@ -112,6 +122,24 @@ def create_redshift_datasource(
 	return _create_datasource(datasource, test, user)
 
 
+@router.post("/snowflake")
+def create_snowflake_datasource(
+		datasource: Snowflake,
+		test: Optional[bool] = False,
+		user: UserDB = Depends(current_active_user),
+):
+	return _create_datasource(datasource, test, user)
+
+
+@router.post("/trino")
+def create_trino_datasource(
+		datasource: Trino,
+		test: Optional[bool] = False,
+		user: UserDB = Depends(current_active_user),
+):
+	return _create_datasource(datasource, test, user)
+
+
 @router.put("/athena/{key}")
 def update_athena_datasource(datasource: Athena, key: str, test: Optional[bool] = False):
 	return _update_datasource(datasource, key, test)
@@ -137,6 +165,11 @@ def update_snowflake_datasource(datasource: Snowflake, key: str, test: Optional[
 	return _update_datasource(datasource, key, test)
 
 
+@router.put("/trino/{key}")
+def update_trino_datasource(datasource: Trino, key: str, test: Optional[bool] = False):
+	return _update_datasource(datasource, key, test)
+
+
 @router.delete("/{datasource_id}")
 def delete_datasource(
 		datasource_id: str,
@@ -146,18 +179,22 @@ def delete_datasource(
 
 
 def _test_datasource(datasource: DatasourceCommon):
-	test_datasource = utils.test_sqlalchemy_connection(datasource)
-
-	if test_datasource:
+	try:
+		engine = create_engine(datasource.connection_string())
+		connection = engine.connect()
+	except DBAPIError as ex:
 		raise HTTPException(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-			detail=test_datasource
+			detail=str(ex.orig),
 		)
-	else:
-		return JSONResponse(
-			status_code=status.HTTP_200_OK,
-			content="Successfully connected"
-		)
+
+	connection.close()
+	engine.dispose()
+
+	return JSONResponse(
+		status_code=status.HTTP_200_OK,
+		content="Successfully connected"
+	)
 
 
 def _delete_datasource(
@@ -202,7 +239,7 @@ def _update_datasource(datasource, key: str, test: bool):
 	if test:
 		datasource_for_test = deepcopy(datasource)
 
-		if hasattr(datasource, "password"):
+		if hasattr(datasource, "password") and datasource.password:
 			if datasource.password == "*****":
 				# password hasn't changed, get it from existing datasource and decrypt password
 				datasource_for_test.password = original_datasource.password
@@ -214,7 +251,7 @@ def _update_datasource(datasource, key: str, test: bool):
 
 		_test_datasource(datasource_for_test)
 
-	response = client.update(
+	client.update(
 		index=settings.DATASOURCE_INDEX,
 		id=key,
 		body={"doc": datasource_as_dict},
@@ -238,7 +275,7 @@ def _update_datasource(datasource, key: str, test: bool):
 		update_by_query_string += f"ctx._source.datasource_name = '{datasource.datasource_name}';"
 
 	if update_by_query_string != "":
-		response = client.update_by_query(
+		client.update_by_query(
 			index=settings.DATASET_INDEX,
 			body={
 				"query": {"match": {"datasource_id": key}},
@@ -274,10 +311,10 @@ def _create_datasource(datasource, test: bool, user: UserDB):
 	datasource.create_date = utils.current_time()
 	datasource.modified_date = utils.current_time()
 
-	if hasattr(datasource, "password"):
+	if hasattr(datasource, "password") and datasource.password:
 		datasource.password = security.encrypt_password(datasource.password)
 
-	datasource_as_dict = datasource.dict(by_alias=True)
+	datasource_as_dict = datasource.dict(by_alias=True, exclude_none=True)
 
 	insert_response = client.index(
 		index=settings.DATASOURCE_INDEX,

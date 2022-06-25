@@ -37,6 +37,12 @@ const FeatureList = [
         height: 180,
         width: 180,
     },
+    {
+        title: 'Trino',
+        Svg: require('@site/static/img/databases/trino.png').default,
+        height: 150,
+        width: 150,
+    },
 ];
 
 function Feature({Svg, title, height, width}) {
