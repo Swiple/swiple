@@ -35,7 +35,8 @@ class Runner:
         batch_request = self.get_batch_request(is_profile=True)
 
         validator = context.get_validator(
-            batch_request=batch_request, expectation_suite=suite,
+            batch_request=batch_request,
+            expectation_suite=suite,
         )
 
         profiler = UserConfigurableProfiler(

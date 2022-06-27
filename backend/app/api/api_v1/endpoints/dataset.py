@@ -162,7 +162,11 @@ def update_dataset(
                 rows=json.dumps(jsonable_encoder(response['rows'])),
             )
 
-    if original_dataset.runtime_parameters and original_dataset.runtime_parameters.query != dataset.runtime_parameters.query:
+    if (
+            original_dataset.runtime_parameters and
+            dataset.runtime_parameters and
+            original_dataset.runtime_parameters.query != dataset.runtime_parameters.query
+    ):
         response = sample(dataset, False)
 
         if response.get("exception"):
