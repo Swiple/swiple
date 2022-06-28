@@ -134,6 +134,12 @@ function DatasourceModal({
             if (!ignoredFormItem.includes(formItem)) {
               const propObj = formItemObj.properties[formItem];
               const placeholder = propObj.placeholder ? propObj.placeholder : null;
+
+              let inputType = 'text';
+              if (propObj.title.toLowerCase() === 'password') {
+                inputType = 'password';
+              }
+
               return (
                 <Form.Item
                   key={propObj.title}
@@ -164,7 +170,7 @@ function DatasourceModal({
                           onChange={(e) => handleNumberInput(e.target.value, formItem)}
                         />
                       )
-                      : <Input placeholder={placeholder} />
+                      : <Input placeholder={placeholder} type={inputType} />
                   }
                 </Form.Item>
               );

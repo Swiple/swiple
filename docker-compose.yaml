@@ -8,10 +8,10 @@ services:
       - "8000:8000"
     volumes:
       - $PWD/backend/app/:/code/app/
-      - $HOME/.aws/config:/root/.aws/config
+      - $HOME/.aws:$HOME/.aws
     environment:
       - APP=SWIPLE_API
-      - AWS_CONFIG_FILE=/root/.aws/config
+      - AWS_CONFIG_FILE=$HOME/.aws/config
     depends_on:
       opensearch-node1:
         condition: service_healthy
@@ -23,9 +23,10 @@ services:
     ports:
       - "8001:8001"
     volumes:
-      - $PWD/backend/app/:/code/app/
+      - $HOME/.aws:$HOME/.aws
     environment:
       - APP=SCHEDULER
+      - AWS_CONFIG_FILE=$HOME/.aws/config
     depends_on:
       opensearch-node1:
         condition: service_healthy

@@ -235,7 +235,7 @@ def _update_datasource(datasource, key: str, test: bool):
 	datasource.modified_date = utils.current_time()
 	datasource.create_date = original_datasource.create_date
 	datasource.created_by = original_datasource.created_by
-	datasource_as_dict = datasource.dict(by_alias=True)  # exclude_none to prevent create_date from being set to None
+	datasource_as_dict = datasource.dict(by_alias=True, exclude_none=True)
 	if test:
 		datasource_for_test = deepcopy(datasource)
 
