@@ -8,8 +8,10 @@ services:
       - "8000:8000"
     volumes:
       - $PWD/backend/app/:/code/app/
+      - $HOME/.aws:$HOME/.aws
     environment:
       - APP=SWIPLE_API
+      - AWS_CONFIG_FILE=$HOME/.aws/config
     depends_on:
       opensearch-node1:
         condition: service_healthy
@@ -21,9 +23,10 @@ services:
     ports:
       - "8001:8001"
     volumes:
-      - $PWD/backend/app/:/code/app/
+      - $HOME/.aws:$HOME/.aws
     environment:
       - APP=SCHEDULER
+      - AWS_CONFIG_FILE=$HOME/.aws/config
     depends_on:
       opensearch-node1:
         condition: service_healthy
@@ -34,6 +37,7 @@ services:
     command: ["npm", "run", "start_docker_dev"]
     volumes:
       - $PWD/frontend/:/app/
+      - /app/node_modules
     ports:
       - "3000:3000"
     depends_on:
@@ -124,5 +128,6 @@ services:
       - ./docker/redis-data:/var/lib/redis
     environment:
       - REDIS_REPLICATION_MODE=master
+
 volumes:
   opensearch-data1:

@@ -5,7 +5,7 @@ import {
 } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import {
-  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon,
+  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
 } from '../../../static/images';
 import { getDataSourcesJsonSchema, postDataSource, putDataSource } from '../../../Api';
 import AsyncButton from '../../../components/AsyncButton';
@@ -134,6 +134,12 @@ function DatasourceModal({
             if (!ignoredFormItem.includes(formItem)) {
               const propObj = formItemObj.properties[formItem];
               const placeholder = propObj.placeholder ? propObj.placeholder : null;
+
+              let inputType = 'text';
+              if (propObj.title.toLowerCase() === 'password') {
+                inputType = 'password';
+              }
+
               return (
                 <Form.Item
                   key={propObj.title}
@@ -143,13 +149,13 @@ function DatasourceModal({
                   rules={[
                     formItemObj.required.includes(formItem)
                       ? { required: true, message: 'required field.' }
-                      : null,
+                      : { required: false },
                     {
                       validator: async (rule, value) => {
                         const validate = ajv.compile(propObj);
                         const valid = validate(value);
                         // no need to validate undefined values as we have 'required' rule above
-                        if (value !== undefined && !valid) {
+                        if (value && !valid) {
                           throw new Error(buildValidationErrors(validate.errors));
                         }
                       },
@@ -164,7 +170,7 @@ function DatasourceModal({
                           onChange={(e) => handleNumberInput(e.target.value, formItem)}
                         />
                       )
-                      : <Input placeholder={placeholder} />
+                      : <Input placeholder={placeholder} type={inputType} />
                   }
                 </Form.Item>
               );
@@ -186,6 +192,7 @@ function DatasourceModal({
       mysql: MysqlIcon,
       bigquery: BigqueryIcon,
       athena: AthenaIcon,
+      trino: TrinoIcon,
     };
 
     return dataSourcesJsonSchema.map((item) => {

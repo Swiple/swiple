@@ -4,7 +4,7 @@ from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import DataContextConfig
 from great_expectations.data_context.types.base import InMemoryStoreBackendDefaults
 from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
-from app import constants as c
+from pandas import isnull
 import json
 import datetime
 # TODO, add some "runner_max_batches" to datasource to control the
@@ -35,12 +35,14 @@ class Runner:
         batch_request = self.get_batch_request(is_profile=True)
 
         validator = context.get_validator(
-            batch_request=batch_request, expectation_suite=suite,
+            batch_request=batch_request,
+            expectation_suite=suite,
         )
 
         profiler = UserConfigurableProfiler(
             validator,
-            excluded_expectations=self.excluded_expectations
+            excluded_expectations=self.excluded_expectations,
+            value_set_threshold="few",
         )
         expectations = profiler.build_suite().to_json_dict()['expectations']
 
@@ -78,6 +80,8 @@ class Runner:
                 if isinstance(record[column], datetime.datetime):
                     record[column] = record[column].__str__()
 
+                if isnull(record[column]):
+                    record[column] = None
         return {'columns': list(columns), 'rows': rows}
 
     def validate(self):

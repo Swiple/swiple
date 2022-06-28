@@ -2,6 +2,7 @@ import json
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, status, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 
@@ -13,7 +14,6 @@ from app.config.settings import settings
 from opensearchpy import NotFoundError, RequestError
 from app.utils import get_sample_query
 from app.models.datasource import get_datasource
-from app.core.runner import Runner
 from app.models.users import UserDB
 from app.core.dataset import split_dataset_resource
 import uuid
@@ -101,7 +101,7 @@ def create_dataset(
 
         dataset.sample = Sample(
             columns=response['columns'],
-            rows=json.dumps(response['rows']),
+            rows=json.dumps(jsonable_encoder(response['rows'])),
         )
 
     dataset.created_by = user.email
@@ -159,10 +159,14 @@ def update_dataset(
 
             dataset.sample = Sample(
                 columns=response['columns'],
-                rows=json.dumps(response['rows']),
+                rows=json.dumps(jsonable_encoder(response['rows'])),
             )
 
-    if original_dataset.runtime_parameters and original_dataset.runtime_parameters.query != dataset.runtime_parameters.query:
+    if (
+            original_dataset.runtime_parameters and
+            dataset.runtime_parameters and
+            original_dataset.runtime_parameters.query != dataset.runtime_parameters.query
+    ):
         response = sample(dataset, False)
 
         if response.get("exception"):
@@ -173,7 +177,7 @@ def update_dataset(
 
         dataset.sample = Sample(
             columns=response['columns'],
-            rows=json.dumps(response['rows']),
+            rows=json.dumps(jsonable_encoder(response['rows'])),
         )
     dataset.modified_date = utils.current_time()
     dataset.create_date = original_dataset.create_date
@@ -226,18 +230,16 @@ def sample(
         decrypt_pw=True,
     )
 
-    # TODO remove this block once validator.head() has better exception response messages.
     if dataset.runtime_parameters:
         response = get_sample_query(
             query=dataset.runtime_parameters.query,
             url=datasource.connection_string()
         )
     else:
-        response = Runner(
-            datasource=datasource,
-            batch=dataset,
-            meta={**datasource.expectation_meta()}
-        ).sample()
+        response = get_sample_query(
+            query=f"select * from {dataset.dataset_name}",
+            url=datasource.connection_string(),
+        )
 
     if not response_format:
         return response
@@ -250,7 +252,7 @@ def sample(
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=response
+        content=jsonable_encoder(response)
     )
 
 
@@ -270,7 +272,7 @@ def update_sample(
 
     dataset.sample = Sample(
         columns=response['columns'],
-        rows=json.dumps(response['rows']),
+        rows=json.dumps(jsonable_encoder(response['rows'])),
     )
 
     client.update(
