@@ -3,6 +3,8 @@ import ReactECharts from 'echarts-for-react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
+const formatter = Intl.NumberFormat('en', { notation: 'compact' });
+
 function ExpectationHistory({ validations, resultType }) {
   const percentageValue = (row) => {
     const color = row.success ? '#38C438' : '#F54646';
@@ -51,6 +53,8 @@ function ExpectationHistory({ validations, resultType }) {
 
   const { percentageValues, slaValues } = formatResults();
 
+  const abbreviateNumber = (value) => formatter.format(value);
+
   const slaMarkLineData = () => {
     if (slaValues.length > 0 && slaValues[slaValues.length - 1][1] !== null) {
       return [{
@@ -95,7 +99,9 @@ function ExpectationHistory({ validations, resultType }) {
         type: 'value',
         position: 'right',
         axisLabel: {
-          formatter: '{value}',
+          formatter(value) {
+            return abbreviateNumber(value);
+          },
         },
         axisLine: {
           show: true,
