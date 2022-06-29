@@ -6,9 +6,7 @@ import {
 import Editor from '@uiw/react-textarea-code-editor';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import AsyncButton from '../../../components/AsyncButton';
-import {
-  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
-} from '../../../static/images';
+import { getEngineIcon } from '../../../Utils';
 import {
   getDataSources, getSchemas, getTables, getQuerySample, postDataset, putDataset,
 } from '../../../Api';
@@ -34,7 +32,6 @@ function DatasetModal({
   const [dataSampleInProgress, setDataSampleInProgress] = useState(false);
   const [dataSample, setDataSample] = useState({});
   const [responseStatus, setResponseStatus] = useState(null);
-  // const [hiddenItems, setHiddenItems] = useState({});
   const [datasetType, setDatasetType] = useState('table');
 
   const [form] = Form.useForm();
@@ -46,7 +43,6 @@ function DatasetModal({
     } else if (form.getFieldValue('schema')) {
       obj.query = true;
     }
-    // setHiddenItems(obj);
   };
 
   useEffect(() => {
@@ -185,43 +181,31 @@ function DatasetModal({
     }
   }, [form, dataSampleInProgress]);
 
-  const datasourceOptions = () => {
-    const datasourceImgMap = {
-      postgresql: PostgresqlIcon,
-      redshift: RedshiftIcon,
-      snowflake: SnowflakeIcon,
-      mysql: MysqlIcon,
-      bigquery: BigqueryIcon,
-      athena: AthenaIcon,
-      trino: TrinoIcon,
-    };
-
-    return dataSources.map((item) => {
-      const imgPath = datasourceImgMap[item.engine.toLowerCase()];
-      return (
-        <Option
-          key={item.key}
-          value={item.datasource_id}
-          label={item.datasource_name}
-        >
-          <Row align="start" style={{ alignItems: 'center', color: 'black' }}>
-            <Space>
-              <div className="select-option">
-                <img
-                  style={{ position: 'relative' }}
-                  src={imgPath}
-                  alt="Girl in a jacket"
-                  width="20"
-                  height="20"
-                />
-              </div>
-              {item.datasource_name}
-            </Space>
-          </Row>
-        </Option>
-      );
-    });
-  };
+  const datasourceOptions = () => dataSources.map((item) => {
+    const imgPath = getEngineIcon(item.engine);
+    return (
+      <Option
+        key={item.key}
+        value={item.datasource_id}
+        label={item.datasource_name}
+      >
+        <Row align="start" style={{ alignItems: 'center', color: 'black' }}>
+          <Space>
+            <div className="select-option">
+              <img
+                style={{ position: 'relative' }}
+                src={imgPath}
+                alt="Girl in a jacket"
+                width="20"
+                height="20"
+              />
+            </div>
+            {item.datasource_name}
+          </Space>
+        </Row>
+      </Option>
+    );
+  });
 
   const onDatabaseChange = () => {
     form.setFieldsValue({ schema: undefined, table: undefined });

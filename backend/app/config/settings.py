@@ -59,11 +59,11 @@ class Settings(BaseSettings):
     OPENSEARCH_PASSWORD: str = config.OPENSEARCH_PASSWORD
 
     # OpenSearch Index names
-    DATASOURCE_INDEX: str = "datasource"
-    DATASET_INDEX: str = "dataset"
-    EXPECTATION_INDEX: str = "expectation"
-    VALIDATION_INDEX: str = "validation"
-    SUGGESTION_INDEX: str = "suggestion"
+    DATASOURCE_INDEX: str = "datasources"
+    DATASET_INDEX: str = "datasets"
+    EXPECTATION_INDEX: str = "expectations"
+    VALIDATION_INDEX: str = "validations"
+    SUGGESTION_INDEX: str = "suggestions"
     USER_INDEX: str = "user"
 
     TOKEN_URL: str = "/api/v1/token"

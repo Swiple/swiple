@@ -1,8 +1,7 @@
 from typing import Optional
 from pydantic import Field, constr
 from app.models.base_model import BaseModel
-from app import utils
-
+from app.models.datasource import Engines
 
 class RuntimeParameters(BaseModel):
 	schema_name: str = Field(alias="schema")
@@ -17,6 +16,7 @@ class Sample(BaseModel):
 class Dataset(BaseModel):
 	datasource_id: str
 	datasource_name: str
+	engine: Optional[Engines]
 	database: str
 	connector_type: str = "RuntimeDataConnector"
 	dataset_name: str

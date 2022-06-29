@@ -15,9 +15,7 @@ import {
 } from '../../Api';
 import Section from '../../components/Section';
 import DatasourceModal, { CREATE_TYPE, UPDATE_TYPE } from './components/DatasourceModal';
-import {
-  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
-} from '../../static/images';
+import { getEngineIcon } from '../../Utils';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -94,19 +92,6 @@ export default function DatasourceOverview() {
       </Menu.Item>
     </Menu>
   );
-
-  const getEngineIcon = (engine) => {
-    const datasourceImgMap = {
-      postgresql: PostgresqlIcon,
-      redshift: RedshiftIcon,
-      snowflake: SnowflakeIcon,
-      mysql: MysqlIcon,
-      bigquery: BigqueryIcon,
-      athena: AthenaIcon,
-      trino: TrinoIcon,
-    };
-    return datasourceImgMap[engine.toLowerCase()];
-  };
 
   const columns = [
     {

@@ -57,49 +57,35 @@ export const getDashboardIssues = () => axios.get(`${BASE_URL}/dashboard/issue`)
 // Datasource
 // ========================================================
 
-export const getDataSources = () => axios.get(`${BASE_URL}/datasource`)
+export const getDataSources = () => axios.get(`${BASE_URL}/datasources`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const getDataSource = (key) => axios.get(`${BASE_URL}/datasource/${key}`)
+export const getDataSource = (key) => axios.get(`${BASE_URL}/datasources/${key}`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const getDataSourcesJsonSchema = () => axios.get(`${BASE_URL}/datasource/json_schema`)
+export const getDataSourcesJsonSchema = () => axios.get(`${BASE_URL}/datasources/json_schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-// TODO how to handle fastapi exceptions.
-//  Can we return a default message if this happens
+export const postDataSource = (data) => axios.post(
+  `${BASE_URL}/datasources`,
+  data,
+  { params: { test: true } },
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
 
-export const postDataSource = (data) => {
-  const payload = data;
-  const path = payload.engine.toLowerCase();
-  delete payload.engine;
-  // datasource name lowercased = endpoint path
-  return axios.post(
-    `${BASE_URL}/datasource/${path}`,
-    data,
-    { params: { test: true }, withCredentials: true },
-  )
-    .then((response) => response)
-    .catch((error) => errorHandler(error));
-};
+export const putDataSource = (data, key) => axios.put(
+  `${BASE_URL}/datasources/${key}`,
+  data,
+  { params: { test: true } },
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
 
-export const putDataSource = (data, key) => {
-  const payload = data;
-  const path = payload.engine.toLowerCase();
-  delete payload.engine;
-  return axios.put(
-    `${BASE_URL}/datasource/${path}/${key}`,
-    data,
-    { params: { test: true } },
-  )
-    .then((response) => response)
-    .catch((error) => errorHandler(error));
-};
-
-export const deleteDataSource = (key) => axios.delete(`${BASE_URL}/datasource/${key}`)
+export const deleteDataSource = (key) => axios.delete(`${BASE_URL}/datasources/${key}`)
   .then((data) => data.data)
   .catch((error) => errorHandler(error));
 

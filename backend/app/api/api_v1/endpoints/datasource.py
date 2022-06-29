@@ -1,17 +1,13 @@
 from copy import deepcopy
 from fastapi import APIRouter, HTTPException, status, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 from sqlalchemy import create_engine
 from sqlalchemy.exc import DBAPIError
 from app.models.datasource import (
 	engine_types,
-	Athena,
-	PostgreSQL,
-	MySQL,
-	Redshift,
-	Snowflake,
-	Trino,
-	DatasourceCommon,
+	Datasource,
 )
 from app.db.client import client
 from app.config.settings import settings
@@ -38,7 +34,7 @@ def get_json_schema():
 	for data_source in engine_types.values():
 		data_sources.append(data_source.schema())
 
-	return JSONResponse(status_code=status.HTTP_200_OK, content=data_sources)
+	return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(data_sources))
 
 
 @router.get("")
@@ -85,88 +81,46 @@ def get_datasource(
 	doc = datasourcee.get_datasource(key=key).dict(by_alias=True)
 	return JSONResponse(status_code=status.HTTP_200_OK, content=doc)
 
-
-@router.post("/athena")
-def create_athena_datasource(
-		datasource: Athena,
+@router.post("")
+def create_datasource(
+		datasource: Datasource,
 		test: Optional[bool] = False,
 		user: UserDB = Depends(current_active_user),
 ):
+	try:
+		datasource = engine_types[datasource.engine](**datasource.dict(exclude_none=True))
+	except KeyError:
+		raise HTTPException(
+			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+			detail=f"datasource {datasource.engine} is not supported"
+		)
+	except ValidationError as exc:
+		return JSONResponse(
+			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+			content=jsonable_encoder({"detail": exc.errors(), "body": datasource}),
+		)
+
 	return _create_datasource(datasource, test, user)
 
 
-@router.post("/postgresql")
-def create_postgresql_datasource(
-		datasource: PostgreSQL,
+@router.put("/{key}")
+def update_datasource(
+		datasource: Datasource,
+		key: str,
 		test: Optional[bool] = False,
-		user: UserDB = Depends(current_active_user),
 ):
-	return _create_datasource(datasource, test, user)
-
-
-@router.post("/mysql")
-def create_mysql_datasource(
-		datasource: MySQL,
-		test: Optional[bool] = False,
-		user: UserDB = Depends(current_active_user),
-):
-	return _create_datasource(datasource, test, user)
-
-
-@router.post("/redshift")
-def create_redshift_datasource(
-		datasource: Redshift,
-		test: Optional[bool] = False,
-		user: UserDB = Depends(current_active_user),
-):
-	return _create_datasource(datasource, test, user)
-
-
-@router.post("/snowflake")
-def create_snowflake_datasource(
-		datasource: Snowflake,
-		test: Optional[bool] = False,
-		user: UserDB = Depends(current_active_user),
-):
-	return _create_datasource(datasource, test, user)
-
-
-@router.post("/trino")
-def create_trino_datasource(
-		datasource: Trino,
-		test: Optional[bool] = False,
-		user: UserDB = Depends(current_active_user),
-):
-	return _create_datasource(datasource, test, user)
-
-
-@router.put("/athena/{key}")
-def update_athena_datasource(datasource: Athena, key: str, test: Optional[bool] = False):
-	return _update_datasource(datasource, key, test)
-
-
-@router.put("/postgresql/{key}")
-def update_postgresql_datasource(datasource: PostgreSQL, key: str, test: Optional[bool] = False):
-	return _update_datasource(datasource, key, test)
-
-
-@router.put("/mysql/{key}")
-def update_mysql_datasource(datasource: MySQL, key: str, test: Optional[bool] = False):
-	return _update_datasource(datasource, key, test)
-
-
-@router.put("/redshift/{key}")
-def update_redshift_datasource(datasource: Redshift, key: str, test: Optional[bool] = False):
-	return _update_datasource(datasource, key, test)
-
-
-@router.put("/snowflake/{key}")
-def update_snowflake_datasource(datasource: Snowflake, key: str, test: Optional[bool] = False):
-	return _update_datasource(datasource, key, test)
-
-
-@router.put("/trino/{key}")
-def update_trino_datasource(datasource: Trino, key: str, test: Optional[bool] = False):
+	try:
+		datasource = engine_types[datasource.engine](**datasource.dict(exclude_none=True))
+	except KeyError:
+		raise HTTPException(
+			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+			detail=f"datasource {datasource.engine} is not supported"
+		)
+	except ValidationError as exc:
+		return JSONResponse(
+			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+			content=jsonable_encoder({"detail": exc.errors(), "body": datasource}),
+		)
 	return _update_datasource(datasource, key, test)
 
 
@@ -178,7 +132,7 @@ def delete_datasource(
 	return _delete_datasource(datasource_id, request)
 
 
-def _test_datasource(datasource: DatasourceCommon):
+def _test_datasource(datasource: Datasource):
 	try:
 		engine = create_engine(datasource.connection_string())
 		connection = engine.connect()
@@ -324,6 +278,7 @@ def _create_datasource(datasource, test: bool, user: UserDB):
 	)
 
 	datasource_as_dict["key"] = insert_response["_id"]
+	datasource_as_dict["password"] = "*****"
 
 	return JSONResponse(
 		status_code=status.HTTP_200_OK,

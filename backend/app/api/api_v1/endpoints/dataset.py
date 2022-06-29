@@ -87,7 +87,7 @@ def create_dataset(
         test_query: bool = True,
         user: UserDB = Depends(current_active_user),
 ):
-    _check_datasource_exists(dataset.datasource_id)
+    datasource = _check_datasource_exists(dataset.datasource_id)
     _check_dataset_does_not_exists(dataset)
 
     if test_query:
@@ -104,6 +104,7 @@ def create_dataset(
             rows=json.dumps(jsonable_encoder(response['rows'])),
         )
 
+    dataset.engine = datasource.engine
     dataset.created_by = user.email
     dataset.create_date = utils.current_time()
     dataset.modified_date = utils.current_time()
@@ -143,7 +144,7 @@ def update_dataset(
             content="updates to dataset datasource_id are not supported",
         )
 
-    _check_datasource_exists(dataset.datasource_id)
+    datasource = _check_datasource_exists(dataset.datasource_id)
 
     if original_dataset.dataset_name != dataset.dataset_name:
         _check_dataset_does_not_exists(dataset)
@@ -179,6 +180,7 @@ def update_dataset(
             columns=response['columns'],
             rows=json.dumps(jsonable_encoder(response['rows'])),
         )
+    dataset.engine = datasource.engine
     dataset.modified_date = utils.current_time()
     dataset.create_date = original_dataset.create_date
     dataset.created_by = original_dataset.created_by
@@ -286,7 +288,7 @@ def update_sample(
 
 def _check_datasource_exists(datasource_id: str):
     try:
-        get_datasource(key=datasource_id)
+        return get_datasource(key=datasource_id)
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

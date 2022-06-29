@@ -49,14 +49,10 @@ import CodeEditor from './components/CodeEditor';
 import ExpectationHistory from './components/ExpectationHistory';
 import SLAHitRate from './components/SLAHitRate';
 import DataSample from './components/DataSample';
-import {
-  AthenaIcon, BigqueryIcon, MysqlIcon,
-  PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
-} from '../../static/images';
 import AsyncButton from '../../components/AsyncButton';
 import ExpectationModal, { CREATE_TYPE, UPDATE_TYPE } from './components/ExpectationModal';
 import ScheduleModal from './components/ScheduleModal';
-import { splitDatasetResource } from '../../Utils';
+import { splitDatasetResource, getEngineIcon } from '../../Utils';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -618,19 +614,6 @@ const Dataset = withRouter(() => {
       }
     </Space>
   );
-
-  const getEngineIcon = (engine) => {
-    const datasourceImgMap = {
-      postgresql: PostgresqlIcon,
-      redshift: RedshiftIcon,
-      snowflake: SnowflakeIcon,
-      mysql: MysqlIcon,
-      bigquery: BigqueryIcon,
-      athena: AthenaIcon,
-      trino: TrinoIcon,
-    };
-    return datasourceImgMap[engine.toLowerCase()];
-  };
 
   const datasetMetaData = (column = 2) => (
     <Descriptions size="small" column={column}>

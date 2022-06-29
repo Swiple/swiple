@@ -5,8 +5,8 @@ user:
       oauth_accounts:
         type: nested
 
-datasoure:
-  index_name: datasource
+datasoures:
+  index_name: datasources
   mappings:
     properties:
       account_name:
@@ -55,8 +55,8 @@ datasoure:
         type: keyword
       warehouse:
         type: keyword
-dataset:
-  index_name: dataset
+datasets:
+  index_name: datasets
   mappings:
     properties:
       create_date:
@@ -78,6 +78,8 @@ dataset:
         type: text
       datasource_id:
         type: keyword
+      engine:
+        type: keyword
       modified_date:
         format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
         type: date
@@ -88,8 +90,8 @@ dataset:
           schema:
             type: keyword
         type: object
-expectation:
-  index_name: expectation
+expectations:
+  index_name: expectations
   mappings:
     properties:
       create_date:
@@ -106,8 +108,8 @@ expectation:
       modified_date:
         format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
         type: date
-suggestion:
-  index_name: suggestion
+suggestions:
+  index_name: suggestions
   mappings:
     properties:
       create_date:
@@ -121,8 +123,8 @@ suggestion:
         type: keyword
       kwargs:
         type: text
-validation:
-  index_name: validation
+validations:
+  index_name: validations
   mappings:
     properties:
       run_date:
