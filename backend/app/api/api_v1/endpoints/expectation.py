@@ -34,14 +34,14 @@ def get_json_schema():
     return JSONResponse(status_code=status.HTTP_200_OK, content=expectations)
 
 
-@router.get("/supported_expectations")
-def get_supported_expectations():
+@router.get("/supported")
+def list_supported_expectations():
     content = supported_unsupported_expectations()
     return JSONResponse(status_code=status.HTTP_200_OK, content=content)
 
 
 @router.get("")
-def get_expectations(
+def list_expectations(
         datasource_id: Optional[str] = None,
         dataset_id: Optional[str] = None,
         include_history: Optional[bool] = False,

@@ -233,36 +233,32 @@ export const getExpectations = (datasetId, includeHistory = false, datasourceId 
   }
 
   return axios.get(
-    `${BASE_URL}/expectation`,
+    `${BASE_URL}/expectations`,
     { params },
   )
     .then((response) => response)
     .catch((error) => errorHandler(error));
 };
 
-export const getExpectation = (key) => axios.get(`${BASE_URL}/expectation/${key}`)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
-export const getExpectationsJsonSchema = () => axios.get(`${BASE_URL}/expectation/json_schema`)
+export const getExpectationsJsonSchema = () => axios.get(`${BASE_URL}/expectations/json_schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const postExpectation = (data) => axios.post(
-  `${BASE_URL}/expectation`,
+  `${BASE_URL}/expectations`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const putExpectation = (data, key) => axios.put(
-  `${BASE_URL}/expectation/${key}`,
+  `${BASE_URL}/expectations/${key}`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const deleteExpectation = (key) => axios.delete(`${BASE_URL}/expectation/${key}`)
+export const deleteExpectation = (key) => axios.delete(`${BASE_URL}/expectations/${key}`)
   .then((data) => data.data)
   .catch((error) => errorHandler(error));
 
