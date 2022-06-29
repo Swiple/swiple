@@ -26,12 +26,12 @@ router = APIRouter(
 
 @router.get("/json_schema")
 def get_json_schema():
-    schema = Dataset.schema_json()
+    schema = Dataset.schema()
     return JSONResponse(status_code=status.HTTP_200_OK, content=schema)
 
 
 @router.get("")
-def get_datasets_by_datasource(
+def list_datasets(
         datasource_id: Optional[str] = None,
         sort_by_key: Optional[str] = "dataset_name",
         asc: Optional[bool] = True
@@ -258,7 +258,7 @@ def sample(
     )
 
 
-@router.put("/sample/{key}")
+@router.put("/{key}/sample")
 def update_sample(
         key: str
 ):

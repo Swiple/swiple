@@ -100,45 +100,45 @@ export const getDatasets = (datasourceId) => {
   }
 
   return axios.get(
-    `${BASE_URL}/dataset`,
+    `${BASE_URL}/datasets`,
     { params },
   )
     .then((response) => response)
     .catch((error) => errorHandler(error));
 };
 
-export const getDataset = (key) => axios.get(`${BASE_URL}/dataset/${key}`)
+export const getDataset = (key) => axios.get(`${BASE_URL}/datasets/${key}`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const getQuerySample = (data) => axios.post(
-  `${BASE_URL}/dataset/sample`,
+  `${BASE_URL}/datasets/sample`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const putSample = (key) => axios.put(
-  `${BASE_URL}/dataset/sample/${key}`,
+  `${BASE_URL}/datasets/${key}/sample`,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const postDataset = (data) => axios.post(
-  `${BASE_URL}/dataset`,
+  `${BASE_URL}/datasets`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const putDataset = (key, data) => axios.put(
-  `${BASE_URL}/dataset/${key}`,
+  `${BASE_URL}/datasets/${key}`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const deleteDataset = (key) => axios.delete(`${BASE_URL}/dataset/${key}`)
+export const deleteDataset = (key) => axios.delete(`${BASE_URL}/datasets/${key}`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 

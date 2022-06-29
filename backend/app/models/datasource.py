@@ -1,5 +1,3 @@
-from enum import Enum
-
 from fastapi import HTTPException, status
 from app.models.base_model import BaseModel
 from pydantic import Field, Extra

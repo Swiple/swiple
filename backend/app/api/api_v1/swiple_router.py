@@ -15,7 +15,7 @@ from app.api.api_v1.endpoints import (
 router = APIRouter()
 router.include_router(auth.router, prefix="/auth", tags=["Auth"])
 router.include_router(datasource.router, prefix="/datasources", tags=["Data Sources"])
-router.include_router(dataset.router, prefix="/dataset", tags=["Datasets"])
+router.include_router(dataset.router, prefix="/datasets", tags=["Datasets"])
 router.include_router(expectation.router, prefix="/expectation", tags=["Expectations"])
 router.include_router(runner.router, prefix="/runner", tags=["Runner"])
 router.include_router(validation.router, prefix="/validation", tags=["Validations"])
