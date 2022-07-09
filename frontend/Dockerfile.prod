@@ -13,8 +13,14 @@ RUN npm install
 # Copies everything over to Docker environment
 COPY . /app
 
+# Build for production.
+RUN npm run build --production
+
+# Install `serve` to run the application.
+RUN npm install -g serve
+
 # Port used by the application
 EXPOSE 3000
 
 # Run application
-CMD ["npm", "run", "start_docker_dev"]
+CMD serve -s build
