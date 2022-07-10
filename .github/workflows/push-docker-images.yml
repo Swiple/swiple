@@ -45,7 +45,7 @@ jobs:
 
       -
         name: Docker meta swiple-ui
-        id: meta
+        id: meta-2
         uses: docker/metadata-action@v4
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/swiple-ui
