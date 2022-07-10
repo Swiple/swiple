@@ -25,4 +25,4 @@ jobs:
           context: ./backend/
           file: ./backend/Dockerfile
           push: true
-          tags: "swiple/swiple-api:${{ GITHUB_REF_NAME }}"
+          tags: "swiple/swiple-api:${{ env.GITHUB_REF_NAME }}"
