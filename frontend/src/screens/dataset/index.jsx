@@ -32,17 +32,14 @@ import Paragraph from 'antd/es/typography/Paragraph';
 import {
   deleteExpectation,
   getDataset, getDataSource,
-  getSuggestions,
   deleteSuggestion,
-  enableSuggestion,
   getExpectations,
   getValidationStats,
   postRunnerValidateDataset,
-  postRunnerProfileDataset,
   putSample,
   getQuerySample,
   getSchedulesForDataset,
-  deleteSchedule,
+  deleteSchedule, suggestExpectations, enableExpectation,
 } from '../../Api';
 import Section from '../../components/Section';
 import CodeEditor from './components/CodeEditor';
@@ -145,7 +142,7 @@ const Dataset = withRouter(() => {
   useEffect(() => {
     if (refreshExpectations && datasetId) {
       setRequestInProgress(true);
-      getExpectations(datasetId, true)
+      getExpectations(datasetId, null, true, null, true)
         .then((response) => {
           if (response.status === 200) {
             setExpectations(response.data);
@@ -161,7 +158,7 @@ const Dataset = withRouter(() => {
   useEffect(() => {
     if (refreshSuggestions && datasetId) {
       setRequestInProgress(true);
-      getSuggestions(datasetId, true)
+      getExpectations(datasetId, null, false, true, false)
         .then((response) => {
           if (response.status === 200) {
             setSuggestions(response.data);
@@ -272,7 +269,7 @@ const Dataset = withRouter(() => {
               size="medium"
               ghost
               onClick={() => new Promise((resolve, reject) => {
-                enableSuggestion(record.key).then((response) => {
+                enableExpectation(record.key).then((response) => {
                   if (response.status === 200) {
                     setSuggestions(suggestions.filter((item) => item.key !== record.key));
                     setRefreshExpectations(true);
@@ -531,7 +528,7 @@ const Dataset = withRouter(() => {
   const profileDataset = () => new Promise((resolve) => {
     const data = { datasource_id: datasource.key, dataset_id: datasetId };
     setSuggestions([]);
-    postRunnerProfileDataset(data).then(() => {
+    suggestExpectations(data).then(() => {
       setRefreshSuggestions(true);
       resolve();
     });

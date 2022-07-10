@@ -20,10 +20,10 @@ router = APIRouter(
 
 
 @router.get("")
-def get_suggestions(
+def list_suggestions(
         datasource_id: Optional[str] = None,
         dataset_id: Optional[str] = None,
-        asc: Optional[bool] = True,
+        asc: Optional[bool] = False,
 ):
     # TODO implement scrolling
     direction = "asc" if asc else "desc"
@@ -75,30 +75,30 @@ def get_suggestions(
     return JSONResponse(status_code=status.HTTP_200_OK, content=result_response)
 
 
-@router.get("/{key}")
-def get_suggestion(key: str):
+@router.get("/{suggestion_id}")
+def get_suggestion(suggestion_id: str):
     doc = client.get(
         index=settings.SUGGESTION_INDEX,
-        id=key
+        id=suggestion_id
     )["_source"]
 
-    doc["key"] = key
+    doc["key"] = suggestion_id
 
     return JSONResponse(status_code=status.HTTP_200_OK, content=doc)
 
 
-@router.delete("/{key}")
-def delete_suggestion(key: str):
+@router.delete("/{suggestion_id}")
+def delete_suggestion(suggestion_id: str):
     try:
         client.delete(
             index=settings.SUGGESTION_INDEX, 
-            id=key, 
+            id=suggestion_id,
             refresh="wait_for",
         )
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"suggestion with key '{key}' does not exist"
+            detail=f"suggestion '{suggestion_id}' does not exist"
         )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
@@ -106,12 +106,12 @@ def delete_suggestion(key: str):
     )
 
 
-@router.post("/{key}")
-def enable_suggestion(key: str):
+@router.post("/{suggestion_id}")
+def enable_suggestion(suggestion_id: str):
     try:
         doc = client.get(
             index=settings.SUGGESTION_INDEX,
-            id=key
+            id=suggestion_id
         )["_source"]
         doc["kwargs"] = json.loads(doc["kwargs"])
 
@@ -120,13 +120,13 @@ def enable_suggestion(key: str):
 
         client.delete(
             index=settings.SUGGESTION_INDEX,
-            id=key,
+            id=suggestion_id,
             refresh="wait_for",
         )
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"suggestion with key '{key}' does not exist"
+            detail=f"suggestion '{suggestion_id}' does not exist"
         )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
@@ -143,5 +143,5 @@ def _resource_exists(key: str, index: str, resource_type: str):
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{resource_type} with id '{key}' does not exist"
+            detail=f"{resource_type} '{key}' does not exist"
         )

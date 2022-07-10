@@ -10,6 +10,7 @@ from app.api.api_v1.endpoints import (
     validation,
     suggestion,
     schedule,
+    metrics,
 )
 
 router = APIRouter()
@@ -19,7 +20,8 @@ router.include_router(dataset.router, prefix="/datasets", tags=["Datasets"])
 router.include_router(expectation.router, prefix="/expectations", tags=["Expectations"])
 router.include_router(runner.router, prefix="/runner", tags=["Runner"])
 router.include_router(validation.router, prefix="/validation", tags=["Validations"])
-router.include_router(suggestion.router, prefix="/suggestion", tags=["Suggestions"])
+router.include_router(suggestion.router, prefix="/suggestions", tags=["Suggestions"])
 router.include_router(introspect.router, prefix="/introspect", tags=["Introspect"])
 router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
+router.include_router(metrics.router, prefix="/metrics", tags=["Metrics"])
 router.include_router(schedule.router, prefix="/schedules", tags=["Schedule"])

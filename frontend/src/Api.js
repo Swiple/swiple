@@ -217,8 +217,17 @@ export const getColumns = (datasourceId, schema, table) => axios.get(
 // Expectations
 // ========================================================
 
-export const getExpectations = (datasetId, includeHistory = false, datasourceId = null) => {
-  const params = {};
+export const getExpectations = (
+  datasetId,
+  datasourceId = null,
+  includeHistory = false,
+  suggested = null,
+  enabled = true,
+) => {
+  const params = {
+    suggested,
+    enabled,
+  };
 
   if (datasourceId) {
     params.datasource_id = datasourceId;
@@ -229,7 +238,7 @@ export const getExpectations = (datasetId, includeHistory = false, datasourceId 
   }
 
   if (includeHistory) {
-    params.include_history = includeHistory;
+    params.include_history = true;
   }
 
   return axios.get(
@@ -251,6 +260,12 @@ export const postExpectation = (data) => axios.post(
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
+export const enableExpectation = (key) => axios.put(
+  `${BASE_URL}/expectations/${key}/enable`,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
 export const putExpectation = (data, key) => axios.put(
   `${BASE_URL}/expectations/${key}`,
   data,
@@ -262,6 +277,12 @@ export const deleteExpectation = (key) => axios.delete(`${BASE_URL}/expectations
   .then((data) => data.data)
   .catch((error) => errorHandler(error));
 
+export const suggestExpectations = (data) => axios.post(
+  `${BASE_URL}/expectations/suggest`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
 // ========================================================
 // Runner
 // ========================================================
@@ -272,26 +293,9 @@ export const postRunnerValidateDataset = async (data) => axios.post(
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const postRunnerExpectation = async (data) => axios.post(
-  `${BASE_URL}/runner/validate/expectation`,
-  data,
-)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
-export const postRunnerProfileDataset = async (data) => axios.post(
-  `${BASE_URL}/runner/profile/dataset`,
-  data,
-)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
 // ========================================================
 // Validation
 // ========================================================
-export const getValidations = () => axios.get(`${BASE_URL}/validation`)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
 export const getValidationStats = (datasetId) => axios.get(
   `${BASE_URL}/validation/statistics`,
   { params: { dataset_id: datasetId } },
@@ -302,28 +306,6 @@ export const getValidationStats = (datasetId) => axios.get(
 // ========================================================
 // Suggestions
 // ========================================================
-export const getSuggestions = (datasetId, includeHistory = false, datasourceId = null) => {
-  const params = {};
-
-  if (datasourceId) {
-    params.datasource_id = datasourceId;
-  }
-
-  if (datasetId) {
-    params.dataset_id = datasetId;
-  }
-
-  if (includeHistory) {
-    params.include_history = includeHistory;
-  }
-
-  return axios.get(
-    `${BASE_URL}/suggestion`,
-    { params },
-  )
-    .then((response) => response)
-    .catch((error) => errorHandler(error));
-};
 
 export const getSuggestion = (key) => axios.get(`${BASE_URL}/suggestion/${key}`)
   .then((response) => response)
