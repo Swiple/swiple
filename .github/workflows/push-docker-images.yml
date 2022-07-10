@@ -23,7 +23,7 @@ jobs:
       -
         name: Build and push PR Docker Image
         uses: docker/build-push-action@v3
-        if: ${{ github.event_name == "pull_request" }}
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           context: ./backend/
           file: ./backend/Dockerfile
