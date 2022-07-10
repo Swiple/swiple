@@ -28,13 +28,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Docker meta
+        name: Docker meta swiple-api
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/swiple-api
       -
-        name: Build and push
+        name: Build and push swiple-api
         uses: docker/build-push-action@v3
         with:
           context: ./backend/
@@ -43,20 +43,18 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-#        name: Build and push PR Docker Image
-#        uses: docker/build-push-action@v3
-#        if: ${{ github.event_name == 'pull_request' }}
-#        with:
-#          context: ./backend/
-#          file: ./backend/Dockerfile
-#          push: true
-#          tags: "swiple/swiple-api:pr-${{ env.CI_PR_NUMBER }}"
-#      -
-#        name: Build and push main Docker Image
-#        uses: docker/build-push-action@v3
-#        if: ${{ github.ref == 'refs/heads/main' }}
-#        with:
-#          context: ./backend/
-#          file: ./backend/Dockerfile
-#          push: true
-#          tags: ${{ secrets.DOCKERHUB_USERNAME }}/swiple-api:latest"
+      -
+        name: Docker meta swiple-ui
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/swiple-ui
+      -
+        name: Build and push swiple-ui
+        uses: docker/build-push-action@v3
+        with:
+          context: ./frontend/
+          file: ./frontend/Dockerfile.prod
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
