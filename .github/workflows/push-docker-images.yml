@@ -19,7 +19,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: "{{defaultContext}}:backend"
-          file: ./Dockerfile
+          context: ./backend"
+          file: ./backend/Dockerfile
           push: true
           tags: swiple/swiple-api:latest
