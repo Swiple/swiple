@@ -22,6 +22,5 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v3
         with:
-          file: ./backend/Dockerfile
           push: true
           tags: swiple/swiple-api:latest
