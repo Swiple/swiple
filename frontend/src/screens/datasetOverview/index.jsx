@@ -16,7 +16,7 @@ import {
 } from '../../Api';
 import Section from '../../components/Section';
 import DatasetModal, { CREATE_TYPE, UPDATE_TYPE } from './components/DatasetModal';
-import { splitDatasetResource } from '../../Utils';
+import { getEngineIcon, splitDatasetResource } from '../../Utils';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -127,6 +127,22 @@ const DatasetOverview = withRouter(() => {
       dataIndex: 'schema',
     },
     {
+      title: 'ENGINE',
+      dataIndex: 'engine',
+      render: (text) => (
+        <img
+          style={{
+            position: 'relative',
+            width: 20,
+            height: 20,
+            marginRight: 8,
+          }}
+          src={getEngineIcon(text)}
+          alt={text}
+        />
+      ),
+    },
+    {
       title: 'LAST MODIFIED',
       dataIndex: 'modified_date',
     },
@@ -162,6 +178,7 @@ const DatasetOverview = withRouter(() => {
       dataset_name: datasetName,
       schema: datasetSchema,
       datasource: item.datasource_name,
+      engine: item.engine,
       database: item.database,
       create_date: moment(item.create_date).local().fromNow(),
       modified_date: moment(item.modified_date).local().fromNow(),

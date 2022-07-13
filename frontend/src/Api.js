@@ -42,14 +42,14 @@ function errorHandler(error) {
 }
 
 // ========================================================
-// Dashboard
+// Metrics
 // ========================================================
 
-export const getDashboardMetrics = () => axios.get(`${BASE_URL}/dashboard/metrics`)
+export const getResourceCounts = () => axios.get(`${BASE_URL}/metrics/resource-counts`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const getDashboardIssues = () => axios.get(`${BASE_URL}/dashboard/issue`)
+export const getTopIssues = () => axios.get(`${BASE_URL}/metrics/top-issues`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
@@ -57,49 +57,35 @@ export const getDashboardIssues = () => axios.get(`${BASE_URL}/dashboard/issue`)
 // Datasource
 // ========================================================
 
-export const getDataSources = () => axios.get(`${BASE_URL}/datasource`)
+export const getDataSources = () => axios.get(`${BASE_URL}/datasources`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const getDataSource = (key) => axios.get(`${BASE_URL}/datasource/${key}`)
+export const getDataSource = (key) => axios.get(`${BASE_URL}/datasources/${key}`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const getDataSourcesJsonSchema = () => axios.get(`${BASE_URL}/datasource/json_schema`)
+export const getDataSourcesJsonSchema = () => axios.get(`${BASE_URL}/datasources/json-schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-// TODO how to handle fastapi exceptions.
-//  Can we return a default message if this happens
+export const postDataSource = (data) => axios.post(
+  `${BASE_URL}/datasources`,
+  data,
+  { params: { test: true } },
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
 
-export const postDataSource = (data) => {
-  const payload = data;
-  const path = payload.engine.toLowerCase();
-  delete payload.engine;
-  // datasource name lowercased = endpoint path
-  return axios.post(
-    `${BASE_URL}/datasource/${path}`,
-    data,
-    { params: { test: true }, withCredentials: true },
-  )
-    .then((response) => response)
-    .catch((error) => errorHandler(error));
-};
+export const putDataSource = (data, key) => axios.put(
+  `${BASE_URL}/datasources/${key}`,
+  data,
+  { params: { test: true } },
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
 
-export const putDataSource = (data, key) => {
-  const payload = data;
-  const path = payload.engine.toLowerCase();
-  delete payload.engine;
-  return axios.put(
-    `${BASE_URL}/datasource/${path}/${key}`,
-    data,
-    { params: { test: true } },
-  )
-    .then((response) => response)
-    .catch((error) => errorHandler(error));
-};
-
-export const deleteDataSource = (key) => axios.delete(`${BASE_URL}/datasource/${key}`)
+export const deleteDataSource = (key) => axios.delete(`${BASE_URL}/datasources/${key}`)
   .then((data) => data.data)
   .catch((error) => errorHandler(error));
 
@@ -114,52 +100,64 @@ export const getDatasets = (datasourceId) => {
   }
 
   return axios.get(
-    `${BASE_URL}/dataset`,
+    `${BASE_URL}/datasets`,
     { params },
   )
     .then((response) => response)
     .catch((error) => errorHandler(error));
 };
 
-export const getDataset = (key) => axios.get(`${BASE_URL}/dataset/${key}`)
+export const getDataset = (key) => axios.get(`${BASE_URL}/datasets/${key}`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const getQuerySample = (data) => axios.post(
-  `${BASE_URL}/dataset/sample`,
+  `${BASE_URL}/datasets/sample`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const putSample = (key) => axios.put(
-  `${BASE_URL}/dataset/sample/${key}`,
+  `${BASE_URL}/datasets/${key}/sample`,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const postDataset = (data) => axios.post(
-  `${BASE_URL}/dataset`,
+  `${BASE_URL}/datasets`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const putDataset = (key, data) => axios.put(
-  `${BASE_URL}/dataset/${key}`,
+  `${BASE_URL}/datasets/${key}`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const deleteDataset = (key) => axios.delete(`${BASE_URL}/dataset/${key}`)
+export const deleteDataset = (key) => axios.delete(`${BASE_URL}/datasets/${key}`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const postRunnerValidateDataset = async (datasetId) => axios.post(
+  `${BASE_URL}/datasets/${datasetId}/validate`,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const suggestExpectations = (datasetId) => axios.post(
+  `${BASE_URL}/datasets/${datasetId}/suggest`,
+)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 // ========================================================
 // Schedule
 // ========================================================
-export const getSchedulesJsonSchema = () => axios.get(`${BASE_URL}/schedules/json_schema`)
+export const getSchedulesJsonSchema = () => axios.get(`${BASE_URL}/schedules/json-schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
@@ -190,7 +188,7 @@ export const deleteSchedule = (key) => axios.delete(`${BASE_URL}/schedules/${key
   .catch((error) => errorHandler(error));
 
 export const postGenerateNextRunTimes = (data) => axios.post(
-  `${BASE_URL}/schedules/next_run_times`,
+  `${BASE_URL}/schedules/next-run-times`,
   data,
 )
   .then((response) => response)
@@ -231,8 +229,17 @@ export const getColumns = (datasourceId, schema, table) => axios.get(
 // Expectations
 // ========================================================
 
-export const getExpectations = (datasetId, includeHistory = false, datasourceId = null) => {
-  const params = {};
+export const getExpectations = (
+  datasetId,
+  datasourceId = null,
+  includeHistory = false,
+  suggested = null,
+  enabled = true,
+) => {
+  const params = {
+    suggested,
+    enabled,
+  };
 
   if (datasourceId) {
     params.datasource_id = datasourceId;
@@ -243,117 +250,56 @@ export const getExpectations = (datasetId, includeHistory = false, datasourceId 
   }
 
   if (includeHistory) {
-    params.include_history = includeHistory;
+    params.include_history = true;
   }
 
   return axios.get(
-    `${BASE_URL}/expectation`,
+    `${BASE_URL}/expectations`,
     { params },
   )
     .then((response) => response)
     .catch((error) => errorHandler(error));
 };
 
-export const getExpectation = (key) => axios.get(`${BASE_URL}/expectation/${key}`)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
-export const getExpectationsJsonSchema = () => axios.get(`${BASE_URL}/expectation/json_schema`)
+export const getExpectationsJsonSchema = () => axios.get(`${BASE_URL}/expectations/json-schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const postExpectation = (data) => axios.post(
-  `${BASE_URL}/expectation`,
+  `${BASE_URL}/expectations`,
   data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const enableExpectation = (key) => axios.put(
+  `${BASE_URL}/expectations/${key}/enable`,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
 export const putExpectation = (data, key) => axios.put(
-  `${BASE_URL}/expectation/${key}`,
+  `${BASE_URL}/expectations/${key}`,
   data,
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const deleteExpectation = (key) => axios.delete(`${BASE_URL}/expectation/${key}`)
+export const deleteExpectation = (key) => axios.delete(`${BASE_URL}/expectations/${key}`)
   .then((data) => data.data)
   .catch((error) => errorHandler(error));
 
-// ========================================================
-// Runner
-// ========================================================
-export const postRunnerValidateDataset = async (data) => axios.post(
-  `${BASE_URL}/runner/validate/dataset`,
-  data,
-)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
 
-export const postRunnerExpectation = async (data) => axios.post(
-  `${BASE_URL}/runner/validate/expectation`,
-  data,
-)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
-export const postRunnerProfileDataset = async (data) => axios.post(
-  `${BASE_URL}/runner/profile/dataset`,
-  data,
-)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
 // ========================================================
 // Validation
 // ========================================================
-export const getValidations = () => axios.get(`${BASE_URL}/validation`)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
 export const getValidationStats = (datasetId) => axios.get(
-  `${BASE_URL}/validation/statistics`,
+  `${BASE_URL}/validations/statistics`,
   { params: { dataset_id: datasetId } },
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-// ========================================================
-// Suggestions
-// ========================================================
-export const getSuggestions = (datasetId, includeHistory = false, datasourceId = null) => {
-  const params = {};
-
-  if (datasourceId) {
-    params.datasource_id = datasourceId;
-  }
-
-  if (datasetId) {
-    params.dataset_id = datasetId;
-  }
-
-  if (includeHistory) {
-    params.include_history = includeHistory;
-  }
-
-  return axios.get(
-    `${BASE_URL}/suggestion`,
-    { params },
-  )
-    .then((response) => response)
-    .catch((error) => errorHandler(error));
-};
-
-export const getSuggestion = (key) => axios.get(`${BASE_URL}/suggestion/${key}`)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
-export const deleteSuggestion = (key) => axios.delete(`${BASE_URL}/suggestion/${key}`)
-  .then((data) => data.data)
-  .catch((error) => errorHandler(error));
-
-export const enableSuggestion = (key) => axios.post(`${BASE_URL}/suggestion/${key}`)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
 
 // ========================================================
 // Auth

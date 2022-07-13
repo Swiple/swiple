@@ -14,6 +14,8 @@ class IgnoreRowIf(str, Enum):
 class Expectation(BaseModel):
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str
     kwargs: dict
     meta: Optional[dict]
@@ -34,6 +36,8 @@ class ExpectColumnToExist(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_TO_EXIST
     kwargs: Kwargs
     meta: Optional[dict]
@@ -57,6 +61,8 @@ class ExpectTableColumnsToMatchOrderedList(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_TABLE_COLUMNS_TO_MATCH_ORDERED_LIST
     kwargs: Kwargs
     meta: Optional[dict]
@@ -82,6 +88,8 @@ class ExpectTableColumnsToMatchSet(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_TABLE_COLUMNS_TO_MATCH_SET
     kwargs: Kwargs
     meta: Optional[dict]
@@ -107,6 +115,8 @@ class ExpectTableRowCountToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_TABLE_ROW_COUNT_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -130,6 +140,8 @@ class ExpectTableRowCountToEqual(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_TABLE_ROW_COUNT_TO_EQUAL
     kwargs: Kwargs
     meta: Optional[dict]
@@ -154,6 +166,8 @@ class ExpectTableColumnCountToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_TABLE_COLUMN_COUNT_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -177,6 +191,8 @@ class ExpectTableColumnCountToBeEqual(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_TABLE_COLUMN_COUNT_TO_EQUAL
     kwargs: Kwargs
     meta: Optional[dict]
@@ -201,6 +217,8 @@ class ExpectColumnValuesToBeUnique(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_UNIQUE
     kwargs: Kwargs
     meta: Optional[dict]
@@ -225,6 +243,8 @@ class ExpectCompoundColumnsToBeUnique(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COMPOUND_COLUMNS_TO_BE_UNIQUE
     kwargs: Kwargs
     meta: Optional[dict]
@@ -250,6 +270,8 @@ class ExpectSelectColumnValuesToBeUniqueWithinRecord(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_SELECT_COLUMN_VALUES_TO_BE_UNIQUE_WITHIN_RECORD
     kwargs: Kwargs
     meta: Optional[dict]
@@ -275,6 +297,8 @@ class ExpectColumnValuesToNotBeNull(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_BE_NULL
     kwargs: Kwargs
     meta: Optional[dict]
@@ -299,6 +323,8 @@ class ExpectColumnValuesToBeNull(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_NULL
     kwargs: Kwargs
     meta: Optional[dict]
@@ -325,6 +351,8 @@ class ExpectColumnValuesToBeInSet(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_IN_SET
     kwargs: Kwargs
     meta: Optional[dict]
@@ -350,6 +378,8 @@ class ExpectColumnValuesToNotBeInSet(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_BE_IN_SET
     kwargs: Kwargs
     meta: Optional[dict]
@@ -384,6 +414,8 @@ class ExpectColumnValuesToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -412,6 +444,8 @@ class ExpectColumnValueLengthsToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUE_LENGTHS_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -438,6 +472,8 @@ class ExpectColumnValueLengthsToEqual(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUE_LENGTHS_TO_EQUAL
     kwargs: Kwargs
     meta: Optional[dict]
@@ -463,6 +499,8 @@ class ExpectColumnValuesToMatchRegex(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_MATCH_REGEX
     kwargs: Kwargs
     meta: Optional[dict]
@@ -488,6 +526,8 @@ class ExpectColumnValuesToNotMatchRegex(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_MATCH_REGEX
     kwargs: Kwargs
     meta: Optional[dict]
@@ -518,6 +558,8 @@ class ExpectColumnValuesToMatchRegexList(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_MATCH_REGEX_LIST
     kwargs: Kwargs
     meta: Optional[dict]
@@ -548,6 +590,8 @@ class ExpectColumnValuesToNotMatchRegexList(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_MATCH_REGEX_LIST
     kwargs: Kwargs
     meta: Optional[dict]
@@ -579,6 +623,8 @@ class ExpectColumnMeanToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_MEAN_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -615,6 +661,8 @@ class ExpectColumnMedianToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_MEDIAN_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -649,6 +697,8 @@ class ExpectColumnUniqueValueCountToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_UNIQUE_VALUE_COUNT_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -678,6 +728,8 @@ class ExpectColumnProportionOfUniqueValuesToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_PROPORTION_OF_UNIQUE_VALUES_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -714,6 +766,8 @@ class ExpectColumnSumToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_SUM_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -746,6 +800,8 @@ class ExpectMultiColumnSumToEqual(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_MULTICOLUMN_SUM_TO_EQUAL
     kwargs: Kwargs
     meta: Optional[dict]
@@ -776,6 +832,8 @@ class ExpectColumnMinToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_MIN_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -820,6 +878,8 @@ class ExpectColumnMaxToBeBetween(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_MAX_TO_BE_BETWEEN
     kwargs: Kwargs
     meta: Optional[dict]
@@ -862,6 +922,8 @@ class ExpectColumnPairValuesToBeEqual(BaseModel):
 
     dataset_id: str
     datasource_id: str
+    enabled: Optional[bool] = True
+    suggested: Optional[bool] = False
     expectation_type: str = c.EXPECT_COLUMN_PAIR_VALUES_TO_BE_EQUAL
     kwargs: Kwargs
     meta: Optional[dict]

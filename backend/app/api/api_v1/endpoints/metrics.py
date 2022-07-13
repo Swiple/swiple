@@ -10,17 +10,17 @@ router = APIRouter(
 )
 
 
-@router.get("/metrics")
-def metrics():
+@router.get("/resource-counts")
+def resource_counts():
     datasource_count = client.count(
         index=settings.DATASOURCE_INDEX,
         body={"query": {"match_all": {}}}
     )
 
-    schema_count = client.search(
-        index=settings.DATASET_INDEX,
-        body={"size": 0, "aggs": {"item": {"cardinality": {"field": "runtime_parameters.schema"}}}}
-    )["aggregations"]["item"]["value"]
+    # schema_count = client.search(
+    #     index=settings.DATASET_INDEX,
+    #     body={"size": 0, "aggs": {"item": {"cardinality": {"field": "runtime_parameters.schema"}}}}
+    # )["aggregations"]["item"]["value"]
 
     dataset_count = client.count(
         index=settings.DATASET_INDEX,
@@ -29,7 +29,11 @@ def metrics():
 
     expectation_count = client.count(
         index=settings.EXPECTATION_INDEX,
-        body={"query": {"match_all": {}}}
+        body={
+            "query": {
+                "match": {"enabled": True}
+            }
+        }
     )
 
     validation_count = client.count(
@@ -59,8 +63,8 @@ def metrics():
     return JSONResponse(status_code=status.HTTP_200_OK, content=response)
 
 
-@router.get("/issue")
-def issues():
+@router.get("/top-issues")
+def top_issues():
     issues_response = client.search(
         index=settings.VALIDATION_INDEX,
         body={
@@ -170,7 +174,21 @@ def get_histogram_points():
             {"index": settings.DATASET_INDEX},
             histogram_query("create_date"),
             {"index": settings.EXPECTATION_INDEX},
-            histogram_query("create_date"),
+            {
+                "size": 0,
+                "query": {
+                    "match": {"enabled": True}
+                },
+                "aggregations": {
+                    "histogram": {
+                        "date_histogram": {
+                            "field": "create_date",
+                            "min_doc_count": 0,
+                            "interval": "1d",
+                        }
+                    }
+                }
+            },
             {"index": settings.VALIDATION_INDEX},
             histogram_query("run_date"),
         ]

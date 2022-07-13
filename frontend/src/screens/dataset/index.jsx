@@ -32,31 +32,23 @@ import Paragraph from 'antd/es/typography/Paragraph';
 import {
   deleteExpectation,
   getDataset, getDataSource,
-  getSuggestions,
-  deleteSuggestion,
-  enableSuggestion,
   getExpectations,
   getValidationStats,
   postRunnerValidateDataset,
-  postRunnerProfileDataset,
   putSample,
   getQuerySample,
   getSchedulesForDataset,
-  deleteSchedule,
+  deleteSchedule, suggestExpectations, enableExpectation,
 } from '../../Api';
 import Section from '../../components/Section';
 import CodeEditor from './components/CodeEditor';
 import ExpectationHistory from './components/ExpectationHistory';
 import SLAHitRate from './components/SLAHitRate';
 import DataSample from './components/DataSample';
-import {
-  AthenaIcon, BigqueryIcon, MysqlIcon,
-  PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
-} from '../../static/images';
 import AsyncButton from '../../components/AsyncButton';
 import ExpectationModal, { CREATE_TYPE, UPDATE_TYPE } from './components/ExpectationModal';
 import ScheduleModal from './components/ScheduleModal';
-import { splitDatasetResource } from '../../Utils';
+import { splitDatasetResource, getEngineIcon } from '../../Utils';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -149,7 +141,7 @@ const Dataset = withRouter(() => {
   useEffect(() => {
     if (refreshExpectations && datasetId) {
       setRequestInProgress(true);
-      getExpectations(datasetId, true)
+      getExpectations(datasetId, null, true, null, true)
         .then((response) => {
           if (response.status === 200) {
             setExpectations(response.data);
@@ -165,7 +157,7 @@ const Dataset = withRouter(() => {
   useEffect(() => {
     if (refreshSuggestions && datasetId) {
       setRequestInProgress(true);
-      getSuggestions(datasetId, true)
+      getExpectations(datasetId, null, false, true, false)
         .then((response) => {
           if (response.status === 200) {
             setSuggestions(response.data);
@@ -237,7 +229,7 @@ const Dataset = withRouter(() => {
   };
 
   const rejectSuggestion = (record) => new Promise((resolve) => {
-    deleteSuggestion(record.key).then(() => {
+    deleteExpectation(record.key).then(() => {
       setSuggestions(suggestions.filter((item) => item.key !== record.key));
       resolve();
     });
@@ -276,7 +268,7 @@ const Dataset = withRouter(() => {
               size="medium"
               ghost
               onClick={() => new Promise((resolve, reject) => {
-                enableSuggestion(record.key).then((response) => {
+                enableExpectation(record.key).then((response) => {
                   if (response.status === 200) {
                     setSuggestions(suggestions.filter((item) => item.key !== record.key));
                     setRefreshExpectations(true);
@@ -524,18 +516,16 @@ const Dataset = withRouter(() => {
   });
 
   const analyzeDataset = () => new Promise((resolve) => {
-    const data = { datasource_id: datasource.key, dataset_id: datasetId };
-    postRunnerValidateDataset(data).then(() => {
+    postRunnerValidateDataset(datasetId).then(() => {
       setRefreshValidationStats(true);
       setRefreshExpectations(true);
       resolve();
     });
   });
 
-  const profileDataset = () => new Promise((resolve) => {
-    const data = { datasource_id: datasource.key, dataset_id: datasetId };
+  const suggestExpectationsForDataset = () => new Promise((resolve) => {
     setSuggestions([]);
-    postRunnerProfileDataset(data).then(() => {
+    suggestExpectations(datasetId).then(() => {
       setRefreshSuggestions(true);
       resolve();
     });
@@ -593,7 +583,7 @@ const Dataset = withRouter(() => {
               style={{ fontWeight: 'bold' }}
               type="primary"
               size="medium"
-              onClick={() => profileDataset()}
+              onClick={() => suggestExpectationsForDataset()}
             >
               Generate Suggestions
             </AsyncButton>
@@ -618,19 +608,6 @@ const Dataset = withRouter(() => {
       }
     </Space>
   );
-
-  const getEngineIcon = (engine) => {
-    const datasourceImgMap = {
-      postgresql: PostgresqlIcon,
-      redshift: RedshiftIcon,
-      snowflake: SnowflakeIcon,
-      mysql: MysqlIcon,
-      bigquery: BigqueryIcon,
-      athena: AthenaIcon,
-      trino: TrinoIcon,
-    };
-    return datasourceImgMap[engine.toLowerCase()];
-  };
 
   const datasetMetaData = (column = 2) => (
     <Descriptions size="small" column={column}>

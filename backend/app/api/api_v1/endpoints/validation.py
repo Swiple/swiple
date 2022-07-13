@@ -12,7 +12,10 @@ router = APIRouter(
 
 
 @router.get("")
-def validations(datasource_id: str, dataset_id: str):
+def list_validations(
+        datasource_id: str,
+        dataset_id: str,
+):
     validations_response = client.search(
         index=settings.VALIDATION_INDEX,
         body=validations_query_body(dataset_id, datasource_id)

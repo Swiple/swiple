@@ -4,9 +4,7 @@ import {
   Button, Form, Input, message, Modal, Row, Select, Space, Typography,
 } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
-import {
-  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
-} from '../../../static/images';
+import { getEngineIcon } from '../../../Utils';
 import { getDataSourcesJsonSchema, postDataSource, putDataSource } from '../../../Api';
 import AsyncButton from '../../../components/AsyncButton';
 
@@ -184,43 +182,31 @@ function DatasourceModal({
     return null;
   };
 
-  const getEngineOptions = () => {
-    const datasourceImgMap = {
-      postgresql: PostgresqlIcon,
-      redshift: RedshiftIcon,
-      snowflake: SnowflakeIcon,
-      mysql: MysqlIcon,
-      bigquery: BigqueryIcon,
-      athena: AthenaIcon,
-      trino: TrinoIcon,
-    };
-
-    return dataSourcesJsonSchema.map((item) => {
-      const imgPath = datasourceImgMap[item.title.toLowerCase()];
-      return (
-        <Option
-          key={item.title}
-          value={item.title}
-          label={item.title}
-        >
-          <Row align="start" style={{ alignItems: 'center', color: 'black' }}>
-            <Space>
-              <div className="select-option">
-                <img
-                  style={{ position: 'relative' }}
-                  src={imgPath}
-                  alt={item.title}
-                  width="20"
-                  height="20"
-                />
-              </div>
-              {item.title}
-            </Space>
-          </Row>
-        </Option>
-      );
-    });
-  };
+  const getEngineOptions = () => dataSourcesJsonSchema.map((item) => {
+    const imgPath = getEngineIcon(item.title);
+    return (
+      <Option
+        key={item.title}
+        value={item.title}
+        label={item.title}
+      >
+        <Row align="start" style={{ alignItems: 'center', color: 'black' }}>
+          <Space>
+            <div className="select-option">
+              <img
+                style={{ position: 'relative' }}
+                src={imgPath}
+                alt={item.title}
+                width="20"
+                height="20"
+              />
+            </div>
+            {item.title}
+          </Space>
+        </Row>
+      </Option>
+    );
+  });
 
   const getResponseStatus = () => {
     if (responseStatus === null) {

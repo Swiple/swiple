@@ -1,3 +1,7 @@
+import {
+  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
+} from './static/images';
+
 const splitDatasetResource = (dataset) => {
   let datasetSchema;
   let datasetName;
@@ -40,4 +44,17 @@ const formatErrorMsg = (errorResponse) => {
   });
 };
 
-export { formatErrorMsg, splitDatasetResource };
+const getEngineIcon = (engine) => {
+  const engineIconMap = {
+    postgresql: PostgresqlIcon,
+    redshift: RedshiftIcon,
+    snowflake: SnowflakeIcon,
+    mysql: MysqlIcon,
+    bigquery: BigqueryIcon,
+    athena: AthenaIcon,
+    trino: TrinoIcon,
+  };
+  return engineIconMap[engine.toLowerCase()];
+};
+
+export { formatErrorMsg, splitDatasetResource, getEngineIcon };
