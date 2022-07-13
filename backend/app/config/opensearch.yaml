@@ -108,21 +108,6 @@ expectations:
       modified_date:
         format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
         type: date
-suggestions:
-  index_name: suggestions
-  mappings:
-    properties:
-      create_date:
-        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
-        type: date
-      dataset_id:
-        type: keyword
-      datasource_id:
-        type: keyword
-      expectation_type:
-        type: keyword
-      kwargs:
-        type: text
 validations:
   index_name: validations
   mappings:
