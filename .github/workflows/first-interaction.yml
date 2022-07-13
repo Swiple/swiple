@@ -1,0 +1,32 @@
+name: review
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [ main ]
+jobs:
+
+  first-interaction:
+    name: runner / first-interaction
+    runs-on: ubuntu-latest
+    steps:
+      - name: first-interaction
+        uses: actions/first-interaction@v1.1.0
+        if: github.event_name == 'pull_request'
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: Thanks for opening your first issue!
+          pr-message: |
+            # Welcome!
+            Thank you for opening your first pull request!
+            ## What's next?
+            The next steps to getting this pull request deployed are as follows:
+            1. Ensure that all CI checks are successful
+            2. Obtain an approval (we are always watching 👀)
+            3. Merge your pull request! ✨
+            ## Deployment
+            Docker images are created for every pull request. E.g. `swiple/swiple-api:pr-#` and `swiple/swiple-ui:pr-#`.
+            Once merged into the `main` branch, your contribution will be included in `swiple/swiple-api:main` and `swiple/swiple-ui:latest` in the next release!
+            
+            That's all! Thanks for contributing!
