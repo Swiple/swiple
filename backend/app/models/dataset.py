@@ -14,6 +14,7 @@ class Sample(BaseModel):
 
 
 class Dataset(BaseModel):
+	key: Optional[str]
 	datasource_id: str
 	datasource_name: str
 	engine: Optional[Engines]

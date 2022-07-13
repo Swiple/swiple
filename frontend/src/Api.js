@@ -42,14 +42,14 @@ function errorHandler(error) {
 }
 
 // ========================================================
-// Dashboard
+// Metrics
 // ========================================================
 
-export const getDashboardMetrics = () => axios.get(`${BASE_URL}/dashboard/metrics`)
+export const getResourceCounts = () => axios.get(`${BASE_URL}/metrics/resource-counts`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const getDashboardIssues = () => axios.get(`${BASE_URL}/dashboard/issue`)
+export const getTopIssues = () => axios.get(`${BASE_URL}/metrics/top-issues`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
@@ -65,7 +65,7 @@ export const getDataSource = (key) => axios.get(`${BASE_URL}/datasources/${key}`
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-export const getDataSourcesJsonSchema = () => axios.get(`${BASE_URL}/datasources/json_schema`)
+export const getDataSourcesJsonSchema = () => axios.get(`${BASE_URL}/datasources/json-schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
@@ -142,10 +142,22 @@ export const deleteDataset = (key) => axios.delete(`${BASE_URL}/datasets/${key}`
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
+export const postRunnerValidateDataset = async (datasetId) => axios.post(
+  `${BASE_URL}/datasets/${datasetId}/validate`,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const suggestExpectations = (datasetId) => axios.post(
+  `${BASE_URL}/datasets/${datasetId}/suggest`,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
 // ========================================================
 // Schedule
 // ========================================================
-export const getSchedulesJsonSchema = () => axios.get(`${BASE_URL}/schedules/json_schema`)
+export const getSchedulesJsonSchema = () => axios.get(`${BASE_URL}/schedules/json-schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
@@ -176,7 +188,7 @@ export const deleteSchedule = (key) => axios.delete(`${BASE_URL}/schedules/${key
   .catch((error) => errorHandler(error));
 
 export const postGenerateNextRunTimes = (data) => axios.post(
-  `${BASE_URL}/schedules/next_run_times`,
+  `${BASE_URL}/schedules/next-run-times`,
   data,
 )
   .then((response) => response)
@@ -249,7 +261,7 @@ export const getExpectations = (
     .catch((error) => errorHandler(error));
 };
 
-export const getExpectationsJsonSchema = () => axios.get(`${BASE_URL}/expectations/json_schema`)
+export const getExpectationsJsonSchema = () => axios.get(`${BASE_URL}/expectations/json-schema`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
@@ -277,47 +289,17 @@ export const deleteExpectation = (key) => axios.delete(`${BASE_URL}/expectations
   .then((data) => data.data)
   .catch((error) => errorHandler(error));
 
-export const suggestExpectations = (data) => axios.post(
-  `${BASE_URL}/expectations/suggest`,
-  data,
-)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-// ========================================================
-// Runner
-// ========================================================
-export const postRunnerValidateDataset = async (data) => axios.post(
-  `${BASE_URL}/runner/validate/dataset`,
-  data,
-)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
 
 // ========================================================
 // Validation
 // ========================================================
 export const getValidationStats = (datasetId) => axios.get(
-  `${BASE_URL}/validation/statistics`,
+  `${BASE_URL}/validations/statistics`,
   { params: { dataset_id: datasetId } },
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
-// ========================================================
-// Suggestions
-// ========================================================
-
-export const getSuggestion = (key) => axios.get(`${BASE_URL}/suggestion/${key}`)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
-
-export const deleteSuggestion = (key) => axios.delete(`${BASE_URL}/suggestion/${key}`)
-  .then((data) => data.data)
-  .catch((error) => errorHandler(error));
-
-export const enableSuggestion = (key) => axios.post(`${BASE_URL}/suggestion/${key}`)
-  .then((response) => response)
-  .catch((error) => errorHandler(error));
 
 // ========================================================
 // Auth

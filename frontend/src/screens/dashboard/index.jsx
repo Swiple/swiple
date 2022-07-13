@@ -3,7 +3,7 @@ import {
   Layout, message,
 } from 'antd';
 import { withRouter } from 'react-router-dom';
-import { getDashboardIssues, getDashboardMetrics } from '../../Api';
+import { getTopIssues, getResourceCounts } from '../../Api';
 import TopIssues from './components/TopIssues';
 import IntroduceRow from './components/IntroduceRow';
 
@@ -25,7 +25,7 @@ const Dashboard = withRouter(() => {
         ...prevState,
         dashboardMetrics: true,
       }));
-      getDashboardMetrics()
+      getResourceCounts()
         .then((response) => {
           if (response.status === 200) {
             setMetricData(response.data);
@@ -47,7 +47,7 @@ const Dashboard = withRouter(() => {
         ...prevState,
         topIssues: true,
       }));
-      getDashboardIssues()
+      getTopIssues()
         .then((response) => {
           if (response.status === 200) {
             setTopIssues(response.data);

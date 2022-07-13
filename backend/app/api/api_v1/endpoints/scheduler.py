@@ -9,7 +9,6 @@ from fastapi.responses import JSONResponse
 from app.config.settings import settings
 from app.core.users import current_active_user
 from app.db.client import client
-from app.models.runner import DatasetRun
 from app.core.schedulers.scheduler import scheduler, Schedule
 
 router = APIRouter(
@@ -17,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.get("/json_schema")
+@router.get("/json-schema")
 def json_schema():
     schema = Schedule.schema()
     return JSONResponse(
@@ -56,15 +55,11 @@ def create_schedule(
         settings.DATASET_INDEX,
         dataset_id,
     )
-    datasource_id = dataset["_source"]["datasource_id"]
-    dataset_run = DatasetRun(
-        dataset_id=dataset_id,
-        datasource_id=datasource_id
-    )
 
     schedule = scheduler.add_schedule(
         schedule=schedule,
-        dataset_run=dataset_run,
+        datasource_id=dataset["_source"]["datasource_id"],
+        dataset_id=dataset_id,
     )
     schedule_as_dict = scheduler.to_dict(schedule)
 
@@ -79,9 +74,9 @@ def get_schedule(schedule_id: str):
     schedule = scheduler.get_schedule(schedule_id=schedule_id)
 
     if schedule is None:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=f"Schedule id '{schedule_id}' does not exist"
+            detail=f"Schedule id '{schedule_id}' does not exist"
         )
     schedule_as_dict = scheduler.to_dict(schedule)
     return JSONResponse(
@@ -103,14 +98,14 @@ def update_schedule(
         )
         schedule_as_dict = scheduler.to_dict(modified_schedule)
     except AttributeError as ex:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=str(ex),
+            detail=str(ex),
         )
     except JobLookupError:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            content=f"Schedule id '{schedule_id}' does not exist"
+            detail=f"Schedule id '{schedule_id}' does not exist"
         )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
@@ -127,9 +122,9 @@ def delete_schedule(
             schedule_id=schedule_id
         )
     except JobLookupError:
-        JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            content=f"Schedule id '{schedule_id}' does not exist"
+            detail=f"Schedule id '{schedule_id}' does not exist"
         )
 
     return JSONResponse(
@@ -178,8 +173,8 @@ def delete_schedules(
     )
 
 
-@router.post("/next_run_times")
-def get_next_schedule_run_times(
+@router.post("/next-run-times")
+def next_schedule_run_times(
         schedule: Schedule,
 ):
     next_run_times = scheduler.next_schedule_run_times(
@@ -199,7 +194,7 @@ def _resource_exists(index, key: str):
             id=key
         )
     except NotFoundError:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            content=f"{index} with id '{key}' does not exist"
+            detail=f"{index} with id '{key}' does not exist"
         )

@@ -32,7 +32,6 @@ import Paragraph from 'antd/es/typography/Paragraph';
 import {
   deleteExpectation,
   getDataset, getDataSource,
-  deleteSuggestion,
   getExpectations,
   getValidationStats,
   postRunnerValidateDataset,
@@ -230,7 +229,7 @@ const Dataset = withRouter(() => {
   };
 
   const rejectSuggestion = (record) => new Promise((resolve) => {
-    deleteSuggestion(record.key).then(() => {
+    deleteExpectation(record.key).then(() => {
       setSuggestions(suggestions.filter((item) => item.key !== record.key));
       resolve();
     });
@@ -517,18 +516,16 @@ const Dataset = withRouter(() => {
   });
 
   const analyzeDataset = () => new Promise((resolve) => {
-    const data = { datasource_id: datasource.key, dataset_id: datasetId };
-    postRunnerValidateDataset(data).then(() => {
+    postRunnerValidateDataset(datasetId).then(() => {
       setRefreshValidationStats(true);
       setRefreshExpectations(true);
       resolve();
     });
   });
 
-  const profileDataset = () => new Promise((resolve) => {
-    const data = { datasource_id: datasource.key, dataset_id: datasetId };
+  const suggestExpectationsForDataset = () => new Promise((resolve) => {
     setSuggestions([]);
-    suggestExpectations(data).then(() => {
+    suggestExpectations(datasetId).then(() => {
       setRefreshSuggestions(true);
       resolve();
     });
@@ -586,7 +583,7 @@ const Dataset = withRouter(() => {
               style={{ fontWeight: 'bold' }}
               type="primary"
               size="medium"
-              onClick={() => profileDataset()}
+              onClick={() => suggestExpectationsForDataset()}
             >
               Generate Suggestions
             </AsyncButton>

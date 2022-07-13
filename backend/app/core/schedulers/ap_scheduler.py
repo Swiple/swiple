@@ -11,9 +11,8 @@ from apscheduler.job import Job
 from pytz import utc
 from app.config.settings import settings
 import app.constants as c
-from app.api.api_v1.endpoints.runner import run_dataset
+from app.api.api_v1.endpoints.dataset import validate_dataset
 
-from app.models.runner import DatasetRun
 from app.models.schedule import Schedule
 import uuid
 import datetime
@@ -53,11 +52,11 @@ class ApScheduler(SchedulerInterface):
         self.ap_scheduler.shutdown()
         print("-- Scheduler Shutdown --")
 
-    def add_schedule(self, schedule: Schedule, dataset_run: DatasetRun):
+    def add_schedule(self, schedule: Schedule, datasource_id: str, dataset_id: str):
         return self.ap_scheduler.add_job(
-            id=f"{dataset_run.dataset_id}__{uuid.uuid4()}",
-            func=run_dataset,
-            kwargs={'dataset_run': dataset_run},
+            id=f"{datasource_id}__{dataset_id}__{uuid.uuid4()}",
+            func=validate_dataset,
+            kwargs={"dataset_id": dataset_id},
             misfire_grace_time=schedule.misfire_grace_time,
             max_instances=schedule.max_instances,
             **schedule.trigger.dict(exclude_none=True)
@@ -89,12 +88,12 @@ class ApScheduler(SchedulerInterface):
             if not datasource_id and not dataset_id:
                 schedules_as_dict.append(schedule_as_dict)
 
-            schedule_dataset_id = schedule.id.split("__")[0]
+            schedule_datasource_id, schedule_dataset_id, __ = schedule.id.split("__")
 
             if not datasource_id and dataset_id and schedule_dataset_id == dataset_id:
                 schedules_as_dict.append(schedule_as_dict)
 
-            if not dataset_id and datasource_id and schedule.kwargs['dataset_run'].datasource_id == datasource_id:
+            if not dataset_id and datasource_id and schedule_datasource_id == datasource_id:
                 schedules_as_dict.append(schedule_as_dict)
 
         return schedules_as_dict

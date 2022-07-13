@@ -27,7 +27,7 @@ router = APIRouter(
 )
 
 
-@router.get("/json_schema")
+@router.get("/json-schema")
 def get_json_schema():
 	data_sources = []
 

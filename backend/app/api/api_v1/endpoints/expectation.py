@@ -2,12 +2,6 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-
-from app.api.api_v1.endpoints.runner import not_found_response
-from app.core import security
-from app.core.runner import Runner
-from app.models.dataset import Dataset
-from app.models.datasource import engine_types
 from app.models.expectation import Expectation
 from app.core.expectations import supported_unsupported_expectations
 from app import utils
@@ -18,13 +12,10 @@ from opensearchpy.helpers import bulk
 from app.models import expectation as exp
 from copy import deepcopy
 from pydantic.error_wrappers import ValidationError
-
-from app.models.runner import DatasetRun
 from app.utils import json_schema_to_single_doc
 from app.api.api_v1.endpoints import validation
 from fastapi.param_functions import Depends
 from app.core.users import current_active_user
-import app.constants as c
 import json
 import uuid
 
@@ -34,7 +25,7 @@ router = APIRouter(
 )
 
 
-@router.get("/json_schema")
+@router.get("/json-schema")
 def get_json_schema():
     expectations = []
     for expectation in exp.type_map.values():
@@ -59,6 +50,21 @@ def enable_expectation(
         id=expectation_id,
         body={"doc": {
             "enabled": True,
+        }},
+        refresh="wait_for",
+    )
+    return JSONResponse(status_code=status.HTTP_200_OK)
+
+
+@router.put("/{expectation_id}/disable")
+def enable_expectation(
+        expectation_id: str,
+):
+    client.update(
+        index=settings.EXPECTATION_INDEX,
+        id=expectation_id,
+        body={"doc": {
+            "enabled": False,
         }},
         refresh="wait_for",
     )
@@ -143,80 +149,6 @@ def get_expectation(expectation_id: str):
     doc["key"] = expectation_id
 
     return JSONResponse(status_code=status.HTTP_200_OK, content=doc)
-
-@router.post("/suggest")
-def create_suggestions(dataset_run: DatasetRun):
-    docs = client.mget(
-        body={
-            "docs": [
-                {"_index": settings.DATASOURCE_INDEX, "_id": dataset_run.datasource_id},
-                {"_index": settings.DATASET_INDEX, "_id": dataset_run.dataset_id},
-            ]
-        }
-    )["docs"]
-
-    datasource = None
-    dataset = None
-    meta = {}
-    identifiers = {
-        "run_date": utils.current_time(),
-        "run_id": uuid.uuid4(),
-    }
-
-    for doc in docs:
-        if doc["_index"] == settings.DATASOURCE_INDEX:
-            if doc.get("_source") is None:
-                not_found_response("datasource", dataset_run.datasource_id)
-
-            if doc["_source"].get("password"):
-                doc["_source"]["password"] = security.decrypt_password(doc["_source"]["password"])
-
-            engine = engine_types[doc["_source"]["engine"]]
-            datasource = engine(**doc["_source"])
-
-            identifiers["datasource_id"] = doc["_id"]
-
-            meta = {**datasource.expectation_meta()}
-            continue
-
-        if doc["_index"] == settings.DATASET_INDEX:
-            if doc.get("_source") is None:
-                not_found_response("dataset", dataset_run.dataset_id)
-            dataset = Dataset(**doc["_source"])
-
-            identifiers["dataset_id"] = doc["_id"]
-            meta["dataset_name"] = dataset.dataset_name
-            continue
-
-    excluded_expectations = supported_unsupported_expectations()["unsupported_expectations"]
-    excluded_expectations.append(c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN)
-
-    results = Runner(
-        datasource=datasource,
-        batch=dataset,
-        meta=meta,
-        identifiers=identifiers,
-        datasource_id=dataset_run.datasource_id,
-        dataset_id=dataset_run.dataset_id,
-        excluded_expectations=excluded_expectations,
-    ).profile()
-
-    client.delete_by_query(
-        index=settings.EXPECTATION_INDEX,
-        body={
-            "query": {
-                "bool": {
-                    "must": [
-                        {"match": {"dataset_id": dataset_run.dataset_id}},
-                        {"match": {"suggested": True}},
-                        {"match": {"enabled": False}},
-                    ]
-                }
-            }
-        }
-    )
-
-    _insert_results(results, settings.EXPECTATION_INDEX)
 
 
 @router.post("")
@@ -306,15 +238,15 @@ def update_expectation(expectation: Expectation, expectation_id: str):
         return JSONResponse(status_code=status.HTTP_200_OK, content=expectation)
 
     if original_expectation["datasource_id"] != expectation_copy["datasource_id"]:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content="updates to expectation datasource_id are not supported",
+            detail="updates to expectation datasource_id are not supported",
         )
 
     if original_expectation["dataset_id"] != expectation_copy["dataset_id"]:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content="updates to expectation dataset_id are not supported",
+            detail="updates to expectation dataset_id are not supported",
         )
 
     # This allows the user to edit an existing
