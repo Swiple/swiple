@@ -9,3 +9,6 @@ on:
 jobs:
   build-and-publish-docker-images:
     uses: ./.github/workflows/build-and-publish-docker-images.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
