@@ -8,4 +8,4 @@ on:
 
 jobs:
   build-and-publish-docker-images:
-    uses: ./.github/workflows/build-and-publish-docker-images.yml@main
+    uses: ./.github/workflows/build-and-publish-docker-images.yml
