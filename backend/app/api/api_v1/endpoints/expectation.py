@@ -8,6 +8,7 @@ from app import utils
 from app.db.client import client
 from app.config.settings import settings
 from opensearchpy import NotFoundError, RequestError
+from opensearchpy.helpers import bulk
 from app.models import expectation as exp
 from copy import deepcopy
 from pydantic.error_wrappers import ValidationError
@@ -24,7 +25,7 @@ router = APIRouter(
 )
 
 
-@router.get("/json_schema")
+@router.get("/json-schema")
 def get_json_schema():
     expectations = []
     for expectation in exp.type_map.values():
@@ -34,33 +35,65 @@ def get_json_schema():
     return JSONResponse(status_code=status.HTTP_200_OK, content=expectations)
 
 
-@router.get("/supported_expectations")
-def get_supported_expectations():
+@router.get("/supported")
+def list_supported_expectations():
     content = supported_unsupported_expectations()
     return JSONResponse(status_code=status.HTTP_200_OK, content=content)
 
 
+@router.put("/{expectation_id}/enable")
+def enable_expectation(
+        expectation_id: str,
+):
+    client.update(
+        index=settings.EXPECTATION_INDEX,
+        id=expectation_id,
+        body={"doc": {
+            "enabled": True,
+        }},
+        refresh="wait_for",
+    )
+    return JSONResponse(status_code=status.HTTP_200_OK)
+
+
+@router.put("/{expectation_id}/disable")
+def enable_expectation(
+        expectation_id: str,
+):
+    client.update(
+        index=settings.EXPECTATION_INDEX,
+        id=expectation_id,
+        body={"doc": {
+            "enabled": False,
+        }},
+        refresh="wait_for",
+    )
+    return JSONResponse(status_code=status.HTTP_200_OK)
+
 @router.get("")
-def get_expectations(
+def list_expectations(
         datasource_id: Optional[str] = None,
         dataset_id: Optional[str] = None,
         include_history: Optional[bool] = False,
-        asc: Optional[bool] = True,
+        suggested: Optional[bool] = None,
+        enabled: Optional[bool] = True,
+        asc: Optional[bool] = False,
 ):
-    # TODO implement scrolling
     direction = "asc" if asc else "desc"
     sort_by_key: str = "expectation_type"
 
-    query = {"query": {"match": {}}, "sort": [{sort_by_key: direction}]}
+    query = {"query": {"bool": {"must": []}}, "sort": [{sort_by_key: direction}]}
 
-    if datasource_id is None and dataset_id is None:
-        query = {"query": {"match_all": {}}, "sort": [{sort_by_key: direction}]}
-    else:
-        if datasource_id is not None:
-            query["query"]["match"]["datasource_id"] = datasource_id
+    query["query"]["bool"]["must"].append({"match": {"enabled": enabled}})
 
-        if dataset_id is not None:
-            query["query"]["match"]["dataset_id"] = dataset_id
+    if suggested is not None:
+        query["query"]["bool"]["must"].append({"match": {"suggested": suggested}})
+
+    if datasource_id is not None:
+        query["query"]["bool"]["must"].append({"match": {"datasource_id": datasource_id}})
+
+    if dataset_id is not None:
+        query["query"]["bool"]["must"].append({"match": {"dataset_id": dataset_id}})
 
     try:
         if include_history:
@@ -106,14 +139,14 @@ def get_expectations(
     return JSONResponse(status_code=status.HTTP_200_OK, content=result_response)
 
 
-@router.get("/{key}")
-def get_expectation(key: str):
+@router.get("/{expectation_id}")
+def get_expectation(expectation_id: str):
     doc = client.get(
         index=settings.EXPECTATION_INDEX,
-        id=key
+        id=expectation_id
     )["_source"]
 
-    doc["key"] = key
+    doc["key"] = expectation_id
 
     return JSONResponse(status_code=status.HTTP_200_OK, content=doc)
 
@@ -168,8 +201,8 @@ def create_expectation(expectation: Expectation):
     return JSONResponse(status_code=status.HTTP_200_OK, content=expectation_copy)
 
 
-@router.put("/{key}")
-def update_expectation(expectation: Expectation, key: str):
+@router.put("/{expectation_id}")
+def update_expectation(expectation: Expectation, expectation_id: str):
     try:
         expectation.modified_date = utils.current_time()
         expectation = exp.type_map[expectation.expectation_type](**expectation.dict(exclude_none=True)).dict(exclude_none=True)
@@ -179,8 +212,6 @@ def update_expectation(expectation: Expectation, key: str):
             detail=f"expectation '{expectation.expectation_type}' has not been implemented"
         )
     except ValidationError as exc:
-        print(exc)
-        print(expectation)
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content=jsonable_encoder({"detail": exc.errors(), "body": expectation}),
@@ -189,33 +220,33 @@ def update_expectation(expectation: Expectation, key: str):
     try:
         original_expectation = client.get(
             index=settings.EXPECTATION_INDEX,
-            id=key
+            id=expectation_id
         )["_source"]
 
         expectation['create_date'] = original_expectation['create_date']
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"expectation with key '{key}' does not exist"
+            detail=f"expectation '{expectation_id}' does not exist"
         )
 
     expectation_copy = deepcopy(expectation)
     expectation_copy["kwargs"] = json.dumps(expectation_copy["kwargs"])
 
     if original_expectation == expectation_copy:
-        expectation["key"] = key
+        expectation["key"] = expectation_id
         return JSONResponse(status_code=status.HTTP_200_OK, content=expectation)
 
     if original_expectation["datasource_id"] != expectation_copy["datasource_id"]:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content="updates to expectation datasource_id are not supported",
+            detail="updates to expectation datasource_id are not supported",
         )
 
     if original_expectation["dataset_id"] != expectation_copy["dataset_id"]:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content="updates to expectation dataset_id are not supported",
+            detail="updates to expectation dataset_id are not supported",
         )
 
     # This allows the user to edit an existing
@@ -234,16 +265,16 @@ def update_expectation(expectation: Expectation, key: str):
         )
         expectation["key"] = response["_id"]
 
-        client.delete(index=settings.EXPECTATION_INDEX, id=key, refresh="wait_for")
+        client.delete(index=settings.EXPECTATION_INDEX, id=expectation_id, refresh="wait_for")
         client.delete_by_query(
             index=settings.VALIDATION_INDEX,
-            body={"query": {"match": {"expectation_id": key}}}
+            body={"query": {"match": {"expectation_id": expectation_id}}}
         )
         return JSONResponse(status_code=status.HTTP_200_OK, content=expectation)
 
     response = client.update(
         index=settings.EXPECTATION_INDEX,
-        id=key,
+        id=expectation_id,
         body={"doc": expectation_copy},
         refresh="wait_for",
     )
@@ -251,18 +282,18 @@ def update_expectation(expectation: Expectation, key: str):
     return JSONResponse(status_code=status.HTTP_200_OK, content=expectation)
 
 
-@router.delete("/{key}")
-def delete_expectation(key: str):
+@router.delete("/{expectation_id}")
+def delete_expectation(expectation_id: str):
     try:
         client.delete_by_query(
             index=settings.VALIDATION_INDEX,
-            body={"query": {"match": {"expectation_id": key}}}
+            body={"query": {"match": {"expectation_id": expectation_id}}}
         )
-        client.delete(index=settings.EXPECTATION_INDEX, id=key, refresh="wait_for", )
+        client.delete(index=settings.EXPECTATION_INDEX, id=expectation_id, refresh="wait_for", )
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"expectation with key '{key}' does not exist"
+            detail=f"expectation '{expectation_id}' does not exist"
         )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
@@ -270,20 +301,21 @@ def delete_expectation(key: str):
     )
 
 
-def _resource_exists(key: str, index: str, resource_type: str):
+def _resource_exists(expectation_id: str, index: str, resource_type: str):
     try:
         return client.get(
             index=index,
-            id=key
+            id=expectation_id
         )
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{resource_type} with id '{key}' does not exist"
+            detail=f"{resource_type} '{expectation_id}' does not exist"
         )
 
 
 def zip_expectations_and_validations(expectations, validations):
+
     expectations_as_dict = {}
 
     for expectation in expectations:
@@ -302,3 +334,16 @@ def zip_expectations_and_validations(expectations, validations):
         expectations_as_dict[source["expectation_id"]]["validations"].append(source)
 
     return list(expectations_as_dict.values())
+
+
+def _insert_results(results, index: str = settings.VALIDATION_INDEX):
+    for result in results:
+        result["enabled"] = False
+        result["suggested"] = True
+
+    bulk(
+        client,
+        results,
+        index=index,
+        refresh="wait_for",
+    )

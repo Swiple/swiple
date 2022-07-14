@@ -23,6 +23,7 @@ services:
     ports:
       - "8001:8001"
     volumes:
+      - $PWD/backend/app/:/code/app/
       - $HOME/.aws:$HOME/.aws
     environment:
       - APP=SCHEDULER

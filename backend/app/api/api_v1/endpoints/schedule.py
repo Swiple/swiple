@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 
-@router.get("/json_schema")
+@router.get("/json-schema")
 def json_schema():
     schema = Schedule.schema()
     return JSONResponse(
@@ -163,14 +163,14 @@ def delete_schedules(
     )
 
 
-@router.post("/next_run_times")
-def get_next_schedule_run_times(
+@router.post("/next-run-times")
+def next_schedule_run_times(
         schedule: Schedule,
         request: Request,
 ):
     payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
     response = requests.post(
-        url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/next_run_times",
+        url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/next-run-times",
         data=payload,
         headers=request.headers,
         cookies=request.cookies,

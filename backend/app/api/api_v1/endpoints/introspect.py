@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import JSONResponse
 import sqlalchemy as sa
 from sqlalchemy.exc import DBAPIError
@@ -23,9 +23,9 @@ def list_schemas(datasource_id: str):
         inspect = sa.inspect(engine)
         schema_list = inspect.get_schema_names()
     except DBAPIError as ex:
-        return JSONResponse(
+        raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=str(ex),
+            detail=str(ex),
         )
     return JSONResponse(status_code=status.HTTP_200_OK, content=schema_list)
 

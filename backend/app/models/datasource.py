@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from app.models.base_model import BaseModel
-from pydantic import Field
-from typing import Optional
+from pydantic import Field, Extra
+from typing import Optional, Literal
 from app.config.settings import settings
 from app.db.client import client
 from app.core import security
@@ -17,9 +17,15 @@ SNOWFLAKE = "Snowflake"
 BIGQUERY = "BigQuery"
 TRINO = "Trino"
 
+Engines = Literal[ATHENA, POSTGRESQL, MYSQL, REDSHIFT, SNOWFLAKE, TRINO]
 
-class DatasourceCommon(BaseModel):
+
+class Datasource(BaseModel):
+    class Config:
+        extra = Extra.allow
+
     key: Optional[str]
+    engine: Engines
     datasource_name: str
     description: str
     created_by: Optional[str]
@@ -35,7 +41,7 @@ class DatasourceCommon(BaseModel):
         pass
 
 
-class Athena(DatasourceCommon):
+class Athena(Datasource):
     engine: str = Field(ATHENA, const=True)
     database: str
     region: str = Field(placeholder="us-east-1", description="AWS Region")
@@ -56,7 +62,7 @@ class Athena(DatasourceCommon):
         }
 
 
-class PostgreSQL(DatasourceCommon):
+class PostgreSQL(Datasource):
     engine: str = Field(POSTGRESQL, const=True)
     username: str
     password: str
@@ -74,7 +80,7 @@ class PostgreSQL(DatasourceCommon):
         }
 
 
-class MySQL(DatasourceCommon):
+class MySQL(Datasource):
     engine: str = Field(MYSQL, const=True)
     username: str
     password: str
@@ -92,7 +98,7 @@ class MySQL(DatasourceCommon):
         }
 
 
-class Redshift(DatasourceCommon):
+class Redshift(Datasource):
     engine: str = Field(REDSHIFT, const=True)
     username: str
     password: str
@@ -110,7 +116,7 @@ class Redshift(DatasourceCommon):
         }
 
 
-class Snowflake(DatasourceCommon):
+class Snowflake(Datasource):
     engine: str = Field(SNOWFLAKE, const=True)
     account: str
     user: str
@@ -144,7 +150,7 @@ class Snowflake(DatasourceCommon):
         }
 
 
-class Trino(DatasourceCommon):
+class Trino(Datasource):
     engine: str = Field(TRINO, const=True)
     username: str
     password: Optional[str]
@@ -172,7 +178,7 @@ class Trino(DatasourceCommon):
 
 
 # An update to "_update_datasource" update_by_query and Dataset.js breadcrumb for BigQuery to work.
-# class BigQuery(DatasourceCommon):
+# class BigQuery(Datasource):
 #     engine: str = Field(BIGQUERY, const=True)
 #     gcp_project: str = Field(title="GCP Project")
 #     dataset: str
@@ -220,5 +226,4 @@ engine_types = {
     REDSHIFT: Redshift,
     SNOWFLAKE: Snowflake,
     TRINO: Trino,
-    # BIGQUERY: BigQuery,
 }

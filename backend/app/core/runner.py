@@ -50,6 +50,9 @@ class Runner:
             expectation["kwargs"] = json.dumps(expectation["kwargs"])
             expectation["datasource_id"] = self.datasource_id
             expectation["dataset_id"] = self.dataset_id
+            expectation["create_date"] = utils.current_time()
+            expectation["modified_date"] = utils.current_time()
+
         return expectations
 
     def sample(self):
