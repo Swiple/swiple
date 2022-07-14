@@ -289,7 +289,6 @@ export const deleteExpectation = (key) => axios.delete(`${BASE_URL}/expectations
   .then((data) => data.data)
   .catch((error) => errorHandler(error));
 
-
 // ========================================================
 // Validation
 // ========================================================
@@ -299,7 +298,6 @@ export const getValidationStats = (datasetId) => axios.get(
 )
   .then((response) => response)
   .catch((error) => errorHandler(error));
-
 
 // ========================================================
 // Auth
