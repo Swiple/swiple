@@ -2,14 +2,34 @@
 sidebar_position: 2
 ---
 
-# Install From Scratch
+# Start Developing
 
 
-### 1. Setup Docker Engine and Docker Compose
+### 1. Install Docker Engine and Docker Compose
+**Mac OSX**
 
-Complete steps 1 & 2 of [Running Locally With Docker](../../docs/installation/run-locally-with-docker) guide.
+[Install Docker for Mac](https://docs.docker.com/desktop/mac/install/), and follow steps.
 
-### 2. Install `make`
+
+**Window**
+
+[Install Docker for Windows](https://docs.docker.com/desktop/windows/install/), and follow steps.
+
+### 2. Clone Swiple's Github Repository 
+Clone [Swiple's repo](https://github.com/Swiple/swiple.git) in your terminal with the following command:
+
+```bash
+git clone https://github.com/Swiple/swiple.git
+# or
+git clone git@github.com:Swiple/swiple.git
+```
+Once the command completes successfully, you should see a new `swiple` folder in your current directory, navigate to it.
+
+```bash
+cd swiple
+```
+
+### 3. Install `make`
 
 `make` allows us to bundle multiple commands into one making development easier.
 
@@ -28,7 +48,7 @@ brew install make
 
 
 
-### 3. Setup Python Virtual Environment
+### 4. Setup Python Virtual Environment
 
 :::note Note
 Swiple has only been tested using **Python 3.9**. If you do not have Python virtual environments setup, please follow [Setup with Anaconda](#setup-with-anaconda)
@@ -79,14 +99,14 @@ pip install -r ./backend/requirements.txt
 ```
 
 
-### 4. Setup Swiple UI
+### 5. Setup Swiple UI
 ```bash
 # Install Dependecies
 npm install --prefix ./frontend/
 ```
 
 
-### 5. Run Docker Containers
+### 6. Run Docker Containers
 
 Run docker containers. Changes made to code will trigger a reload.
 
@@ -98,12 +118,8 @@ Running `make` does the following for you:
 1. Builds the Docker Images for `swiple-api` and `swiple-ui`.
 2. Runs `docker-compose up`, starting all services needed to run Swiple.
 
-:::note Note
-Changes to `requirements.txt` and `node_modules will require stopping containers and re-running step 5.
-:::
 
-
-### 4. Sign in to Swiple at [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
+### 7. Sign in to Swiple at [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
 Sign in with the following credentials:
 - **Username**: admin@email.com
 - **Password**: admin

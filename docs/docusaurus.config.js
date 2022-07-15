@@ -35,6 +35,9 @@ const config = {
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
+        gtag: {
+          trackingID: 'G-8PLQFLJQV6',
+        }
       }),
     ],
   ],
@@ -57,7 +60,7 @@ const config = {
           },
           // {to: '/blog', label: 'Blog', position: 'left'},
           {
-            href: 'https://join.slack.com/t/swiple/shared_invite/zt-19pzbjekw-Qgy~rjWVorrdqhxOgazyhw',
+            href: 'https://join.slack.com/t/swiple/shared_invite/zt-1cssnt7k0-51zMQENDhFiDMW2k1jA75g',
             label: 'Slack',
             position: 'right',
           },
@@ -90,7 +93,7 @@ const config = {
               },
               {
                 label: 'Slack',
-                href: 'https://join.slack.com/t/swiple/shared_invite/zt-19pzbjekw-Qgy~rjWVorrdqhxOgazyhw',
+                href: 'https://join.slack.com/t/swiple/shared_invite/zt-1cssnt7k0-51zMQENDhFiDMW2k1jA75g',
               },
               // {
               //   label: 'Twitter',
