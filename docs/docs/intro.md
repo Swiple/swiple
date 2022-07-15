@@ -20,6 +20,7 @@ Swiple is the data observability web application that allows teams to quickly un
 * Snowflake
 * Athena
 * MySQL
+* Trino
 
 
 ## Authentication
@@ -32,8 +33,8 @@ Swiple is the data observability web application that allows teams to quickly un
 
 
 ## Get Started!
-* ### [Running Locally With Docker Compose](./installation/run-locally-with-docker.md)
-* ### [Installing From Scratch](./installation/install-from-scratch.md)
+* ### [Quickstart With Docker Compose](./installation/quick-start)
+* ### [Start Developing](./installation/start-developing)
 
 
 

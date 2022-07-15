@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Run Locally With Docker Compose
+# Quickstart with Docker Compose
 
 The fastest way to try Swiple locally is using Docker and Docker Compose.
 
@@ -35,14 +35,22 @@ cd swiple
 When working on the `main` branch, run the following commands:
 
 ```bash
-make
+docker compose -f docker-compose-non-dev.yaml up
 ```
+This will start the following services:
+1. Swiple API
+2. Swiple UI
+3. Swiple Scheduler
+4. Swiple Setup
+5. OpenSearch Cluster
+6. PostgreSQL (Sample Data)
+7. Redis
+
 You should start to see a wall of logging output from the containers being launched on your machine. Once the output slows, you can navigate to [https://127.0.0.1:3000/login](https://127.0.0.1:3000/login) to see the app running.
 
-Running `make` does the following for you:
-1. Builds the Docker Images for `swiple-api` and `swiple-ui`.
-2. Runs `docker-compose up`, starting all services needed to run Swiple.
-
+:::note Note
+This will bring up Swiple in a non-dev mode, changes to the codebase will not be reflected. If you would like to run Swiple in dev mode to test local changes, follow the steps in [Start Developing](./start-developing).
+:::
 
 ### 4. Sign in to Swiple at [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
 Sign in with the following credentials:
