@@ -61,7 +61,7 @@ services:
       opensearch-node1:
         condition: service_healthy
     volumes:
-      - ./backend/app/sample_data/:/sample_data/
+      - ./backend/app/sample_data/:/code/app/sample_data/
       - ./backend/app/config/:/code/app/config/
   postgres:
     container_name: postgresql
