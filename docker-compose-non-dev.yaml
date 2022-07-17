@@ -43,10 +43,10 @@ services:
     container_name: setup
     image: swiple/swiple-api:main
     command: bash -c "
-        python3 /sample_data/load_data.py
-        && export PYTHONPATH=$PYTHONPATH:/code
+        export PYTHONPATH=$PYTHONPATH:/code
         && python3 /code/app/scripts/setup_opensearch.py
         && python3 /code/app/scripts/create_admin_user.py
+        && python3 /code/app/sample_data/load_data.py
       "
     depends_on:
       postgres:
