@@ -8,15 +8,15 @@ sidebar_position: 2
 ### 1. Install Docker Engine and Docker Compose
 **Mac OSX**
 
-[Install Docker for Mac](https://docs.docker.com/desktop/mac/install/), and follow steps.
+[Install Docker for Mac](https://docs.docker.com/desktop/mac/install/).
 
 
 **Window**
 
-[Install Docker for Windows](https://docs.docker.com/desktop/windows/install/), and follow steps.
+[Install Docker for Windows](https://docs.docker.com/desktop/windows/install/).
 
-### 2. Clone Swiple's Github Repository 
-Clone [Swiple's repo](https://github.com/Swiple/swiple.git) in your terminal with the following command:
+### 2. Clone Swiple GitHub Repository 
+Clone [Swiple GitHub Repository](https://github.com/Swiple/swiple.git) in your terminal with the following command:
 
 ```bash
 git clone https://github.com/Swiple/swiple.git

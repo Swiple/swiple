@@ -9,15 +9,15 @@ The fastest way to try Swiple locally is using Docker and Docker Compose.
 ### 1. Install Docker Engine and Docker Compose
 **Mac OSX**
 
-[Install Docker for Mac](https://docs.docker.com/desktop/mac/install/), and follow steps.
+[Install Docker for Mac](https://docs.docker.com/desktop/mac/install/).
 
 
 **Window**
 
-[Install Docker for Windows](https://docs.docker.com/desktop/windows/install/), and follow steps.
+[Install Docker for Windows](https://docs.docker.com/desktop/windows/install/).
 
-### 2. Clone Swiple's Github Repository 
-Clone [Swiple's repo](https://github.com/Swiple/swiple.git) in your terminal with the following command:
+### 2. Clone Swiple GitHub Repository 
+Clone [Swiple GitHub Repository](https://github.com/Swiple/swiple.git) in your terminal with the following command:
 
 ```bash
 git clone https://github.com/Swiple/swiple.git
@@ -35,6 +35,7 @@ cd swiple
 When working on the `main` branch, run the following commands:
 
 ```bash
+docker compose -f docker-compose-non-dev.yaml pull
 docker compose -f docker-compose-non-dev.yaml up
 ```
 This will start the following services:
@@ -46,7 +47,7 @@ This will start the following services:
 6. PostgreSQL (Sample Data)
 7. Redis
 
-You should start to see a wall of logging output from the containers being launched on your machine. Once the output slows, you can navigate to [https://127.0.0.1:3000/login](https://127.0.0.1:3000/login) to see the app running.
+You should start to see a wall of logging output from the containers being launched on your machine. Once the output slows, you can navigate to [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login) to see the app running.
 
 :::note Note
 This will bring up Swiple in a non-dev mode, changes to the codebase will not be reflected. If you would like to run Swiple in dev mode to test local changes, follow the steps in [Start Developing](./start-developing).
