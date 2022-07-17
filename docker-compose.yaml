@@ -50,10 +50,10 @@ services:
     container_name: setup
     image: swiple-api:latest
     command: bash -c "
-        python3 /sample_data/load_data.py
-        && export PYTHONPATH=$PYTHONPATH:/code
+        export PYTHONPATH=$PYTHONPATH:/code
         && python3 /code/app/scripts/setup_opensearch.py
         && python3 /code/app/scripts/create_admin_user.py
+        && python3 /code/app/sample_data/load_data.py
       "
     depends_on:
       postgres:
@@ -61,7 +61,7 @@ services:
       opensearch-node1:
         condition: service_healthy
     volumes:
-      - ./backend/sample_data/:/sample_data/
+      - ./backend/app/sample_data/:/code/app/sample_data/
       - ./backend/app/config/:/code/app/config/
   postgres:
     container_name: postgresql
