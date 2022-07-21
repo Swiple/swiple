@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Button, Form, Input, message, Modal, Row, Select, Space, Typography,
+  Button, Form, Input, message, Row, Select, Space, Typography,
 } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
+import Modal from '../../../components/Modal';
 import { getEngineIcon } from '../../../Utils';
 import { getDataSourcesJsonSchema, postDataSource, putDataSource } from '../../../Api';
 import AsyncButton from '../../../components/AsyncButton';
@@ -248,12 +249,6 @@ function DatasourceModal({
         return onCancel();
       }}
       width={600}
-      bodyStyle={{
-        maxHeight: '900px',
-        overflowWrap: 'break-word',
-        overflow: 'auto',
-      }}
-      wrapClassName="wrapper-class"
       footer={[
         <Button
           key="cancel"

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Button, Checkbox, Col, Form, Input, InputNumber, message, Modal, Row, Select, Space, Typography,
+  Button, Checkbox, Col, Form, Input, InputNumber, message, Row, Select, Space, Typography,
 } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone, InfoCircleOutlined } from '@ant-design/icons';
 import AsyncButton from '../../../components/AsyncButton';
+import Modal from '../../../components/Modal';
 import {
   getExpectationsJsonSchema,
   postExpectation, putExpectation,
@@ -272,12 +273,6 @@ function ExpectationModal({
         return onCancel();
       }}
       width={800}
-      bodyStyle={{
-        maxHeight: '900px',
-        overflowWrap: 'break-word',
-        overflow: 'auto',
-      }}
-      wrapClassName="wrapper-class"
       footer={[
         <Button
           key="cancel"
