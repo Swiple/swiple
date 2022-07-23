@@ -47,7 +47,10 @@ class Runner:
         expectations = profiler.build_suite().to_json_dict()['expectations']
 
         for expectation in expectations:
+            expectation["kwargs"].update({"result_format": "SUMMARY", "include_config": True, "catch_exceptions": True})
             expectation["kwargs"] = json.dumps(expectation["kwargs"])
+            expectation["enabled"] = False
+            expectation["suggested"] = True
             expectation["datasource_id"] = self.datasource_id
             expectation["dataset_id"] = self.dataset_id
             expectation["create_date"] = utils.current_time()
@@ -102,6 +105,9 @@ class Runner:
             if expectation.get("meta"):
                 expectation_meta = expectation.get("meta")
 
+            if expectation["kwargs"].get("objective"):
+                expectation["kwargs"]["mostly"] = expectation["kwargs"].pop("objective")
+
             expectation_configuration = ExpectationConfiguration(
                 expectation_type=expectation["expectation_type"],
                 kwargs=expectation["kwargs"],
@@ -118,6 +124,9 @@ class Runner:
         results = validator.validate().to_json_dict()["results"]
 
         for result in results:
+            if result["expectation_config"]["kwargs"].get("mostly"):
+                result["expectation_config"]["kwargs"]["objective"] = result["expectation_config"]["kwargs"].pop("mostly")
+
             if isinstance(result["result"].get("observed_value"), list):
                 result["result"]["observed_value_list"] = result["result"].pop("observed_value")
 

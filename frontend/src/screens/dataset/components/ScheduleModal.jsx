@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Collapse, Form, DatePicker, Input, Radio,
-  InputNumber, message, Modal, Row, Col, Space, Typography, Table,
+  InputNumber, message, Row, Col, Space, Typography, Table,
 } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
+import Modal from '../../../components/Modal';
 import {
   postSchedule, putSchedule, postGenerateNextRunTimes,
 } from '../../../Api';
@@ -405,12 +406,6 @@ function ScheduleModal({
         return onCancel();
       }}
       width={1000}
-      bodyStyle={{
-        maxHeight: '900px',
-        overflowWrap: 'break-word',
-        overflow: 'auto',
-      }}
-      wrapClassName="wrapper-class"
       footer={[
         <Button
           key="cancel"

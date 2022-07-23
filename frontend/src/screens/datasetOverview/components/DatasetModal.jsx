@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Button, Form, Input, message, Modal, Radio, Row, Select, Space, Typography,
+  Button, Form, Input, message, Radio, Row, Select, Space, Typography,
 } from 'antd';
 import Editor from '@uiw/react-textarea-code-editor';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
+import Modal from '../../../components/Modal';
 import AsyncButton from '../../../components/AsyncButton';
 import { getEngineIcon } from '../../../Utils';
 import {
@@ -326,13 +327,6 @@ function DatasetModal({
         return onCancel();
       }}
       width={1000}
-      wrapClassName="wrapper-class"
-      bodyStyle={{
-        minWidth: '400px',
-        maxHeight: '1000px',
-        overflowWrap: 'break-word',
-        overflow: 'auto',
-      }}
       footer={[
         <Button
           key="cancel"

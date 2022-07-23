@@ -440,10 +440,6 @@ def create_suggestions(dataset_id):
         }
     )
 
-    for result in results:
-        result["enabled"] = False
-        result["suggested"] = True
-
     _insert_results(results, settings.EXPECTATION_INDEX)
 
     return JSONResponse(
