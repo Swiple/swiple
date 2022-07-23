@@ -5,7 +5,7 @@ APP_SCHEDULER = "SCHEDULER"
 # Expectation Descriptions
 COLUMN = "The column to be analyzed."
 VALUE_SET = "A comma separated set of values. Remove all unnecessary whitespace."
-MOSTLY = "A float between 0 and 1. When an expectations result is higher that this value, it will be marked as a successful run."
+OBJECTIVE = "A float between 0 and 1. When an expectations result is higher that this value, it will be marked as a successful run."
 PARSE_STRINGS_AS_DATETIMES = "If True, values provided in Value Set will be parsed as datetimes before making comparisons."
 COLUMN_INDEX = "If not None, checks the order of the columns. The expectation will fail if the column is not in location column_index (zero-indexed)."
 COLUMN_LIST = "The column names, in the correct order."

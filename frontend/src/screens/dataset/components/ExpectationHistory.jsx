@@ -26,8 +26,8 @@ function ExpectationHistory({ validations, resultType }) {
   };
 
   const slaValue = (row) => {
-    if (!row.expectation_config.kwargs.mostly) return null;
-    return row.expectation_config.kwargs.mostly * 100;
+    if (!row.expectation_config.kwargs.objective) return null;
+    return row.expectation_config.kwargs.objective * 100;
   };
 
   const formatResults = () => {

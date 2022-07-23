@@ -210,7 +210,7 @@ class ExpectColumnValuesToBeUnique(BaseModel):
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -236,7 +236,7 @@ class ExpectCompoundColumnsToBeUnique(BaseModel):
     """
     class Kwargs(BaseModel):
         column_list: List[str] = Field(description=c.COLUMN_LIST, form_type="multi_column_select")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -263,7 +263,7 @@ class ExpectSelectColumnValuesToBeUniqueWithinRecord(BaseModel):
     """
     class Kwargs(BaseModel):
         column_list: List[str] = Field(description=c.COLUMN_LIST, form_type="multi_column_select")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -290,7 +290,7 @@ class ExpectColumnValuesToNotBeNull(BaseModel):
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -316,7 +316,7 @@ class ExpectColumnValuesToBeNull(BaseModel):
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -343,7 +343,7 @@ class ExpectColumnValuesToBeInSet(BaseModel):
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
         value_set: List[Any] = Field(description=c.VALUE_SET)
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         parse_strings_as_datetimes: Optional[bool] = Field(description=c.PARSE_STRINGS_AS_DATETIMES)
         result_format: str = "SUMMARY"
         include_config: bool = True
@@ -371,7 +371,7 @@ class ExpectColumnValuesToNotBeInSet(BaseModel):
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
         value_set: List[Any] = Field(description=c.VALUE_SET)
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -407,7 +407,7 @@ class ExpectColumnValuesToBeBetween(BaseModel):
         # allow_cross_type_comparisons: bool = Field(description="If True, allow comparisons between types (e.g. integer and string). Otherwise, attempting such comparisons will raise an exception.", default=False)
         # parse_strings_as_datetimes: Optional[bool] = Field(description="If True, parse min_value, max_value, and all non-null column values to datetimes before making comparisons.")
         # output_strftime_format: Optional[bool] = Field(description="A valid strfime format for datetime output. Only used if parse_strings_as_datetimes=True.")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -437,7 +437,7 @@ class ExpectColumnValueLengthsToBeBetween(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
         min_value: int = Field(description="The minimum value for a column entry length. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable rows has no minimum.", default=False)
         max_value: int = Field(description="The maximum value for a column entry length. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable rows has no maximum.", default=False)
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -465,7 +465,7 @@ class ExpectColumnValueLengthsToEqual(BaseModel):
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
         value: int = Field(description="The expected value for a column entry length.")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -492,7 +492,7 @@ class ExpectColumnValuesToMatchRegex(BaseModel):
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
         regex: str = Field(description="The regular expression the column entries should match. Valid matches can be found anywhere in the string, for example “[at]+” will identify the following strings as expected: “cat”, “hat”, “aa”, “a”, and “t”, and the following strings as unexpected: “fish”, “dog”.")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -519,7 +519,7 @@ class ExpectColumnValuesToNotMatchRegex(BaseModel):
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
         regex: str = Field(description="The regular expression the column entries should NOT match. For example, “[at]+” would identify the following strings as expected: “fish”, “dog”, and the following as unexpected: “cat”, “hat”")
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -551,7 +551,7 @@ class ExpectColumnValuesToMatchRegexList(BaseModel):
             description="“any” or “all”. Use “any” if the value should match at least one regular expression in the list. Use “all” if it should match each regular expression in the list.",
             enum=["any", "all"]
         )
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -583,7 +583,7 @@ class ExpectColumnValuesToNotMatchRegexList(BaseModel):
             description="“any” or “all”. Use “any” if the value should match at least one regular expression in the list. Use “all” if it should match each regular expression in the list.",
             enum=["any", "all"]
         )
-        mostly: Optional[float] = Field(description=c.MOSTLY, ge=0, le=1)
+        objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True

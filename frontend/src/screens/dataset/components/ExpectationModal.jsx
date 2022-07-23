@@ -104,7 +104,7 @@ function ExpectationModal({
           notFoundContent={null}
         />
       );
-    } else if (item.type === 'number' && prop === 'mostly') {
+    } else if (item.type === 'number' && prop === 'objective') {
       itemType = <InputNumber min={0} max={1} placeholder={0.95} />;
     } else if (item.type === 'integer' || item.type === 'number') {
       itemType = <InputNumber />;
