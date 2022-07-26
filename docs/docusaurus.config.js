@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Build trust in every dataset',
-  tagline: 'Swiple is the data observability web application that allows teams to quickly understand the state of their data, validate & improve it.',
+  tagline: 'Swiple enables you to easily observe, understand, validate and improve the quality of your data',
   url: 'https://swiple.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
