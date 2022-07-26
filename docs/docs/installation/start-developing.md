@@ -56,7 +56,7 @@ Swiple has only been tested using **Python 3.9**. If you do not have Python virt
 
 ### Setup with Anaconda ###
 
-I use Anaconda to manage my Python versions. To use Anaconda too, follow [Anaconda's installation guide](https://docs.anaconda.com/anaconda/install/).
+I recommend using Anaconda to manage Python versions and packages. To install Anaconda, see Anaconda's installation guide [Anaconda's installation guide](https://docs.anaconda.com/anaconda/install/).
 
 Once Anaconda is installed, run the following:
 

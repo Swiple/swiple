@@ -70,10 +70,60 @@ Included in the running services will be a PostgreSQL database with sample data.
 
 **5.2.** Provide a name and description for the data source, then select PostgreSQL from the Engine dropdown.
 
-Lastly, fill in the following credentials:
+Fill in the following credentials:
 - **username:** postgres
 - **password:** postgres
+- **database:** postgres
 - **host:** postgres
 - **port:** 5432
 
-You are now ready to add a dataset! 👏 😎
+Lastly, click **"Create"** and you should see your new data source in the table of data sources! 👏 😎
+
+### 6. Create a Dataset
+
+**6.1.** Click **"Datasets"** in the left sidebar.
+
+**6.2.** Click `+ Dataset` icon in the top right of the page.
+
+**6.3.** From the **Data Source** dropdown, select the data source you created in step 5, **"postgres"**.
+
+**6.4.** From the **Schema** dropdown, select the schema **"sample_data"**.
+
+**6.5.**
+#### Option 1: Table
+1. From the **"Table"** dropdown select **"orders"** then click **"Create"**.
+
+#### Option 2: Query
+1. For **"Dataset Name"** input **"v_orders"**
+2. For **"Query"** input:
+```sql
+select * from sample_data.orders
+```
+3. Click **"Create"**.
+
+You should see your new dataset in the table of datasets! 👏 😎
+
+### 7. Generate and Add Expectations
+
+**7.1.** Click on **"orders"** or **"v_orders"** to navigate to the dataset view.
+
+**7.2.** Click on the **"Suggestions"** tab, then click on **"Generate Suggestions"**.
+
+The dataset you have selected will be analyzed and expectations will be suggested.
+
+**7.3.** Once a list of suggestions appear, enable the suggestions you consider valuable by clicking **"Enable"**. 
+
+** The following are a good starting point:**
+* expect_table_row_count_to_be_between
+* expect_table_columns_to_match_ordered_list
+* expect_column_values_to_not_be_null
+* expect_column_values_to_be_in_set
+
+Navigate to the **"Expectations"** tab to see the enabled suggestions.
+
+### 8. Validate Data
+**8.1.** While on the **"Expectations"** tab, click **"Run Expectations"** to the right of the page.
+
+At this point, you should see the list of expectations you enabled, whether they passed or failed validation, the history of all validation runs, and the documentation for each expectation! 👏 😎
+
+
