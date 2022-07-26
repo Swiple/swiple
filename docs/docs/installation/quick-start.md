@@ -109,9 +109,9 @@ You should see your new dataset in the table of datasets! 👏 😎
 
 **7.2.** Click on the **"Suggestions"** tab, then click on **"Generate Suggestions"**.
 
-The dataset you have selected will be analyzed and suggested expectations will be generated.
+The dataset you have selected will be analyzed and expectations will be suggested.
 
-**7.3.** Once a list of suggestions appears, enable the suggestions you deem valuable by clicking **"Enable"**. 
+**7.3.** Once a list of suggestions appear, enable the suggestions you consider valuable by clicking **"Enable"**. 
 
 ** The following are a good starting point:**
 * expect_table_row_count_to_be_between
