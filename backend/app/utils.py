@@ -17,7 +17,7 @@ def current_time():
 
 
 def string_to_utc_time(date_string):
-    return datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f%z")
+    return datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f%z")
 
 
 def days_between_dates(start_date: datetime, end_date: datetime):

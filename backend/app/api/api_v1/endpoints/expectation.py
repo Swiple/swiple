@@ -41,34 +41,53 @@ def list_supported_expectations():
     return JSONResponse(status_code=status.HTTP_200_OK, content=content)
 
 
-@router.put("/{expectation_id}/enable")
+@router.put("/{expectation_id}/enable", response_model=Expectation)
 def enable_expectation(
         expectation_id: str,
 ):
-    client.update(
-        index=settings.EXPECTATION_INDEX,
-        id=expectation_id,
-        body={"doc": {
-            "enabled": True,
-        }},
-        refresh="wait_for",
-    )
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    try:
+        response = client.update(
+            index=settings.EXPECTATION_INDEX,
+            id=expectation_id,
+            body={"doc": {
+                "enabled": True,
+            }},
+            refresh="wait_for",
+            _source=True,
+        )
+        source = response["get"]["_source"]
+        source["kwargs"] = json.loads(source["kwargs"])
+    except NotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"expectation '{expectation_id}' does not exist"
+        )
+    return JSONResponse(status_code=status.HTTP_200_OK, content=source)
 
 
-@router.put("/{expectation_id}/disable")
-def enable_expectation(
+@router.put("/{expectation_id}/disable", response_model=Expectation)
+def disable_expectation(
         expectation_id: str,
 ):
-    client.update(
-        index=settings.EXPECTATION_INDEX,
-        id=expectation_id,
-        body={"doc": {
-            "enabled": False,
-        }},
-        refresh="wait_for",
-    )
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    try:
+        response = client.update(
+            index=settings.EXPECTATION_INDEX,
+            id=expectation_id,
+            body={"doc": {
+                "enabled": False,
+            }},
+            refresh="wait_for",
+            _source=True,
+        )
+        source = response["get"]["_source"]
+        source["kwargs"] = json.loads(source["kwargs"])
+    except NotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"expectation '{expectation_id}' does not exist"
+        )
+    return JSONResponse(status_code=status.HTTP_200_OK, content=source)
+
 
 @router.get("")
 def list_expectations(
