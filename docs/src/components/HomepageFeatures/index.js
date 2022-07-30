@@ -42,6 +42,15 @@ const FeatureRow2 = [
       </>
     ),
   },
+  {
+    title: 'OAuth',
+    Svg: require('@site/static/img/oauth.svg').default,
+    description: (
+      <>
+        Out-the-box OAuth for Okta, GitHub, Google, Microsoft
+      </>
+    ),
+  },
 ];
 
 function Feature({Svg, title, description}) {
