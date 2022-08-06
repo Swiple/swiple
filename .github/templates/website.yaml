@@ -32,15 +32,29 @@ Resources:
       Type: A
       Comment: Routes traffic to Swiple website via CloudFront
 
+  VideoContentS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${BucketName}.video"
+      AccessControl: Private
+
+  VideoContentS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref VideoContentS3Bucket
+      PolicyDocument:
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${VideoContentS3Bucket}/*"
+            Principal:
+              CanonicalUser: !GetAtt VideoCloudFrontOriginAccessIdentity.S3CanonicalUserId
+
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref BucketName
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: 404.html
-      VersioningConfiguration:
-        Status: Suspended
+      AccessControl: Private
 
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -50,8 +64,9 @@ Resources:
         Statement:
           - Action: s3:GetObject
             Effect: Allow
-            Principal: "*"
             Resource: !Sub "arn:aws:s3:::${S3Bucket}/*"
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
 
   WWWS3Bucket:
     Type: AWS::S3::Bucket
@@ -91,6 +106,18 @@ Resources:
             ExpirationInDays: 7
             Status: Enabled
 
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'CloudFront OAI for ${DomainName}'
+
+  VideoCloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'CloudFront OAI for ${DomainName}'
+
   Distribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -103,6 +130,15 @@ Resources:
             ResponseCode: 200
             ResponsePagePath: /404.html
         DefaultRootObject: index.html
+        CacheBehaviors:
+          - ForwardedValues:
+              Cookies:
+                Forward: none
+              Headers: [ ]
+              QueryString: "false"
+            TargetOriginId: !Sub "S3-Video-${DomainName}"
+            ViewerProtocolPolicy: redirect-to-https
+            PathPattern: video/*
         DefaultCacheBehavior:
           ForwardedValues:
             Cookies:
@@ -118,14 +154,16 @@ Resources:
           Prefix: 'cloudfront-logs/'
         PriceClass: PriceClass_100 # US, Canada, and Europe
         Origins:
-          - DomainName: !Select
-            - 1
-            - !Split [ "//", !GetAtt S3Bucket.WebsiteURL ]
+          - DomainName: !GetAtt S3Bucket.RegionalDomainName
             Id: !Sub "S3-${DomainName}"
-            CustomOriginConfig:
-              OriginProtocolPolicy: http-only
+            S3OriginConfig:
+              OriginAccessIdentity: !Join [ '', [ 'origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity ] ]
+          - DomainName: !GetAtt VideoContentS3Bucket.RegionalDomainName
+            Id: !Sub "S3-Video-${DomainName}"
+            S3OriginConfig:
+              OriginAccessIdentity: !Join [ '', [ 'origin-access-identity/cloudfront/', !Ref   VideoCloudFrontOriginAccessIdentity ] ]
         ViewerCertificate:
-          AcmCertificateArn: !ImportValue SwipleCertificateArn
+          AcmCertificateArn: !ImportValue SwipleDomainCertificateArn
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2021
 
@@ -163,6 +201,6 @@ Resources:
             CustomOriginConfig:
               OriginProtocolPolicy: http-only
         ViewerCertificate:
-          AcmCertificateArn: !ImportValue SwipleCertificateArn
+          AcmCertificateArn: !ImportValue SwipleDomainCertificateArn
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2021

@@ -11,8 +11,10 @@ Resources:
       ValidationMethod: DNS
       SubjectAlternativeNames:
         - !Sub "www.${DomainName}"
+        - !Sub "test.${DomainName}"
+        - !Sub "www.test.${DomainName}"
 Outputs:
   CertificateARN:
     Value: !Ref Certificate
     Export:
-      Name: SwipleCertificateArn
+      Name: SwipleDomainCertificateArn
