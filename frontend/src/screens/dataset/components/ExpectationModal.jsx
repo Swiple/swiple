@@ -310,6 +310,9 @@ function ExpectationModal({
             onChange={(value) => {
               setSelectedExpectation(value);
             }}
+            filterOption={(input, option) => (
+              option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            )}
           >
             {expectationOptions}
           </Select>

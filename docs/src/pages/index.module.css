@@ -6,6 +6,7 @@ body, html {
   width: unset;
   height: unset;
 }
+
 .heroBanner {
   padding: 4rem 0;
   text-align: center;
@@ -13,14 +14,27 @@ body, html {
   overflow: hidden;
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+.demoVideo {
+  width: 80%;
+  border-radius: 7px;
 }
 
-.buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@media screen and (max-width: 996px) {
+  .buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .heroBanner {
+    padding: 4rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .demoVideo {
+    width: 100%;
+    border-radius: 7px;
+  }
 }

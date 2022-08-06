@@ -43,7 +43,7 @@ import {
 import Section from '../../components/Section';
 import CodeEditor from './components/CodeEditor';
 import ExpectationHistory from './components/ExpectationHistory';
-import SLAHitRate from './components/SLAHitRate';
+import ObjectiveHitRate from './components/ObjectiveHitRate';
 import DataSample from './components/DataSample';
 import AsyncButton from '../../components/AsyncButton';
 import ExpectationModal, { CREATE_TYPE, UPDATE_TYPE } from './components/ExpectationModal';
@@ -829,7 +829,7 @@ const Dataset = withRouter(() => {
             <Content>
               {datasetMetaData()}
               <Divider style={{ margin: '12px 0' }} />
-              <SLAHitRate stats={validationStats} />
+              <ObjectiveHitRate stats={validationStats} />
             </Content>
           </PageHeader>
         </Section>

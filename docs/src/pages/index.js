@@ -19,10 +19,20 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/intro">
+            to="/docs/installation/quick-start">
             Get Started
           </Link>
         </div>
+        <div className={clsx("margin-bottom--xl")} />
+        <video
+            poster={require('@site/static/img/swiple-demo-video-poster.png').default}
+            src="https://swiple.io/video/swiple-demo-video.mp4"
+            playsInline
+            muted={false}
+            autoPlay={false}
+            controls
+            className={clsx(styles.demoVideo)}
+        />
       </div>
     </header>
   );
