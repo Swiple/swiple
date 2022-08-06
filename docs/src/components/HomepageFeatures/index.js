@@ -43,11 +43,11 @@ const FeatureRow2 = [
     ),
   },
   {
-    title: 'OAuth',
+    title: 'Authentication',
     Svg: require('@site/static/img/oauth.svg').default,
     description: (
       <>
-        Out-the-box OAuth for Okta, GitHub, Google, Microsoft
+        Out-the-box OAuth support for Okta, GitHub, Google, Microsoft and Username + Password.
       </>
     ),
   },

@@ -45,13 +45,23 @@ brew install make
 
 **Windows**
 
+If you don't have Chocolatey, [follow the steps here](https://chocolatey.org/install#individual).
 
+Install `make` on Windows with Chocolatey:
+```bash
+choco install make
+```
 
 
 ### 4. Setup Python Virtual Environment
 
 :::note Note
 Swiple has only been tested using **Python 3.9**. If you do not have Python virtual environments setup, please follow [Setup with Anaconda](#setup-with-anaconda)
+
+If you are running on **Apple Silicon** run:
+```bash
+brew install postgresql
+```
 :::
 
 ### Setup with Anaconda ###
@@ -73,8 +83,8 @@ pip install -r ./backend/requirements.txt
 
 ### Setup with `virtualenv` ###
 
-
 **Mac OSX**
+
 ```bash
 # Create Virtual Environment
 python3 -m venv ./backend/venv
@@ -100,9 +110,19 @@ pip install -r ./backend/requirements.txt
 
 
 ### 5. Setup Swiple UI
+
+If you don't have Node, [follow the steps here](https://nodejs.org/en/download/) 
+
+**Mac OSX**
 ```bash
-# Install Dependecies
 npm install --prefix ./frontend/
+```
+
+**Windows**
+```bash
+cd frontend
+npm install
+cd ..
 ```
 
 
