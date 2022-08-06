@@ -91,8 +91,8 @@ class DemoVideoSetup:
     ):
         datasets = [
             {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.orders", "database": "postgres"},
-            # {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.customer", "database": "postgres"},
-            # {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.part", "database": "postgres"},
+            {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.customer", "database": "postgres"},
+            {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.part", "database": "postgres"},
         ]
 
         dataset_responses = []
