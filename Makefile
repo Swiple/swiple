@@ -2,12 +2,12 @@
 
 
 up: build_dev_images
-	docker-compose up
+	docker compose up
 
 bundled_dev: build_dev_images opensearch opensearch_dashboards postgres setup
 
 down:
-	docker-compose down
+	docker compose down
 
 build_dev_images:
 	docker build -t swiple-api ./backend/
@@ -23,16 +23,16 @@ swiple_api_dev:
 	python3 ./backend/main.py
 
 opensearch:
-	docker-compose up -d opensearch-node1
+	docker compose up -d opensearch-node1
 
 postgres:
-	docker-compose up -d postgres
+	docker compose up -d postgres
 
 opensearch_dashboards:
-	docker-compose up -d opensearch-dashboards
+	docker compose up -d opensearch-dashboards
 
 setup:
-	docker-compose up -d setup
+	docker compose up -d setup
 
 install_pip_dep:
 	pip install -r ./backend/requirements.txt
