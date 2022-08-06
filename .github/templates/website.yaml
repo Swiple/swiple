@@ -126,7 +126,7 @@ Resources:
           - !Ref DomainName
         Comment: Routes traffic to Swiple website in S3
         CustomErrorResponses:
-          - ErrorCode: 404
+          - ErrorCode: 403
             ResponseCode: 200
             ResponsePagePath: /404.html
         DefaultRootObject: index.html
@@ -175,7 +175,7 @@ Resources:
           - !Sub "www.${DomainName}"
         Comment: Routes traffic to Swiple website in S3
         CustomErrorResponses:
-          - ErrorCode: 404
+          - ErrorCode: 403
             ResponseCode: 200
             ResponsePagePath: /404.html
         DefaultCacheBehavior:
