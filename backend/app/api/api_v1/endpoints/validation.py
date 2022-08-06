@@ -93,23 +93,23 @@ def validations(dataset_id: str):
 
     validations_dataset = []
     for daily_bucket in aggs["validation_counts"]["buckets"]:
-        sla_pass_rate = calculate_sla_pass_rate(
+        objective_pass_rate = calculate_objective_pass_rate(
             buckets=daily_bucket["1_day"]["buckets"],
             doc_count=daily_bucket["doc_count"],
         )
-        validations_dataset.append([daily_bucket["key_as_string"], sla_pass_rate])
+        validations_dataset.append([daily_bucket["key_as_string"], objective_pass_rate])
 
-    one_day_metric = calculate_sla_pass_rate(
+    one_day_metric = calculate_objective_pass_rate(
         buckets=aggs["1_day"]["success_counts"]["buckets"],
         doc_count=aggs["1_day"]["doc_count"]
     )
 
-    seven_day_metric = calculate_sla_pass_rate(
+    seven_day_metric = calculate_objective_pass_rate(
         buckets=aggs["7_day"]["success_counts"]["buckets"],
         doc_count=aggs["7_day"]["doc_count"]
     )
 
-    thirty_one_day_metric = calculate_sla_pass_rate(
+    thirty_one_day_metric = calculate_objective_pass_rate(
         buckets=aggs["31_day"]["success_counts"]["buckets"],
         doc_count=aggs["31_day"]["doc_count"]
     )
@@ -152,7 +152,7 @@ def validations_query_body(datasource_id: str = None, dataset_id: str = None, pe
     return query
 
 
-def calculate_sla_pass_rate(buckets: list, doc_count: int):
+def calculate_objective_pass_rate(buckets: list, doc_count: int):
     for bucket in buckets:
         if bucket["key_as_string"] == "true":
             return bucket["doc_count"] / doc_count * 100

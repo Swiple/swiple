@@ -25,7 +25,7 @@ function ExpectationHistory({ validations, resultType }) {
     };
   };
 
-  const slaValue = (row) => {
+  const objectiveValue = (row) => {
     if (!row.expectation_config.kwargs.objective) return null;
     return row.expectation_config.kwargs.objective * 100;
   };
@@ -33,7 +33,7 @@ function ExpectationHistory({ validations, resultType }) {
   const formatResults = () => {
     const values = {
       percentageValues: [],
-      slaValues: [],
+      objectiveValues: [],
     };
 
     if (!validations) {
@@ -44,22 +44,22 @@ function ExpectationHistory({ validations, resultType }) {
       values.percentageValues.push(
         percentageValue(validations[i]),
       );
-      values.slaValues.push(
-        [validations[i].run_date, slaValue(validations[i])],
+      values.objectiveValues.push(
+        [validations[i].run_date, objectiveValue(validations[i])],
       );
     }
     return values;
   };
 
-  const { percentageValues, slaValues } = formatResults();
+  const { percentageValues, objectiveValues } = formatResults();
 
   const abbreviateNumber = (value) => formatter.format(value);
 
-  const slaMarkLineData = () => {
-    if (slaValues.length > 0 && slaValues[slaValues.length - 1][1] !== null) {
+  const objectiveMarkLineData = () => {
+    if (objectiveValues.length > 0 && objectiveValues[objectiveValues.length - 1][1] !== null) {
       return [{
-        name: 'SLA',
-        yAxis: [slaValues[slaValues.length - 1][1]],
+        name: 'Obj.',
+        yAxis: [objectiveValues[objectiveValues.length - 1][1]],
         label: {
           position: 'start',
           show: true,
@@ -158,9 +158,9 @@ function ExpectationHistory({ validations, resultType }) {
         labelLine: {
           show: true,
         },
-        name: 'SLA',
+        name: 'Objective',
         silent: true,
-        data: slaValues,
+        data: objectiveValues,
         type: 'line',
         color: '#A7A7A7FF',
         symbol: 'none',
@@ -175,14 +175,14 @@ function ExpectationHistory({ validations, resultType }) {
         data: percentageValues,
         color: '#333',
         markLine: {
-          name: 'SLA',
+          name: 'Obj.',
           symbol: ['none', 'none'],
           label: {
             position: 'start',
             fontSize: 10,
             fontWeight: 'bold',
           },
-          data: slaMarkLineData(),
+          data: objectiveMarkLineData(),
           lineStyle: {
             color: 'transparent',
           },

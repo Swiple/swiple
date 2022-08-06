@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import React from 'react';
 import PropTypes from 'prop-types';
 
-function SLAHitRate({ stats }) {
+function ObjectiveHitRate({ stats }) {
   const validationsDataset = () => {
     if (stats.validations) {
       return stats.validations;
@@ -111,7 +111,7 @@ function SLAHitRate({ stats }) {
   );
 }
 
-SLAHitRate.propTypes = {
+ObjectiveHitRate.propTypes = {
   stats: PropTypes.shape({
     '1_day_avg': PropTypes.number,
     '7_day_avg': PropTypes.number,
@@ -120,4 +120,4 @@ SLAHitRate.propTypes = {
   }).isRequired,
 };
 
-export default SLAHitRate;
+export default ObjectiveHitRate;
