@@ -1,62 +1,56 @@
-name: Bug Report
+name: 🐛Bug Report
 description: File a bug report
 title: "[Bug]: "
 labels: ["bug", "triage"]
 assignees:
-  - octocat
+  - KentonParton
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
-  - type: input
-    id: contact
+        Thanks for taking the time to fill out this bug report! 👊
+  - type: checkboxes
+    id: checks
     attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
-    validations:
-      required: false
-  - type: textarea
-    id: what-happened
-    attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
-      placeholder: Tell us what you see!
-      value: "A bug happened!"
-    validations:
-      required: true
-  - type: dropdown
-    id: version
-    attributes:
-      label: Version
-      description: What version of our software are you running?
+      label: Initial Checks
+      description: |
+        Just a few checks to make sure you need to create a bug report.
+
+        _Sorry to sound so harsh 👿; but every second spent replying to issues is time not spent improving Swiple 🙇._
       options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
+        - label: I have searched GitHub for a duplicate issue and I'm sure this is something new
+          required: true
+        - label: I have searched Google & StackOverflow for a solution and couldn't find anything
+          required: true
+        - label: I have read and followed [the docs](https://swiple.io) and [the FAQ's](https://swiple.io/docs/faq) and still think this is a bug
+          required: true
+        - label: >
+            I am confident that the issue is with swiple and not my configuration in /swiple/backend/app/config/config.py
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        Please explain what you're seeing and what you would expect to see.
+
+        Please provide as much detail as possible to make understanding and solving your problem as quick as possible. 🙏
     validations:
       required: true
   - type: dropdown
     id: browsers
     attributes:
-      label: What browsers are you seeing the problem on?
+      label: If UI related, what browsers are you seeing the problem on?
       multiple: true
       options:
-        - Firefox
+        - Brave
         - Chrome
-        - Safari
+        - Firefox
         - Microsoft Edge
+        - Safari
   - type: textarea
     id: logs
     attributes:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
-      options:
-        - label: I agree to follow this project's Code of Conduct
-          required: true
