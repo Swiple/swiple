@@ -1,6 +1,6 @@
 contact_links:
   - name: I have a question 🤔
-    url: https://github.com/fastapi-users/fastapi-users/discussions
+    url: https://github.com/Swiple/swiple/discussions
     about: If you have any question about the usage of Swiple that's not clearly a bug, please open a discussion first or ask a question on the Slack channel.
   - name: Report a Security Issue
     url: https://github.com/Swiple/swiple/SECURITY.md
