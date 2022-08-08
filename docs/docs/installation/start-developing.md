@@ -138,6 +138,8 @@ Running `make` does the following for you:
 1. Builds the Docker Images for `swiple-api` and `swiple-ui`.
 2. Runs `docker-compose up`, starting all services needed to run Swiple.
 
+Changes made to code will trigger a reload of the API or UI.
+
 
 ### 7. Sign in to Swiple at [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
 Sign in with the following credentials:
@@ -147,3 +149,4 @@ Sign in with the following credentials:
 :::note Note
 `ADMIN_EMAIL` and `ADMIN_PASSWORD` can be set in `./backend/app/config/config.py` 
 :::
+
