@@ -1,0 +1,56 @@
+name: 🐛Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees:
+  - KentonParton
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! 👊
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Initial Checks
+      description: |
+        Just a few checks to make sure you need to create a bug report.
+
+        _Sorry to sound so harsh 👿; but every second spent replying to issues is time not spent improving Swiple 🙇._
+      options:
+        - label: I have searched GitHub for a duplicate issue and I'm sure this is something new
+          required: true
+        - label: I have searched Google & StackOverflow for a solution and couldn't find anything
+          required: true
+        - label: I have read and followed [the docs](https://swiple.io) and [the FAQ's](https://swiple.io/docs/faq) and still think this is a bug
+          required: true
+        - label: >
+            I am confident that the issue is with swiple and not my configuration in /swiple/backend/app/config/config.py
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        Please explain what you're seeing and what you would expect to see.
+
+        Please provide as much detail as possible to make understanding and solving your problem as quick as possible. 🙏
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: If UI related, what browsers are you seeing the problem on?
+      multiple: true
+      options:
+        - Brave
+        - Chrome
+        - Firefox
+        - Microsoft Edge
+        - Safari
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell

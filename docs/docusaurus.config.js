@@ -24,13 +24,13 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/Swiple/swiple',
+          editUrl: 'https://github.com/Swiple/swiple/blob/main/docs',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/Swiple/swiple',
+            'https://github.com/Swiple/swiple/blob/main/docs',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
