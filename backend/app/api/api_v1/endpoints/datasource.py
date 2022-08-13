@@ -1,4 +1,6 @@
 from copy import deepcopy
+
+import sqlalchemy.exc
 from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -81,6 +83,7 @@ def get_datasource(
 	doc = datasourcee.get_datasource(key=key).dict(by_alias=True)
 	return JSONResponse(status_code=status.HTTP_200_OK, content=doc)
 
+
 @router.post("")
 def create_datasource(
 		datasource: Datasource,
@@ -140,6 +143,16 @@ def _test_datasource(datasource: Datasource):
 		raise HTTPException(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
 			detail=str(ex.orig),
+		)
+	except sqlalchemy.exc.NoSuchModuleError as ex:
+		raise HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST,
+			detail=str(f"{ex}. This module needs to be installed before it can be used."),
+		)
+	except ModuleNotFoundError as ex:
+		raise HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST,
+			detail=str(f"{ex}. This module needs to be installed before it can be used."),
 		)
 
 	connection.close()

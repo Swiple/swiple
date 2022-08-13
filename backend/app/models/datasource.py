@@ -6,7 +6,6 @@ from app.config.settings import settings
 from app.db.client import client
 from app.core import security
 from opensearchpy import NotFoundError
-from snowflake.sqlalchemy import URL
 
 
 ATHENA = "Athena"
@@ -125,21 +124,25 @@ class Snowflake(Datasource):
     warehouse: Optional[str]
     role: Optional[str]
 
-    def connection_string(self):
-        url_key_values = {
-            "account": self.account,
-            "user": self.user,
-            "password": self.password,
-            "database": self.database,
-            "warehouse": self.warehouse,
-            "role": self.role,
-        }
+    def connection_string(self, schema=None):
+        connection = f"snowflake://{self.user}:{self.password}@{self.account}/{self.database}"
 
-        for key, value in dict(url_key_values).items():
-            if value is None:
-                del url_key_values[key]
+        if schema:
+            connection = f"{connection}/{schema}"
 
-        return URL(**url_key_values)
+        if self.warehouse:
+            connection = f"{connection}?warehouse={self.warehouse}"
+
+        if self.role and self.warehouse:
+            connection = f"{connection}&role={self.role}"
+
+        if self.role and not self.warehouse:
+            connection = f"{connection}?role={self.role}"
+
+        if not self.role and not self.warehouse:
+            return f"{connection}?application=swiple"
+
+        return f"{connection}&application=swiple"
 
     def expectation_meta(self):
         return {
