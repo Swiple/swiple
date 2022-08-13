@@ -199,7 +199,8 @@ def update_dataset(
         body={"doc": dataset.dict(by_alias=True)},
         refresh="wait_for",
     )
-    return ResponseDataset(key=response["_id"], **dataset.dict(by_alias=True))
+    dataset.key = key
+    return ResponseDataset(**dataset.dict(by_alias=True))
 
 
 @router.delete("/{key}")

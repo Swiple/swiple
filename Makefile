@@ -34,5 +34,3 @@ opensearch_dashboards:
 setup:
 	docker compose up -d setup
 
-install_pip_dep:
-	pip install -r ./backend/requirements.txt

@@ -56,62 +56,32 @@ choco install make
 ### 4. Setup Python Virtual Environment
 
 :::note Note
-Swiple has only been tested using **Python 3.9**. If you do not have Python virtual environments setup, please follow [Setup with Anaconda](#setup-with-anaconda)
+Swiple has only been tested using **Python 3.9**.
 
 If you are running on **Apple Silicon** run:
 ```bash
 brew install postgresql
 ```
 :::
+### Install Poetry
 
-### Setup with Anaconda ###
-
-I recommend using Anaconda to manage Python versions and packages. To install Anaconda, see Anaconda's installation guide [Anaconda's installation guide](https://docs.anaconda.com/anaconda/install/).
-
-Once Anaconda is installed, run the following:
+Follow Poetry's `Installation` instructions [here](https://python-poetry.org/docs/#installation).
 
 ```bash
-# Create Python 3.9 Environment named swiple
-conda create --name swiple python=3.9 -y
-
-# Activate Environment
-conda activate swiple
-
-# Install Python Dependencies
-pip install -r ./backend/requirements.txt
+# Create virtualenv in project
+poetry config virtualenvs.in-project true
 ```
 
-### Setup with `virtualenv` ###
-
-**Mac OSX**
-
+### Install Dependencies
 ```bash
-# Create Virtual Environment
-python3 -m venv ./backend/venv
-
-# Activate `venv` Environment
-source ./backend/venv/bin/activate
-
-# Install Dependencies
-pip install -r ./backend/requirements.txt
+cd backend
+poetry install
+cd ..
 ```
-
-**Windows**
-```bash
-# Create Virtual Environment
-python3 -m venv ./backend/venv
-
-# Activate `venv` Environment
-./backend/Scripts/activate.bat
-
-# Install Dependencies
-pip install -r ./backend/requirements.txt
-```
-
 
 ### 5. Setup Swiple UI
 
-If you don't have Node, [follow the steps here](https://nodejs.org/en/download/) 
+If you don't have Node, [follow the steps here](https://nodejs.org/en/download/).
 
 **Mac OSX**
 ```bash
