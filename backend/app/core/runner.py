@@ -4,6 +4,7 @@ from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import DataContextConfig
 from great_expectations.data_context.types.base import InMemoryStoreBackendDefaults
 from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
+from app.models.datasource import SNOWFLAKE
 from pandas import isnull
 import json
 import datetime
@@ -124,6 +125,7 @@ class Runner:
         results = validator.validate().to_json_dict()["results"]
 
         for result in results:
+            # GE "mostly" is synonymous for Swiple "objective"
             if result["expectation_config"]["kwargs"].get("mostly"):
                 result["expectation_config"]["kwargs"]["objective"] = result["expectation_config"]["kwargs"].pop("mostly")
 
@@ -137,12 +139,19 @@ class Runner:
         return results
 
     def get_data_context_config(self):
+        # Snowflake SQLAlchemy connector requires the schema in the connection string in order to create TEMP tables.
+        if self.datasource.engine == SNOWFLAKE and self.batch.runtime_parameters:
+            schema = self.batch.runtime_parameters.schema_name
+            connection_string = self.datasource.connection_string(schema)
+        else:
+            connection_string = self.datasource.connection_string()
+
         context = DataContextConfig(
             datasources={
                 self.datasource.datasource_name: {
                     "execution_engine": {
                         "class_name": "SqlAlchemyExecutionEngine",
-                        "connection_string": self.datasource.connection_string(),
+                        "connection_string": connection_string,
                     },
                     "class_name": "Datasource",
                     "module_name": "great_expectations.datasource",
