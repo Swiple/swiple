@@ -31,6 +31,7 @@ services:
     environment:
       - APP=SCHEDULER
       - AWS_CONFIG_FILE=$HOME/.aws/config
+      - AWS_SHARED_CREDENTIALS_FILE=$HOME/.aws/credentials
     depends_on:
       opensearch-node1:
         condition: service_healthy

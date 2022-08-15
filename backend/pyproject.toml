@@ -22,6 +22,7 @@ redis = "^4.3.4"
 emails = "^0.6"
 fastapi-users = "9.2.2"
 httpx-oauth = "^0"
+PyYAML = "^6.0"
 
 psycopg2-binary = { version = ">=2.7.6", optional = true }
 snowflake-connector-python = { version = "==2.7.9", optional = true }
