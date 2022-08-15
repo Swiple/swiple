@@ -5,6 +5,8 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+document.documentElement.setAttribute('data-color-mode', 'light');
+
 const consoleError = console.error.bind(console);
 
 // eslint-disable-next-line
