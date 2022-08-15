@@ -10,6 +10,10 @@ jobs:
   first-interaction:
     name: runner / first-interaction
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
     steps:
       - name: first-interaction
         uses: actions/first-interaction@v1.1.0
