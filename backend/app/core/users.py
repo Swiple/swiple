@@ -86,3 +86,5 @@ async def create_user(email: EmailStr, password: str, is_superuser: bool = False
             )
     except Exception as ex:
         print(ex)
+    finally:
+        await async_client.close()

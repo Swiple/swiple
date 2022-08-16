@@ -521,7 +521,6 @@ function DatasetModal({
                     placeholder="Enter your SQL query."
                     padding={15}
                     style={{
-                      backgroundColor: '#f5f5f5',
                       fontFamily:
                         'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
                       fontSize: 16,
