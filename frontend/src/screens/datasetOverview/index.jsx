@@ -99,7 +99,7 @@ const DatasetOverview = withRouter(() => {
           key={2}
           to={{
             pathname: '/dataset/home',
-            search: `?dataset-id=${record.key}`,
+            search: `?dataset-id=${record.key}&tab=expectations`,
             state: { dataset: record },
           }}
         >
