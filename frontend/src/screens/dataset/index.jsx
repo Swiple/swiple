@@ -55,6 +55,13 @@ const { Text } = Typography;
 const { TabPane } = Tabs;
 const { confirm } = Modal;
 
+// Tab Names
+const EXPECTATIONS = 'expectations';
+const SAMPLE = 'sample';
+const QUERY = 'query';
+const SUGGESTIONS = 'suggestions';
+const SCHEDULES = 'schedules';
+
 // A custom hook that builds on useLocation to parse
 // the query string for you.
 function useQuery() {
@@ -75,23 +82,27 @@ const Dataset = withRouter(() => {
   const [requestInProgress, setRequestInProgress] = useState(false);
   const [validationStats, setValidationStats] = useState({});
   const [refreshValidationStats, setRefreshValidationStats] = useState(true);
-  const [activeTab, setActiveTab] = useState('1');
-
   const [expectationModal, setExpectationModal] = useState({ visible: false, type: '', dataset: null });
   const [scheduleModal, setScheduleModal] = useState({ visible: false, type: '', editedSchedule: null });
 
   const history = useHistory();
-
   const query = useQuery();
   const datasetId = query.get('dataset-id');
+  const tab = query.get('tab');
 
-  if (!datasetId) {
-    history.push('/datasets/home');
-  }
+  const [activeTab, setActiveTab] = useState(tab || EXPECTATIONS);
 
   const { datasetSchema, datasetName, isVirtual } = splitDatasetResource(dataset);
-
   const ignoredProps = ['catch_exceptions', 'include_config', 'result_format'];
+
+  useEffect(() => {
+    if (!tab) {
+      history.replace({
+        pathname: '/dataset/home',
+        search: `?dataset-id=${datasetId}&tab=${activeTab}`,
+      });
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (refreshDatasource && dataset.datasource_id) {
@@ -395,7 +406,7 @@ const Dataset = withRouter(() => {
       dataIndex: 'history',
       width: 400,
       render: (text, record) => {
-        if (activeTab === '1') {
+        if (activeTab === EXPECTATIONS) {
           return (
             <ExpectationHistory
               validations={record.validations}
@@ -534,7 +545,7 @@ const Dataset = withRouter(() => {
   const tabBarActions = (
     <Space>
       {
-        activeTab === '1'
+        activeTab === EXPECTATIONS
           ? (
             <>
               <Button
@@ -561,7 +572,7 @@ const Dataset = withRouter(() => {
           : null
       }
       {
-        activeTab === '2'
+        activeTab === SAMPLE
           ? (
             <AsyncButton
               className="card-list-button-dark"
@@ -577,7 +588,7 @@ const Dataset = withRouter(() => {
           : null
       }
       {
-        activeTab === '4'
+        activeTab === SUGGESTIONS
           ? (
             <AsyncButton
               style={{ fontWeight: 'bold' }}
@@ -591,7 +602,7 @@ const Dataset = withRouter(() => {
           : null
       }
       {
-        activeTab === '5'
+        activeTab === SCHEDULES
           ? (
             <Button
               className="card-list-button-dark"
@@ -716,12 +727,17 @@ const Dataset = withRouter(() => {
             footer={(
               <Tabs
                 size="large"
-                activeKey={activeTab}
-                defaultActiveKey="1"
+                defaultActiveKey={activeTab}
                 tabBarExtraContent={tabBarActions}
-                onChange={(tabKey) => setActiveTab(tabKey)}
+                onChange={(tabKey) => {
+                  setActiveTab(tabKey);
+                  history.replace({
+                    pathname: '/dataset/home',
+                    search: `?dataset-id=${datasetId}&tab=${tabKey}`,
+                  });
+                }}
               >
-                <TabPane tab="Expectations" key="1">
+                <TabPane tab="Expectations" key={EXPECTATIONS}>
                   <Row
                     align="space-between"
                     style={{ alignItems: 'center' }}
@@ -752,7 +768,7 @@ const Dataset = withRouter(() => {
                     rowKey={() => uuidv4()}
                   />
                 </TabPane>
-                <TabPane tab="Sample" key="2">
+                <TabPane tab="Sample" key={SAMPLE}>
                   <DataSample
                     columns={dataset.sample?.columns ? dataset.sample?.columns : []}
                     rows={dataset.sample?.rows ? dataset.sample?.rows : []}
@@ -761,7 +777,7 @@ const Dataset = withRouter(() => {
                 {
                   dataset?.runtime_parameters?.query
                     ? (
-                      <TabPane tab="Query" key="3">
+                      <TabPane tab="Query" key={QUERY}>
                         <Col style={{ marginTop: 24, marginBottom: 24 }}>
                           {
                             dataset?.runtime_parameters?.query
@@ -782,7 +798,7 @@ const Dataset = withRouter(() => {
                     )
                     : null
                 }
-                <TabPane tab="Suggestions" key="4">
+                <TabPane tab="Suggestions" key={SUGGESTIONS}>
                   <Table
                     columns={suggestionsColumns}
                     dataSource={suggestionsList}
@@ -791,7 +807,7 @@ const Dataset = withRouter(() => {
                     rowKey={() => uuidv4()}
                   />
                 </TabPane>
-                <TabPane tab="Schedules" key="5">
+                <TabPane tab="Schedules" key={SCHEDULES}>
                   <Row
                     align="space-between"
                     style={{ alignItems: 'center' }}
