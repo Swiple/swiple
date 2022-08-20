@@ -8,7 +8,7 @@ from pydantic import EmailStr
 
 from app.db.client import get_user_db, async_client
 from app.models.auth import User, UserCreate, UserDB, UserUpdate
-from app.config.settings import settings
+from app.settings import settings
 
 SECRET = settings.SECRET_KEY
 

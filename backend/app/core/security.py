@@ -1,5 +1,5 @@
 from cryptography.fernet import Fernet
-from app.config.settings import settings
+from app.settings import settings
 
 
 def encrypt_password(password: str) -> str:

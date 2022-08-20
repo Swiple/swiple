@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 from sqlalchemy import create_engine
-from app.config.settings import settings
+from app.settings import settings
 import datetime
 from re import search
 import emails

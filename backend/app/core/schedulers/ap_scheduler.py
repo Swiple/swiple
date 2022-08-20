@@ -9,7 +9,7 @@ from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.job import Job
 from pytz import utc
-from app.config.settings import settings
+from app.settings import settings
 import app.constants as c
 from app.api.api_v1.endpoints.dataset import validate_dataset
 

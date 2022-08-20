@@ -3,7 +3,7 @@ from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 from app.core.users import current_active_user
 from app.db.client import client
-from app.config.settings import settings
+from app.settings import settings
 
 router = APIRouter(
     dependencies=[Depends(current_active_user)]

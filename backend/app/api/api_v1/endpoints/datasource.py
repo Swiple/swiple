@@ -12,7 +12,7 @@ from app.models.datasource import (
 	Datasource,
 )
 from app.db.client import client
-from app.config.settings import settings
+from app.settings import settings
 from app import utils
 from typing import Optional
 from opensearchpy import RequestError

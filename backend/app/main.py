@@ -1,7 +1,7 @@
 from starlette.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from app.api.api_v1 import auth_router
-from app.config.settings import settings
+from app.settings import settings
 from app.db.client import client, async_client
 import app.constants as c
 from app.core.schedulers.scheduler import scheduler

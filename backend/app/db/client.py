@@ -1,6 +1,6 @@
 # from fastapi_users_db_opensearch import OpenSearchUserDatabase
 from opensearchpy import AsyncOpenSearch, OpenSearch
-from app.config.settings import settings
+from app.settings import settings
 from app.models.auth import UserDB
 
 

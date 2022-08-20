@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 
-from app.config.settings import settings
+from app.settings import settings
 from app.core.users import current_active_user
 from app.db.client import client
 from app.core.schedulers.scheduler import scheduler, Schedule

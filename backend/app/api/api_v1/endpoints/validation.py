@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.db.client import client
-from app.config.settings import settings
+from app.settings import settings
 from fastapi.param_functions import Depends
 from app.core.users import current_active_user
 

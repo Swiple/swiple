@@ -6,7 +6,7 @@ from app.models.expectation import Expectation
 from app.core.expectations import supported_unsupported_expectations
 from app import utils
 from app.db.client import client
-from app.config.settings import settings
+from app.settings import settings
 from opensearchpy import NotFoundError, RequestError
 from opensearchpy.helpers import bulk
 from app.models import expectation as exp

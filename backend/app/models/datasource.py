@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from app.models.base_model import BaseModel
 from pydantic import Field, Extra
 from typing import Optional, Literal
-from app.config.settings import settings
+from app.settings import settings
 from app.db.client import client
 from app.core import security
 from opensearchpy import NotFoundError
