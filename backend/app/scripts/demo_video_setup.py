@@ -1,30 +1,16 @@
+from datetime import timedelta, datetime
+from opensearchpy.helpers import bulk
+from copy import deepcopy
+from app.settings import settings
+from app.db.client import client
 import uuid
 import random
 import pytz
-
-from app.config.settings import settings
-from opensearchpy import OpenSearch
 import requests
 import json
-from datetime import timedelta, datetime
-from app import utils
-from opensearchpy.helpers import bulk
-from copy import deepcopy
 
-api_url = "http://127.0.0.1:8000/api/v1"
+api_url = f"{settings.SWIPLE_API_URL}{settings.API_VERSION}"
 
-client = OpenSearch(
-    hosts=[{'host': 'localhost', 'port': settings.OPENSEARCH_PORT}],
-    http_compress=True,  # enables gzip compression for request bodies
-    http_auth=(settings.OPENSEARCH_USERNAME, settings.OPENSEARCH_PASSWORD),
-    # client_cert = client_cert_path,
-    # client_key = client_key_path,
-    use_ssl=True,
-    verify_certs=False,
-    ssl_assert_hostname=False,
-    ssl_show_warn=False,
-    # ca_certs=ca_certs_path
-)
 
 expectation_types = [
     "expect_table_columns_to_match_ordered_list",
