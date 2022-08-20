@@ -1,62 +1,70 @@
 from typing import List, Union, Literal
 from pydantic import (
     AnyHttpUrl,
-    HttpUrl,
     BaseSettings,
     EmailStr,
+    Field,
     validator,
     root_validator,
 )
-from app.config import config
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = config.PROJECT_NAME
-    API_VERSION: str = config.API_VERSION
-    APP: Literal["SWIPLE_API", "SCHEDULER"] = config.APP
+    PRODUCTION: bool
 
-    SWIPLE_API_URL: AnyHttpUrl = config.SWIPLE_API_URL
-    UI_URL: AnyHttpUrl = config.UI_URL
-    SCHEDULER_API_URL: str = config.SCHEDULER_API_URL
+    # https://swiple.io/docs/configuration/how-to-update-SECRET_KEY
+    SECRET_KEY: str
 
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = config.BACKEND_CORS_ORIGINS
+    # Changing ADMIN_EMAIL does not remove the previous user.
+    ADMIN_EMAIL: EmailStr
+    ADMIN_PASSWORD: str
 
-    REDIRECT_URL: AnyHttpUrl = f"{UI_URL}/login"
+    PROJECT_NAME: str = Field(default="Swiple")
+    API_VERSION: str = Field(default="/api/v1")
 
-    AUTH_LIFETIME_IN_SECONDS: int = config.AUTH_LIFETIME_IN_SECONDS
-    SECRET_KEY: str = config.SECRET_KEY
+    # "SWIPLE_API" or "SCHEDULER"
+    APP: Literal["SWIPLE_API", "SCHEDULER"] = Field(default="SWIPLE_API")
+    SWIPLE_API_URL: AnyHttpUrl = Field(default="http://swiple_api:8000")
+    UI_URL: AnyHttpUrl = Field(default="http://127.0.0.1:3000")
+    SCHEDULER_API_URL: str = Field(default="http://scheduler:8001")
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = Field(default=["http://swiple_api:8000", "http://127.0.0.1:3000"])
+    REDIRECT_URL: AnyHttpUrl = "http://127.0.0.1:3000/login"
 
-    USERNAME_AND_PASSWORD_ENABLED: bool = config.USERNAME_AND_PASSWORD_ENABLED
-    ADMIN_EMAIL: EmailStr = config.ADMIN_EMAIL
-    ADMIN_PASSWORD: str = config.ADMIN_PASSWORD
+    # Lifetime of HTTP Cookie
+    # Default: 8 hrs
+    AUTH_LIFETIME_IN_SECONDS: int = Field(default="28800")
+    USERNAME_AND_PASSWORD_ENABLED: bool = Field(default=True)
 
-    GITHUB_OAUTH_ENABLED: bool = config.GITHUB_OAUTH_ENABLED
-    GITHUB_OAUTH_CLIENT_ID: str = config.GITHUB_OAUTH_CLIENT_ID
-    GITHUB_OAUTH_SECRET: str = config.GITHUB_OAUTH_SECRET
+    GITHUB_OAUTH_ENABLED: bool = Field(default=False)
+    GITHUB_OAUTH_CLIENT_ID: str = Field(default=None)
+    GITHUB_OAUTH_SECRET: str = Field(default=None)
 
-    GOOGLE_OAUTH_ENABLED: bool = config.GOOGLE_OAUTH_ENABLED
-    GOOGLE_OAUTH_CLIENT_ID: str = config.GOOGLE_OAUTH_CLIENT_ID
-    GOOGLE_OAUTH_SECRET: str = config.GOOGLE_OAUTH_SECRET
+    GOOGLE_OAUTH_ENABLED: bool = Field(default=False)
+    GOOGLE_OAUTH_CLIENT_ID: str = Field(default=None)
+    GOOGLE_OAUTH_SECRET: str = Field(default=None)
 
-    MICROSOFT_OAUTH_ENABLED: bool = config.MICROSOFT_OAUTH_ENABLED
-    MICROSOFT_OAUTH_CLIENT_ID: str = config.MICROSOFT_OAUTH_CLIENT_ID
-    MICROSOFT_OAUTH_SECRET: str = config.MICROSOFT_OAUTH_SECRET
-    MICROSOFT_OAUTH_TENANT: str = config.MICROSOFT_OAUTH_TENANT
+    MICROSOFT_OAUTH_ENABLED: bool = Field(default=False)
+    MICROSOFT_OAUTH_CLIENT_ID: str = Field(default=None)
+    MICROSOFT_OAUTH_SECRET: str = Field(default=None)
+    MICROSOFT_OAUTH_TENANT: str = Field(default=None)  # defaults to "common" when not set
 
-    OKTA_OAUTH_ENABLED: bool = config.OKTA_OAUTH_ENABLED
-    OKTA_OAUTH_CLIENT_ID: str = config.OKTA_OAUTH_CLIENT_ID
-    OKTA_OAUTH_SECRET: str = config.OKTA_OAUTH_SECRET
-    OKTA_OAUTH_BASE_URL: str = config.OKTA_OAUTH_BASE_URL
+    OKTA_OAUTH_ENABLED: bool = Field(default=False)
+    OKTA_OAUTH_CLIENT_ID: str = Field(default=None)
+    OKTA_OAUTH_SECRET: str = Field(default=None)
+    OKTA_OAUTH_BASE_URL: str = Field(default=None)
 
-    SCHEDULER_EXECUTOR_MAX_WORKERS: int = config.SCHEDULER_EXECUTOR_MAX_WORKERS
-    SCHEDULER_EXECUTOR_KWARGS: dict = config.SCHEDULER_EXECUTOR_KWARGS
-    SCHEDULER_REDIS_DB: int = config.SCHEDULER_REDIS_DB
-    SCHEDULER_REDIS_KWARGS: dict = config.SCHEDULER_REDIS_KWARGS
+    SCHEDULER_EXECUTOR_MAX_WORKERS: int = Field(default=10)
+    SCHEDULER_EXECUTOR_KWARGS: dict = Field(default=None)
+    SCHEDULER_REDIS_DB: int = Field(default=0)
 
-    OPENSEARCH_HOST: str = config.OPENSEARCH_HOST
-    OPENSEARCH_PORT: str = config.OPENSEARCH_PORT
-    OPENSEARCH_USERNAME: str = config.OPENSEARCH_USERNAME
-    OPENSEARCH_PASSWORD: str = config.OPENSEARCH_PASSWORD
+    # list of Redis connection properties e.g. host, port, password
+    # https://github.com/redis/redis-py/blob/bedf3c82a55b4b67eed93f686cb17e82f7ab19cd/redis/client.py#L899
+    SCHEDULER_REDIS_KWARGS: dict = Field(default={"host": "redis"})
+
+    OPENSEARCH_HOST: str = Field(default="opensearch-node1")
+    OPENSEARCH_PORT: str = Field(default="9200")
+    OPENSEARCH_USERNAME: str = Field(default="admin")
+    OPENSEARCH_PASSWORD: str = Field(default="admin")
 
     # OpenSearch Index names
     DATASOURCE_INDEX: str = "datasources"
@@ -67,6 +75,9 @@ class Settings(BaseSettings):
     USER_INDEX: str = "user"
 
     TOKEN_URL: str = "/api/v1/token"
+
+    class Config:
+        env_nested_delimiter = "__"
 
     @root_validator
     def check_auth_methods(cls, values):
