@@ -25,7 +25,7 @@ body:
         - label: I have read and followed [the docs](https://swiple.io) and [the FAQ's](https://swiple.io/docs/faq) and still think this is a bug
           required: true
         - label: >
-            I am confident that the issue is with swiple and not my configuration in /swiple/backend/app/config/config.py
+            I am confident that the issue is with swiple and not my configuration in `docker/.env` or `docker/.env-non-dev`
           required: true
   - type: textarea
     id: description

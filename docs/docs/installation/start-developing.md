@@ -117,6 +117,6 @@ Sign in with the following credentials:
 - **Password**: admin
 
 :::note Note
-`ADMIN_EMAIL` and `ADMIN_PASSWORD` can be set in `./backend/app/config/config.py` 
+`ADMIN_EMAIL` and `ADMIN_PASSWORD` can be set in `docker/.env` 
 :::
 
