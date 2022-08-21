@@ -27,7 +27,7 @@ function ObjectiveHitRate({ stats }) {
     },
     dataset: {
       source: validationsDataset(),
-      dimensions: ['timestamp', 'Percentage'],
+      dimensions: ['timestamp', 'Pass Rate'],
     },
     xAxis: {
       type: 'time',
@@ -65,11 +65,11 @@ function ObjectiveHitRate({ stats }) {
     },
     series: [
       {
-        name: 'Percentage',
+        name: 'Pass Rate',
         type: 'line',
         encode: {
           x: 'timestamp',
-          y: 'Percentage',
+          y: 'Pass Rate',
         },
         color: '#333',
         showSymbol: true,
@@ -103,7 +103,7 @@ function ObjectiveHitRate({ stats }) {
           value={thirtyOneDayAvg ? thirtyOneDayAvg.toFixed(0) : '-'}
         />
         <div className="ant-statistic">
-          <div className="ant-statistic-title">Hit rate over the last month</div>
+          <div className="ant-statistic-title">Pass rate over the last month</div>
           <ReactECharts style={{ height: 43, width: 300 }} option={options} />
         </div>
       </Space>

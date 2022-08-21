@@ -12,11 +12,20 @@ function ExpectationHistory({ validations, resultType }) {
 
     if (resultType === 'column_map_expectation') {
       resultValue = Number((100 - row.result.unexpected_percent).toFixed(5));
-    } else if (resultType === 'column_aggregate_expectation' || resultType === 'expectation') {
+    } else if (resultType === 'column_aggregate_expectation') {
       resultValue = Number(row.result.observed_value).toFixed(5);
+    } else if (resultType === 'expectation') {
+      // A resultType of 'expectation' can produce a result of
+      // 'observed_value' or 'observed_value_list'.
+      if (row.result?.observed_value) {
+        resultValue = Number(row.result.observed_value).toFixed(5);
+      } else if (row.result?.observed_value_list) {
+        resultValue = row.success ? 100 : 0;
+      }
     } else {
       throw Error(`${resultType} not implemented. Data`);
     }
+
     return {
       value: [row.run_date, resultValue],
       itemStyle: {
@@ -69,55 +78,92 @@ function ExpectationHistory({ validations, resultType }) {
     }
     return [];
   };
+
+  const percentageYAxis = {
+    yAxis: {
+      type: 'value',
+      position: 'right',
+      axisLabel: {
+        formatter: '{value}%',
+      },
+      axisLine: {
+        show: true,
+      },
+      min: 0,
+      max: 100,
+      interval: 100,
+      splitLine: {
+        show: false,
+      },
+      axisTick: {
+        show: false,
+      },
+      scale: true,
+    },
+  };
+
+  const numericYAxis = {
+    yAxis: {
+      type: 'value',
+      position: 'right',
+      axisLabel: {
+        formatter(value) {
+          return abbreviateNumber(value);
+        },
+      },
+      axisLine: {
+        show: true,
+      },
+      splitLine: {
+        show: false,
+      },
+      axisTick: {
+        show: false,
+      },
+      scale: true,
+      splitNumber: 2,
+    },
+  };
+
   let yAxis;
+  let tooltipName;
+
   if (resultType === 'column_map_expectation') {
-    yAxis = {
-      yAxis: {
-        type: 'value',
-        position: 'right',
-        axisLabel: {
-          formatter: '{value}%',
-        },
-        axisLine: {
-          show: true,
-        },
-        min: 0,
-        max: 100,
-        interval: 100,
-        splitLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        scale: true,
-      },
-    };
-  } else if (resultType === 'column_aggregate_expectation' || resultType === 'expectation') {
-    yAxis = {
-      yAxis: {
-        type: 'value',
-        position: 'right',
-        axisLabel: {
-          formatter(value) {
-            return abbreviateNumber(value);
-          },
-        },
-        axisLine: {
-          show: true,
-        },
-        splitLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        scale: true,
-        splitNumber: 2,
-      },
-    };
+    tooltipName = 'Pass Rate';
+    yAxis = percentageYAxis;
+  } else if (resultType === 'expectation') {
+    tooltipName = 'Observed Value';
+    yAxis = numericYAxis;
+
+    if (validations.length > 0 && validations[0].result?.observed_value_list) {
+      tooltipName = 'Pass Rate';
+      yAxis = percentageYAxis;
+    }
+  } else if (resultType === 'column_aggregate_expectation') {
+    yAxis = numericYAxis;
   } else {
     throw Error(`${resultType} not implemented`);
+  }
+
+  // resultType of 'expectation' and 'column_aggregate_expectation' do
+  // not support Objectives like 'column_map_expectation'
+  let objectivesSeries;
+  if (resultType === 'column_map_expectation') {
+    objectivesSeries = {
+      labelLine: {
+        show: true,
+      },
+      name: 'Objective',
+      silent: true,
+      data: objectiveValues,
+      type: 'line',
+      color: '#A7A7A7FF',
+      symbol: 'none',
+      lineStyle: {
+        type: 'dashed',
+        width: 1,
+      },
+    };
   }
 
   const options = {
@@ -154,23 +200,9 @@ function ExpectationHistory({ validations, resultType }) {
     },
     ...yAxis,
     series: [
+      objectivesSeries,
       {
-        labelLine: {
-          show: true,
-        },
-        name: 'Objective',
-        silent: true,
-        data: objectiveValues,
-        type: 'line',
-        color: '#A7A7A7FF',
-        symbol: 'none',
-        lineStyle: {
-          type: 'dashed',
-          width: 1,
-        },
-      },
-      {
-        name: 'Pass Rate',
+        name: tooltipName,
         type: 'line',
         data: percentageValues,
         color: '#333',
