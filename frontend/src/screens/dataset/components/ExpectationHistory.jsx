@@ -12,11 +12,16 @@ function ExpectationHistory({ validations, resultType }) {
 
     if (resultType === 'column_map_expectation') {
       resultValue = Number((100 - row.result.unexpected_percent).toFixed(5));
-    } else if (resultType === 'column_aggregate_expectation' || resultType === 'expectation') {
+    } else if (resultType === 'column_aggregate_expectation') {
       resultValue = Number(row.result.observed_value).toFixed(5);
+    } else if (resultType === 'expectation') {
+      // Table level expectations only show a pass/fail result. They do not include a value.
+      // We will set passing to a value of 100 and failing to 0.
+      resultValue = row.success ? 100 : 0;
     } else {
       throw Error(`${resultType} not implemented. Data`);
     }
+
     return {
       value: [row.run_date, resultValue],
       itemStyle: {
@@ -70,7 +75,7 @@ function ExpectationHistory({ validations, resultType }) {
     return [];
   };
   let yAxis;
-  if (resultType === 'column_map_expectation') {
+  if (resultType === 'column_map_expectation' || resultType === 'expectation') {
     yAxis = {
       yAxis: {
         type: 'value',
@@ -93,7 +98,7 @@ function ExpectationHistory({ validations, resultType }) {
         scale: true,
       },
     };
-  } else if (resultType === 'column_aggregate_expectation' || resultType === 'expectation') {
+  } else if (resultType === 'column_aggregate_expectation') {
     yAxis = {
       yAxis: {
         type: 'value',
@@ -118,6 +123,27 @@ function ExpectationHistory({ validations, resultType }) {
     };
   } else {
     throw Error(`${resultType} not implemented`);
+  }
+
+  // resultType of 'expectation' and 'column_aggregate_expectation' do
+  // not support Objectives like 'column_map_expectation'
+  let objectivesSeries;
+  if (resultType === 'column_map_expectation') {
+    objectivesSeries = {
+      labelLine: {
+        show: true,
+      },
+      name: 'Objective',
+      silent: true,
+      data: objectiveValues,
+      type: 'line',
+      color: '#A7A7A7FF',
+      symbol: 'none',
+      lineStyle: {
+        type: 'dashed',
+        width: 1,
+      },
+    };
   }
 
   const options = {
@@ -154,21 +180,7 @@ function ExpectationHistory({ validations, resultType }) {
     },
     ...yAxis,
     series: [
-      {
-        labelLine: {
-          show: true,
-        },
-        name: 'Objective',
-        silent: true,
-        data: objectiveValues,
-        type: 'line',
-        color: '#A7A7A7FF',
-        symbol: 'none',
-        lineStyle: {
-          type: 'dashed',
-          width: 1,
-        },
-      },
+      objectivesSeries,
       {
         name: 'Pass Rate',
         type: 'line',
