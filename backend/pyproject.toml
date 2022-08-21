@@ -31,6 +31,7 @@ PyMySQL = { version = ">=0.9.3,<0.10", optional = true }
 pyathena = { version = ">=1.11", optional = true }
 sqlalchemy-redshift = { version = ">=0.7.7", optional = true }
 trino = { version = ">=0.310.0", optional = true }
+pydantic = {extras = ["dotenv"], version = "^1.9.2"}
 
 [tool.poetry.extras]
 postgres = ["psycopg2-binary"]

@@ -10,7 +10,7 @@ from app import utils
 from app.core.users import current_active_user
 from app.models.dataset import Dataset, Sample, ResponseDataset
 from app.db.client import client
-from app.config.settings import settings
+from app.settings import settings
 from app.utils import get_sample_query
 from app.models.datasource import get_datasource
 from app.models.users import UserDB

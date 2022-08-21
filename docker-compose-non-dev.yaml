@@ -1,6 +1,19 @@
 version: "3.9"
+
+x-swiple-depends-on: &swiple-depends-on
+  opensearch-node1:
+    condition: service_healthy
+  postgres:
+    condition: service_healthy
+
+x-aws-creds: &aws-creds
+   AWS_CONFIG_FILE: $HOME/.aws/config
+   AWS_SHARED_CREDENTIALS_FILE: $HOME/.aws/credentials
+
 services:
   swiple_api:
+    env_file: docker/.env-non-dev
+    environment: *aws-creds
     container_name: swiple_api
     image: swiple/swiple-api:main
     restart: unless-stopped
@@ -8,15 +21,13 @@ services:
       - "8000:8000"
     volumes:
       - $HOME/.aws:$HOME/.aws
-    environment:
-      - APP=SWIPLE_API
-      - AWS_CONFIG_FILE=$HOME/.aws/config
-      - AWS_SHARED_CREDENTIALS_FILE=$HOME/.aws/credentials
-    depends_on:
-      opensearch-node1:
-        condition: service_healthy
+    depends_on: *swiple-depends-on
 
   scheduler:
+    env_file: docker/.env-non-dev
+    environment:
+      <<: *aws-creds
+      APP: SCHEDULER
     container_name: scheduler
     image: swiple/swiple-api:main
     restart: unless-stopped
@@ -25,13 +36,7 @@ services:
       - "8001:8001"
     volumes:
       - $HOME/.aws:$HOME/.aws
-    environment:
-      - APP=SCHEDULER
-      - AWS_CONFIG_FILE=$HOME/.aws/config
-      - AWS_SHARED_CREDENTIALS_FILE=$HOME/.aws/credentials
-    depends_on:
-      opensearch-node1:
-        condition: service_healthy
+    depends_on: *swiple-depends-on
 
   swiple_ui:
     container_name: swiple_ui
@@ -42,6 +47,7 @@ services:
     depends_on:
       - "swiple_api"
   setup:
+    env_file: docker/.env-non-dev
     container_name: setup
     image: swiple/swiple-api:main
     command: bash -c "
@@ -50,11 +56,7 @@ services:
         && python3 /code/app/scripts/create_admin_user.py
         && python3 /code/app/sample_data/load_data.py
       "
-    depends_on:
-      postgres:
-        condition: service_healthy
-      opensearch-node1:
-        condition: service_healthy
+    depends_on: *swiple-depends-on
   postgres:
     container_name: postgresql
     image: postgres:10.5
@@ -128,6 +130,5 @@ services:
       - ./docker/redis-data:/var/lib/redis
     environment:
       - REDIS_REPLICATION_MODE=master
-
 volumes:
   opensearch-data1:

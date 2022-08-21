@@ -1,9 +1,10 @@
 import opensearchpy.exceptions
 import yaml
 from app.db.client import client
+import pathlib
 
 
-def create_indicies(path=f"/code/app/config/opensearch.yaml"):
+def create_indicies(path=f"{pathlib.Path(__file__).parent.resolve()}/../opensearch.yaml"):
     indicies = yaml.load(open(path), Loader=yaml.SafeLoader)
     print(indicies)
 

@@ -1,6 +1,19 @@
 version: "3.9"
+
+x-swiple-depends-on: &swiple-depends-on
+  opensearch-node1:
+    condition: service_healthy
+  postgres:
+    condition: service_healthy
+
+x-aws-creds: &aws-creds
+   AWS_CONFIG_FILE: $HOME/.aws/config
+   AWS_SHARED_CREDENTIALS_FILE: $HOME/.aws/credentials
+
 services:
   swiple_api:
+    env_file: docker/.env
+    environment: *aws-creds
     container_name: swiple_api
     image: swiple-api:latest
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
@@ -10,15 +23,13 @@ services:
     volumes:
       - $PWD/backend/app/:/code/app/
       - $HOME/.aws:$HOME/.aws
-    environment:
-      - APP=SWIPLE_API
-      - AWS_CONFIG_FILE=$HOME/.aws/config
-      - AWS_SHARED_CREDENTIALS_FILE=$HOME/.aws/credentials
-    depends_on:
-      opensearch-node1:
-        condition: service_healthy
+    depends_on: *swiple-depends-on
 
   scheduler:
+    env_file: docker/.env
+    environment:
+      <<: *aws-creds
+      APP: SCHEDULER
     container_name: scheduler
     image: swiple-api:latest
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
@@ -28,13 +39,7 @@ services:
     volumes:
       - $PWD/backend/app/:/code/app/
       - $HOME/.aws:$HOME/.aws
-    environment:
-      - APP=SCHEDULER
-      - AWS_CONFIG_FILE=$HOME/.aws/config
-      - AWS_SHARED_CREDENTIALS_FILE=$HOME/.aws/credentials
-    depends_on:
-      opensearch-node1:
-        condition: service_healthy
+    depends_on: *swiple-depends-on
 
   swiple_ui:
     container_name: swiple_ui
@@ -49,6 +54,7 @@ services:
     depends_on:
       - "swiple_api"
   setup:
+    env_file: docker/.env
     container_name: setup
     image: swiple-api:latest
     command: bash -c "
@@ -57,22 +63,17 @@ services:
         && python3 /code/app/scripts/create_admin_user.py
         && python3 /code/app/sample_data/load_data.py
       "
-    depends_on:
-      postgres:
-        condition: service_healthy
-      opensearch-node1:
-        condition: service_healthy
+    depends_on: *swiple-depends-on
     volumes:
       - ./backend/app/sample_data/:/code/app/sample_data/
-      - ./backend/app/config/:/code/app/config/
   postgres:
     container_name: postgresql
     image: postgres:10.5
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     healthcheck:
       test: /usr/bin/pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
       interval: 5s
@@ -139,5 +140,18 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
 
+  demo:
+    profiles:
+      - demo
+    env_file: docker/.env
+    container_name: demo
+    image: swiple-api:latest
+    command: bash -c "
+      export PYTHONPATH=$PYTHONPATH:/code
+      && python3 /code/app/scripts/demo_video_setup.py
+      "
+    depends_on: *swiple-depends-on
+    volumes:
+      - ./backend/app/scripts/:/code/app/scripts/
 volumes:
   opensearch-data1:

@@ -4,7 +4,7 @@ from httpx_oauth.clients.google import GoogleOAuth2
 from httpx_oauth.clients.microsoft import MicrosoftGraphOAuth2
 from httpx_oauth.clients.okta import OktaOAuth2
 from app.core.users import fastapi_users, cookie_backend, current_active_superuser
-from app.config.settings import settings
+from app.settings import settings
 
 router = APIRouter()
 router.include_router(

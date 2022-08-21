@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 ---
 
 # Authentication
@@ -14,7 +14,7 @@ Swiple uses [FastAPI Users](https://fastapi-users.github.io/fastapi-users/) and 
 
 ### OAuth
 
-To set up OAuth, add an OAuth provider to `backend/app/config/config.py`.
+To set up OAuth, add an OAuth provider to `docker/.env`.
 
 :::caution Caution
 Do not check in `OAUTH_SECRET` or `SECRET_KEY` to your codebase. The examples below are for testing only.
@@ -27,36 +27,36 @@ All providers will require a redirect URL. The redirect URL structure is as foll
 
 
 #### Github
-```python
-GITHUB_OAUTH_ENABLED = True
-GITHUB_OAUTH_CLIENT_ID = "---Redacted---"
-GITHUB_OAUTH_SECRET = "---Redacted---"
+```bash
+GITHUB_OAUTH_ENABLED=true
+GITHUB_OAUTH_CLIENT_ID="---Redacted---"
+GITHUB_OAUTH_SECRET="---Redacted---"
 ```
 **Redirect URL:** {UI_HOST_URL}/login?provider=github
 
 #### Google
-```python
-GOOGLE_OAUTH_ENABLED = True
-GOOGLE_OAUTH_CLIENT_ID = "---Redacted---"
-GOOGLE_OAUTH_SECRET = "---Redacted---"
+```bash
+GOOGLE_OAUTH_ENABLED=true
+GOOGLE_OAUTH_CLIENT_ID="---Redacted---"
+GOOGLE_OAUTH_SECRET="---Redacted---"
 ```
 **Redirect URL:** {UI_HOST_URL}/login?provider=google
 
 #### Microsoft
-```python
-MICROSOFT_OAUTH_ENABLED = True
-MICROSOFT_OAUTH_CLIENT_ID = "---Redacted---"
-MICROSOFT_OAUTH_SECRET = "---Redacted---"
-MICROSOFT_OAUTH_TENANT = None  # defaults to "common" when not set
+```bash
+MICROSOFT_OAUTH_ENABLED=true
+MICROSOFT_OAUTH_CLIENT_ID="---Redacted---"
+MICROSOFT_OAUTH_SECRET="---Redacted---"
+MICROSOFT_OAUTH_TENANT=null  # defaults to "common" when not set
 ```
 **Redirect URL:** {UI_HOST_URL}/login?provider=microsoft
 
 #### Okta
-```python
-OKTA_OAUTH_ENABLED = True
-OKTA_OAUTH_CLIENT_ID = "---Redacted---"
-OKTA_OAUTH_SECRET = "---Redacted---"
-OKTA_OAUTH_BASE_URL = "[Redacted].okta.com" # do not include HTTP/HTTPS. HTTPS is used.
+```bash
+OKTA_OAUTH_ENABLED=true
+OKTA_OAUTH_CLIENT_ID="---Redacted---"
+OKTA_OAUTH_SECRET="---Redacted---"
+OKTA_OAUTH_BASE_URL="[Redacted].okta.com" # do not include HTTP/HTTPS. HTTPS is used.
 ```
 **Redirect URL:** {UI_HOST_URL}/login?provider=okta
 <br />
@@ -64,32 +64,3 @@ OKTA_OAUTH_BASE_URL = "[Redacted].okta.com" # do not include HTTP/HTTPS. HTTPS i
 :::info
 Do you use an OAuth provider that isn't above? Add it to [HTTPX OAuth here](https://github.com/frankie567/httpx-oauth/tree/master/httpx_oauth/clients).
 :::
-
-### Retrieving `OAUTH_SECRET` and `SECRET_KEY`
-
-Add the code snippet that retrieves your `OAUTH_CLIENT_ID` and `OAUTH_SECRET` to `backend/app/config/config.py`
-
-#### Parameter Store - [Docs](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.get_parameter)
-
-```python
-import boto3
-
-client = boto3.client("ssm")
-
-secret = client.get_parameter(
-    Name="string",
-    WithDecryption=True
-)["Parameter"]["Value"]
-```
-
-
-#### Secrets Manager - [Docs](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager.html#SecretsManager.Client.get_secret_value)
-```python
-import boto3
-
-client = boto3.client("secretsmanager")
-
-secret = client.get_secret_value(
-    SecretId="string",
-)["SecretString"]
-```

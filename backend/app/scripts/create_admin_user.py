@@ -1,4 +1,4 @@
-from app.config.settings import settings
+from app.settings import settings
 from app.core.users import create_user
 import asyncio
 
