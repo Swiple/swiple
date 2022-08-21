@@ -15,9 +15,13 @@ function ExpectationHistory({ validations, resultType }) {
     } else if (resultType === 'column_aggregate_expectation') {
       resultValue = Number(row.result.observed_value).toFixed(5);
     } else if (resultType === 'expectation') {
-      // Table level expectations only show a pass/fail result. They do not include a value.
-      // We will set passing to a value of 100 and failing to 0.
-      resultValue = row.success ? 100 : 0;
+      // A resultType of 'expectation' can produce a result of
+      // 'observed_value' or 'observed_value_list'.
+      if (row.result?.observed_value) {
+        resultValue = Number(row.result.observed_value).toFixed(5);
+      } else if (row.result?.observed_value_list) {
+        resultValue = row.success ? 100 : 0;
+      }
     } else {
       throw Error(`${resultType} not implemented. Data`);
     }
@@ -74,53 +78,69 @@ function ExpectationHistory({ validations, resultType }) {
     }
     return [];
   };
+
+  const percentageYAxis = {
+    yAxis: {
+      type: 'value',
+      position: 'right',
+      axisLabel: {
+        formatter: '{value}%',
+      },
+      axisLine: {
+        show: true,
+      },
+      min: 0,
+      max: 100,
+      interval: 100,
+      splitLine: {
+        show: false,
+      },
+      axisTick: {
+        show: false,
+      },
+      scale: true,
+    },
+  };
+
+  const numericYAxis = {
+    yAxis: {
+      type: 'value',
+      position: 'right',
+      axisLabel: {
+        formatter(value) {
+          return abbreviateNumber(value);
+        },
+      },
+      axisLine: {
+        show: true,
+      },
+      splitLine: {
+        show: false,
+      },
+      axisTick: {
+        show: false,
+      },
+      scale: true,
+      splitNumber: 2,
+    },
+  };
+
   let yAxis;
-  if (resultType === 'column_map_expectation' || resultType === 'expectation') {
-    yAxis = {
-      yAxis: {
-        type: 'value',
-        position: 'right',
-        axisLabel: {
-          formatter: '{value}%',
-        },
-        axisLine: {
-          show: true,
-        },
-        min: 0,
-        max: 100,
-        interval: 100,
-        splitLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        scale: true,
-      },
-    };
+  let tooltipName;
+
+  if (resultType === 'column_map_expectation') {
+    tooltipName = 'Pass Rate';
+    yAxis = percentageYAxis;
+  } else if (resultType === 'expectation') {
+    tooltipName = 'Observed Value';
+    yAxis = numericYAxis;
+
+    if (validations.length > 0 && validations[0].result?.observed_value_list) {
+      tooltipName = 'Pass Rate';
+      yAxis = percentageYAxis;
+    }
   } else if (resultType === 'column_aggregate_expectation') {
-    yAxis = {
-      yAxis: {
-        type: 'value',
-        position: 'right',
-        axisLabel: {
-          formatter(value) {
-            return abbreviateNumber(value);
-          },
-        },
-        axisLine: {
-          show: true,
-        },
-        splitLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        scale: true,
-        splitNumber: 2,
-      },
-    };
+    yAxis = numericYAxis;
   } else {
     throw Error(`${resultType} not implemented`);
   }
@@ -182,7 +202,7 @@ function ExpectationHistory({ validations, resultType }) {
     series: [
       objectivesSeries,
       {
-        name: 'Pass Rate',
+        name: tooltipName,
         type: 'line',
         data: percentageValues,
         color: '#333',
