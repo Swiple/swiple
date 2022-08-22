@@ -93,7 +93,6 @@ const Dataset = withRouter(() => {
   const [activeTab, setActiveTab] = useState(tab || EXPECTATIONS);
 
   const { datasetSchema, datasetName, isVirtual } = splitDatasetResource(dataset);
-  const ignoredProps = ['catch_exceptions', 'include_config', 'result_format'];
 
   useEffect(() => {
     if (!tab) {
