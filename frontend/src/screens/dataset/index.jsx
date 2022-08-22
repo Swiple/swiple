@@ -93,7 +93,6 @@ const Dataset = withRouter(() => {
   const [activeTab, setActiveTab] = useState(tab || EXPECTATIONS);
 
   const { datasetSchema, datasetName, isVirtual } = splitDatasetResource(dataset);
-  const ignoredProps = ['catch_exceptions', 'include_config', 'result_format'];
 
   useEffect(() => {
     if (!tab) {
@@ -380,7 +379,17 @@ const Dataset = withRouter(() => {
 
   const columns = [
     {
-      title: 'NAME',
+      title: 'COLUMN',
+      dataIndex: 'column',
+      width: 200,
+      render: (text) => (
+        <div style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: 'EXPECTATION',
       dataIndex: 'expectation_type',
     },
     {
@@ -499,32 +508,17 @@ const Dataset = withRouter(() => {
     create_date: moment(suggestion.create_date).local().fromNow(),
   }));
 
-  const expectationsList = expectations.map((item) => {
-    const args = Object.keys(item.kwargs).map((property) => {
-      const kwargValue = item.kwargs[property];
-      if (!ignoredProps.includes(property) && (kwargValue !== undefined || kwargValue !== null)) {
-        return (
-          <div key={property}>
-            {property}
-            :
-            {' '}
-            {JSON.stringify(kwargValue)}
-          </div>
-        );
-      }
-      return null;
-    });
-    return {
-      key: item.key,
-      expectation_type: item.expectation_type,
-      validations: item.validations,
-      documentation: item.documentation,
-      arguments: args,
-      resultType: item.result_type,
-      create_date: moment(item.create_date).local().fromNow(),
-      modified_date: moment(item.modified_date).local().fromNow(),
-    };
-  });
+  const expectationsList = expectations.map((item) => ({
+    key: item.key,
+    expectation_type: item.expectation_type,
+    validations: item.validations,
+    documentation: item.documentation,
+    column: item.kwargs?.column ? item.kwargs.column : '',
+    kwargs: item.kwargs,
+    resultType: item.result_type,
+    create_date: moment(item.create_date).local().fromNow(),
+    modified_date: moment(item.modified_date).local().fromNow(),
+  }));
 
   const analyzeDataset = () => new Promise((resolve) => {
     postRunnerValidateDataset(datasetId).then(() => {
