@@ -74,10 +74,8 @@ class Runner:
             head = validator.head()
         except KeyError as ex:
             if self.batch.runtime_parameters:
-                return {"exception": f"Syntax error in query."}
-            else:
-                print(str(ex))
-                return {"exception": f"{self.batch.dataset_name} is not recognized."}
+                return {"exception": "Syntax error in query."}
+            return {"exception": f"{self.batch.dataset_name} is not recognized."}
 
         rows = head.to_dict(orient='records')
         columns = head.columns

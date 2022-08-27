@@ -85,6 +85,7 @@ services:
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
       - "discovery.type=single-node" # disables bootstrap checks that are enabled when network.host is set to a non-loopback address
       - "plugins.security.audit.type=internal_opensearch"
+      - "DISABLE_SECURITY_PLUGIN=true" # To disable https
     ulimits:
       memlock:
         soft: -1

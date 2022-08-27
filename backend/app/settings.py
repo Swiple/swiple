@@ -75,9 +75,11 @@ class Settings(BaseSettings):
     USER_INDEX: str = "user"
 
     TOKEN_URL: str = "/api/v1/token"
+    IS_SSL: bool = True
 
     class Config:
         env_nested_delimiter = "__"
+        env_file = ".env"
 
     @root_validator
     def check_auth_methods(cls, values):
