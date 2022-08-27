@@ -1,23 +1,17 @@
-from fastapi import APIRouter, status, HTTPException
-from fastapi.responses import JSONResponse
 import sqlalchemy as sa
+from app.core.users import current_active_user
+from app.models.datasource import get_datasource
+from fastapi import APIRouter, HTTPException, status
+from fastapi.param_functions import Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.exc import DBAPIError
 
-from app.models.datasource import get_datasource
-from fastapi.param_functions import Depends
-from app.core.users import current_active_user
-
-router = APIRouter(
-    dependencies=[Depends(current_active_user)]
-)
+router = APIRouter(dependencies=[Depends(current_active_user)])
 
 
 @router.get("/schema")
 def list_schemas(datasource_id: str):
-    datasource = get_datasource(
-        key=datasource_id,
-        decrypt_pw=True
-    )
+    datasource = get_datasource(key=datasource_id, decrypt_pw=True)
     try:
         engine = sa.create_engine(datasource.connection_string())
         inspect = sa.inspect(engine)
@@ -32,10 +26,7 @@ def list_schemas(datasource_id: str):
 
 @router.get("/table")
 def list_tables(datasource_id: str, schema: str):
-    datasource = get_datasource(
-        key=datasource_id,
-        decrypt_pw=True
-    )
+    datasource = get_datasource(key=datasource_id, decrypt_pw=True)
 
     engine = sa.create_engine(datasource.connection_string())
     inspect = sa.inspect(engine)
@@ -46,10 +37,7 @@ def list_tables(datasource_id: str, schema: str):
 
 @router.get("/column")
 def list_columns(datasource_id: str, schema: str, table: str):
-    datasource = get_datasource(
-        key=datasource_id,
-        decrypt_pw=True
-    )
+    datasource = get_datasource(key=datasource_id, decrypt_pw=True)
     engine = sa.create_engine(datasource.connection_string())
     inspect = sa.inspect(engine)
     sa_column_list = inspect.get_columns(schema=schema, table_name=table)

@@ -1,6 +1,6 @@
+from app.settings import settings
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
-from app.settings import settings
 
 router = APIRouter()
 
@@ -21,4 +21,3 @@ def methods():
         enabled_auth_methods.append("okta")
 
     return JSONResponse(status_code=status.HTTP_200_OK, content=enabled_auth_methods)
-

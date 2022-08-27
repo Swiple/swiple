@@ -1,34 +1,29 @@
 import json
-from typing import Optional, List
+import uuid
+from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, status, Request
+import requests
+from app import constants as c
+from app import utils
+from app.core import security
+from app.core.dataset import split_dataset_resource
+from app.core.expectations import supported_unsupported_expectations
+from app.core.runner import Runner
+from app.core.users import current_active_user
+from app.db.client import client
+from app.models.dataset import Dataset, ResponseDataset, Sample
+from app.models.datasource import engine_types, get_datasource
+from app.models.users import UserDB
+from app.settings import settings
+from app.utils import get_sample_query
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
-
-from app import utils
-from app.core.users import current_active_user
-from app.models.dataset import Dataset, Sample, ResponseDataset
-from app.db.client import client
-from app.settings import settings
-from app.utils import get_sample_query
-from app.models.datasource import get_datasource
-from app.models.users import UserDB
-from app.core.dataset import split_dataset_resource
-from app.core import security
-from app.models.datasource import engine_types
-from app.core.runner import Runner
-from app.core.expectations import supported_unsupported_expectations
-from app import constants as c
 from opensearchpy import NotFoundError, RequestError
 from opensearchpy.helpers import bulk
-import uuid
-import requests
 
-
-router = APIRouter(
-    dependencies=[Depends(current_active_user)]
-)
+router = APIRouter(dependencies=[Depends(current_active_user)])
 
 
 @router.get("/json-schema")
@@ -39,9 +34,9 @@ def get_json_schema():
 
 @router.get("", response_model=List[Dataset])
 def list_datasets(
-        datasource_id: Optional[str] = None,
-        sort_by_key: Optional[str] = "dataset_name",
-        asc: Optional[bool] = True
+    datasource_id: Optional[str] = None,
+    sort_by_key: Optional[str] = "dataset_name",
+    asc: Optional[bool] = True,
 ):
     # TODO implement scrolling
     direction = "asc" if asc else "desc"
@@ -49,26 +44,25 @@ def list_datasets(
     if datasource_id is None:
         query = {"query": {"match_all": {}}, "sort": [{sort_by_key: direction}]}
     else:
-        query = {"query": {"match": {"datasource_id": datasource_id}}, "sort": [{sort_by_key: direction}]}
+        query = {
+            "query": {"match": {"datasource_id": datasource_id}},
+            "sort": [{sort_by_key: direction}],
+        }
 
     try:
-        docs = client.search(
-            index=settings.DATASET_INDEX,
-            size=1000,
-            body=query
-        )["hits"]["hits"]
+        docs = client.search(index=settings.DATASET_INDEX, size=1000, body=query)[
+            "hits"
+        ]["hits"]
     except RequestError:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"invalid sort_by_key"
+            detail=f"invalid sort_by_key",
         )
 
     docs_response = []
     for doc in docs:
         doc["_source"]["key"] = doc["_id"]
-        docs_response.append(
-            doc["_source"]
-        )
+        docs_response.append(doc["_source"])
     return JSONResponse(status_code=status.HTTP_200_OK, content=docs_response)
 
 
@@ -79,7 +73,7 @@ def get_dataset(key: str):
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"dataset with id '{key}' does not exist"
+            detail=f"dataset with id '{key}' does not exist",
         )
 
     if doc.get("sample"):
@@ -91,9 +85,9 @@ def get_dataset(key: str):
 
 @router.post("", response_model=Dataset)
 def create_dataset(
-        dataset: Dataset,
-        test_query: bool = True,
-        user: UserDB = Depends(current_active_user),
+    dataset: Dataset,
+    test_query: bool = True,
+    user: UserDB = Depends(current_active_user),
 ):
     datasource = _check_datasource_exists(dataset.datasource_id)
     _check_dataset_does_not_exists(dataset)
@@ -104,12 +98,12 @@ def create_dataset(
         if response.get("exception"):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=response.get("exception")
+                detail=response.get("exception"),
             )
 
         dataset.sample = Sample(
-            columns=response['columns'],
-            rows=json.dumps(jsonable_encoder(response['rows'])),
+            columns=response["columns"],
+            rows=json.dumps(jsonable_encoder(response["rows"])),
         )
 
     dataset.engine = datasource.engine
@@ -127,21 +121,14 @@ def create_dataset(
     dataset_as_dict = dataset.dict(by_alias=True)
     dataset_as_dict["key"] = insert_dataset["_id"]
 
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=dataset_as_dict
-    )
+    return JSONResponse(status_code=status.HTTP_200_OK, content=dataset_as_dict)
 
 
 @router.put("/{key}", response_model=ResponseDataset)
-def update_dataset(
-        dataset: Dataset,
-        key: str
-):
-    original_dataset: Dataset = Dataset(**client.get(
-        index=settings.DATASET_INDEX,
-        id=key
-    )["_source"])
+def update_dataset(dataset: Dataset, key: str):
+    original_dataset: Dataset = Dataset(
+        **client.get(index=settings.DATASET_INDEX, id=key)["_source"]
+    )
 
     if original_dataset == dataset:
         return ResponseDataset(key=key, **dataset.dict(by_alias=True))
@@ -163,30 +150,31 @@ def update_dataset(
             if response.get("exception"):
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=response.get("exception")
+                    detail=response.get("exception"),
                 )
 
             dataset.sample = Sample(
-                columns=response['columns'],
-                rows=json.dumps(jsonable_encoder(response['rows'])),
+                columns=response["columns"],
+                rows=json.dumps(jsonable_encoder(response["rows"])),
             )
 
     if (
-            original_dataset.runtime_parameters and
-            dataset.runtime_parameters and
-            original_dataset.runtime_parameters.query != dataset.runtime_parameters.query
+        original_dataset.runtime_parameters
+        and dataset.runtime_parameters
+        and original_dataset.runtime_parameters.query
+        != dataset.runtime_parameters.query
     ):
         response = sample(dataset, False)
 
         if response.get("exception"):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=response.get("exception")
+                detail=response.get("exception"),
             )
 
         dataset.sample = Sample(
-            columns=response['columns'],
-            rows=json.dumps(jsonable_encoder(response['rows'])),
+            columns=response["columns"],
+            rows=json.dumps(jsonable_encoder(response["rows"])),
         )
     dataset.engine = datasource.engine
     dataset.modified_date = utils.current_time()
@@ -204,10 +192,7 @@ def update_dataset(
 
 
 @router.delete("/{key}")
-def delete_dataset(
-        key: str,
-        request: Request
-):
+def delete_dataset(key: str, request: Request):
     try:
         body = {"query": {"match": {"dataset_id": key}}}
 
@@ -223,19 +208,13 @@ def delete_dataset(
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"dataset with id '{key}' does not exist"
+            detail=f"dataset with id '{key}' does not exist",
         )
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content="dataset deleted"
-    )
+    return JSONResponse(status_code=status.HTTP_200_OK, content="dataset deleted")
 
 
 @router.post("/sample")
-def sample(
-        dataset: Dataset,
-        response_format: bool = True
-):
+def sample(dataset: Dataset, response_format: bool = True):
     datasource = get_datasource(
         key=dataset.datasource_id,
         decrypt_pw=True,
@@ -243,8 +222,7 @@ def sample(
 
     if dataset.runtime_parameters:
         response = get_sample_query(
-            query=dataset.runtime_parameters.query,
-            url=datasource.connection_string()
+            query=dataset.runtime_parameters.query, url=datasource.connection_string()
         )
     else:
         response = get_sample_query(
@@ -258,19 +236,16 @@ def sample(
     if response.get("exception"):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=response.get("exception")
+            detail=response.get("exception"),
         )
 
     return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(response)
+        status_code=status.HTTP_200_OK, content=jsonable_encoder(response)
     )
 
 
 @router.put("/{key}/sample")
-def update_sample(
-        key: str
-):
+def update_sample(key: str):
     dataset = _get_dataset(key=key)
 
     response = sample(dataset, False)
@@ -278,12 +253,12 @@ def update_sample(
     if response.get("exception"):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=response.get("exception")
+            detail=response.get("exception"),
         )
 
     dataset.sample = Sample(
-        columns=response['columns'],
-        rows=json.dumps(jsonable_encoder(response['rows'])),
+        columns=response["columns"],
+        rows=json.dumps(jsonable_encoder(response["rows"])),
     )
 
     client.update(
@@ -305,7 +280,7 @@ def validate_dataset(dataset_id):
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"dataset with id '{dataset_id}' does not exist"
+            detail=f"dataset with id '{dataset_id}' does not exist",
         )
 
     datasource = client.get(
@@ -322,11 +297,11 @@ def validate_dataset(dataset_id):
                 "bool": {
                     "must": [
                         {"match": {"dataset_id": dataset["_id"]}},
-                        {"match": {"enabled": True}}
+                        {"match": {"enabled": True}},
                     ]
                 }
             }
-        }
+        },
     )["hits"]["hits"]
 
     expectations = []
@@ -339,7 +314,9 @@ def validate_dataset(dataset_id):
     }
 
     if datasource["_source"].get("password"):
-        datasource["_source"]["password"] = security.decrypt_password(datasource["_source"]["password"])
+        datasource["_source"]["password"] = security.decrypt_password(
+            datasource["_source"]["password"]
+        )
 
     engine = engine_types[datasource["_source"]["engine"]]
     datasource = engine(**datasource["_source"])
@@ -384,7 +361,7 @@ def create_suggestions(dataset_id):
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"dataset with id '{dataset_id}' does not exist"
+            detail=f"dataset with id '{dataset_id}' does not exist",
         )
 
     datasource = client.get(
@@ -401,7 +378,9 @@ def create_suggestions(dataset_id):
     }
 
     if datasource["_source"].get("password"):
-        datasource["_source"]["password"] = security.decrypt_password(datasource["_source"]["password"])
+        datasource["_source"]["password"] = security.decrypt_password(
+            datasource["_source"]["password"]
+        )
 
     engine = engine_types[datasource["_source"]["engine"]]
     datasource = engine(**datasource["_source"])
@@ -413,7 +392,9 @@ def create_suggestions(dataset_id):
         "dataset_name": dataset.dataset_name,
     }
 
-    excluded_expectations = supported_unsupported_expectations()["unsupported_expectations"]
+    excluded_expectations = supported_unsupported_expectations()[
+        "unsupported_expectations"
+    ]
     excluded_expectations.append(c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN)
 
     results = Runner(
@@ -438,7 +419,7 @@ def create_suggestions(dataset_id):
                     ]
                 }
             }
-        }
+        },
     )
 
     _insert_results(results, settings.EXPECTATION_INDEX)
@@ -454,10 +435,7 @@ def not_found_response(resource_name: str, key=None):
 
     if key is None:
         msg = f"no {resource_name} found"
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=msg
-    )
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=msg)
 
 
 def _insert_results(results, index: str = settings.VALIDATION_INDEX):
@@ -475,52 +453,66 @@ def _check_datasource_exists(datasource_id: str):
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"datasource with id '{datasource_id}' does not exist"
+            detail=f"datasource with id '{datasource_id}' does not exist",
         )
 
 
 def _check_dataset_does_not_exists(dataset: Dataset):
     dataset_schema, dataset_name, is_virtual = split_dataset_resource(dataset)
 
-    query = {"query": {"bool": {
-        "should": [
-            {
-                "bool": {
-                    "must": [
-                        {"match": {"datasource_name.keyword": dataset.datasource_name}},
-                        {"match": {"runtime_parameters.schema": dataset_schema}},
-                        {"match": {"dataset_name.keyword": dataset_name}},
-                    ],
-                }
-            },
-            {
-                "bool": {
-                    "must": [
-                        {"match": {"datasource_name.keyword": dataset.datasource_name}},
-                        {"match": {"dataset_name.keyword": dataset.dataset_name}},
-                    ]
-                }
-            },
-        ]
-    }}}
+    query = {
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "bool": {
+                            "must": [
+                                {
+                                    "match": {
+                                        "datasource_name.keyword": dataset.datasource_name
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "runtime_parameters.schema": dataset_schema
+                                    }
+                                },
+                                {"match": {"dataset_name.keyword": dataset_name}},
+                            ],
+                        }
+                    },
+                    {
+                        "bool": {
+                            "must": [
+                                {
+                                    "match": {
+                                        "datasource_name.keyword": dataset.datasource_name
+                                    }
+                                },
+                                {
+                                    "match": {
+                                        "dataset_name.keyword": dataset.dataset_name
+                                    }
+                                },
+                            ]
+                        }
+                    },
+                ]
+            }
+        }
+    }
 
-    response = client.search(
-        index=settings.DATASET_INDEX,
-        body=query
-    )
+    response = client.search(index=settings.DATASET_INDEX, body=query)
 
     if response["hits"]["total"]["value"] > 0:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"dataset '{dataset.datasource_name}.{dataset_schema}.{dataset_name}' already exists"
+            detail=f"dataset '{dataset.datasource_name}.{dataset_schema}.{dataset_name}' already exists",
         )
 
 
 def _get_dataset(key: str, as_dict=False):
-    dataset = client.get(
-        index=settings.DATASET_INDEX,
-        id=key
-    )["_source"]
+    dataset = client.get(index=settings.DATASET_INDEX, id=key)["_source"]
 
     if as_dict:
         return dataset

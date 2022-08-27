@@ -1,15 +1,15 @@
-from typing import Dict, Any
-
-from sqlalchemy import create_engine
-from app.settings import settings
 import datetime
-from re import search
-import emails
-from emails.template import JinjaTemplate
-from pathlib import Path
-from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
+from pathlib import Path
+from re import search
+from typing import Any, Dict
+
+import emails
 import pytz
+from app.settings import settings
+from emails.template import JinjaTemplate
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 
 def current_time():
@@ -31,7 +31,9 @@ def string_to_military_time(date_string):
     to
     2021-10-11T09:10:44.330614Z
     """
-    return datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f%z").strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    return datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f%z").strftime(
+        "%Y-%m-%dT%H:%M:%S.%fZ"
+    )
 
 
 def get_sample_query(query, url):
@@ -66,14 +68,9 @@ def get_sample_query(query, url):
                 result_set.append(temp_row)
 
             if len(columns) == 0:
-                return {
-                    "error": "No columns included in statement."
-                }
+                return {"error": "No columns included in statement."}
 
-            return {
-                "rows": result_set,
-                "columns": columns
-            }
+            return {"rows": result_set, "columns": columns}
 
     except ProgrammingError as ex:
         print(ex.orig.pgerror)
@@ -95,12 +92,12 @@ def json_schema_to_single_doc(schema):
     max_tries = 100
 
     for i in range(max_tries):
-        if '$ref' not in json.dumps(schema):
+        if "$ref" not in json.dumps(schema):
             break
         schema = replace_value_in_dict(schema.copy(), schema.copy())
 
     if schema.get("definitions"):
-        del schema['definitions']
+        del schema["definitions"]
 
     return schema
 
@@ -109,14 +106,17 @@ def replace_value_in_dict(item, original_schema):
     if isinstance(item, list):
         return [replace_value_in_dict(i, original_schema) for i in item]
     elif isinstance(item, dict):
-        if list(item.keys()) == ['$ref']:
-            definitions = item['$ref'][2:].split('/')
+        if list(item.keys()) == ["$ref"]:
+            definitions = item["$ref"][2:].split("/")
             res = original_schema.copy()
             for definition in definitions:
                 res = res[definition]
             return res
         else:
-            return {key: replace_value_in_dict(i, original_schema) for key, i in item.items()}
+            return {
+                key: replace_value_in_dict(i, original_schema)
+                for key, i in item.items()
+            }
     else:
         return item
 
@@ -135,7 +135,10 @@ def list_to_string_mapper(d, sep="."):
         elif isinstance(t, (str, bool, int, float, type(None))):
             pass
         else:
-            raise NotImplementedError(f't is of type, {type(t)}, which is not implemented.')
+            raise NotImplementedError(
+                f"t is of type, {type(t)}, which is not implemented."
+            )
+
     recurse(d)
     return d
 

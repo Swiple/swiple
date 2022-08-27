@@ -1,21 +1,35 @@
-from great_expectations.core import ExpectationSuite, ExpectationConfiguration
-from great_expectations.core.batch import RuntimeBatchRequest, BatchRequest
-from great_expectations.data_context import BaseDataContext
-from great_expectations.data_context.types.base import DataContextConfig
-from great_expectations.data_context.types.base import InMemoryStoreBackendDefaults
-from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
-from app.models.datasource import SNOWFLAKE
-from pandas import isnull
-import json
 import datetime
+import json
+
 # TODO, add some "runner_max_batches" to datasource to control the
 # max number of batches run at any one time.
 from app import utils
+from app.models.datasource import SNOWFLAKE
+from great_expectations.core import ExpectationConfiguration, ExpectationSuite
+from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
+from great_expectations.data_context import BaseDataContext
+from great_expectations.data_context.types.base import (
+    DataContextConfig,
+    InMemoryStoreBackendDefaults,
+)
+from great_expectations.profile.user_configurable_profiler import (
+    UserConfigurableProfiler,
+)
+from pandas import isnull
 
 
 class Runner:
-    def __init__(self, datasource, batch, meta, dataset_id=None, datasource_id=None, expectations=None,
-                 identifiers=None, excluded_expectations=[]):
+    def __init__(
+        self,
+        datasource,
+        batch,
+        meta,
+        dataset_id=None,
+        datasource_id=None,
+        expectations=None,
+        identifiers=None,
+        excluded_expectations=[],
+    ):
         self.identifiers = identifiers
         self.datasource = datasource
         self.batch = batch
@@ -31,7 +45,9 @@ class Runner:
 
         data_context_config = self.get_data_context_config()
         context = BaseDataContext(project_config=data_context_config)
-        suite: ExpectationSuite = context.create_expectation_suite("suite", overwrite_existing=True)
+        suite: ExpectationSuite = context.create_expectation_suite(
+            "suite", overwrite_existing=True
+        )
 
         batch_request = self.get_batch_request(is_profile=True)
 
@@ -45,10 +61,16 @@ class Runner:
             excluded_expectations=self.excluded_expectations,
             value_set_threshold="few",
         )
-        expectations = profiler.build_suite().to_json_dict()['expectations']
+        expectations = profiler.build_suite().to_json_dict()["expectations"]
 
         for expectation in expectations:
-            expectation["kwargs"].update({"result_format": "SUMMARY", "include_config": True, "catch_exceptions": True})
+            expectation["kwargs"].update(
+                {
+                    "result_format": "SUMMARY",
+                    "include_config": True,
+                    "catch_exceptions": True,
+                }
+            )
             expectation["kwargs"] = json.dumps(expectation["kwargs"])
             expectation["enabled"] = False
             expectation["suggested"] = True
@@ -65,19 +87,22 @@ class Runner:
 
         batch_request = self.get_batch_request()
 
-        suite: ExpectationSuite = context.create_expectation_suite("suite", overwrite_existing=True)
+        suite: ExpectationSuite = context.create_expectation_suite(
+            "suite", overwrite_existing=True
+        )
 
         try:
             validator = context.get_validator(
-                batch_request=batch_request, expectation_suite=suite,
+                batch_request=batch_request,
+                expectation_suite=suite,
             )
             head = validator.head()
-        except KeyError as ex:
+        except KeyError:
             if self.batch.runtime_parameters:
                 return {"exception": "Syntax error in query."}
             return {"exception": f"{self.batch.dataset_name} is not recognized."}
 
-        rows = head.to_dict(orient='records')
+        rows = head.to_dict(orient="records")
         columns = head.columns
 
         for record in rows:
@@ -87,17 +112,22 @@ class Runner:
 
                 if isnull(record[column]):
                     record[column] = None
-        return {'columns': list(columns), 'rows': rows}
+        return {"columns": list(columns), "rows": rows}
 
     def validate(self):
         data_context_config = self.get_data_context_config()
         context = BaseDataContext(project_config=data_context_config)
 
-        suite: ExpectationSuite = context.create_expectation_suite("suite", overwrite_existing=True)
+        suite: ExpectationSuite = context.create_expectation_suite(
+            "suite", overwrite_existing=True
+        )
 
         for expectation in self.expectations:
             if self.batch.runtime_parameters:
-                expectation_meta = {**self.meta, **self.batch.runtime_parameters.dict(by_alias=True)}
+                expectation_meta = {
+                    **self.meta,
+                    **self.batch.runtime_parameters.dict(by_alias=True),
+                }
             else:
                 expectation_meta = {**self.meta}
 
@@ -117,7 +147,8 @@ class Runner:
 
         batch_request = self.get_batch_request()
         validator = context.get_validator(
-            batch_request=batch_request, expectation_suite=suite,
+            batch_request=batch_request,
+            expectation_suite=suite,
         )
 
         results = validator.validate().to_json_dict()["results"]
@@ -125,13 +156,19 @@ class Runner:
         for result in results:
             # GE "mostly" is synonymous for Swiple "objective"
             if result["expectation_config"]["kwargs"].get("mostly"):
-                result["expectation_config"]["kwargs"]["objective"] = result["expectation_config"]["kwargs"].pop("mostly")
+                result["expectation_config"]["kwargs"]["objective"] = result[
+                    "expectation_config"
+                ]["kwargs"].pop("mostly")
 
             if isinstance(result["result"].get("observed_value"), list):
-                result["result"]["observed_value_list"] = result["result"].pop("observed_value")
+                result["result"]["observed_value_list"] = result["result"].pop(
+                    "observed_value"
+                )
 
             utils.list_to_string_mapper(result)
-            self.identifiers["expectation_id"] = result["expectation_config"]["meta"].pop("expectation_id")
+            self.identifiers["expectation_id"] = result["expectation_config"][
+                "meta"
+            ].pop("expectation_id")
             result.update(self.identifiers)
 
         return results
@@ -156,7 +193,6 @@ class Runner:
                     "data_connectors": {
                         "default_runtime_data_connector": {
                             "class_name": "RuntimeDataConnector",
-
                             # Is there a use-case where this is needed?
                             # If we require users to add all details for runs in the app then
                             # using SDK, it pulls values into SDK? This would require batch_identifiers
@@ -164,21 +200,19 @@ class Runner:
                             #
                             # Alternative is to let users push to ES runs without
                             # values in app. (Don't like the sound of that...)
-                            "batch_identifiers": [
-                                self.batch.dataset_name
-                            ],
+                            "batch_identifiers": [self.batch.dataset_name],
                         },
                         "default_inferred_data_connector_name": {
                             "class_name": "InferredAssetSqlDataConnector",
                             "include_schema_name": True,
                         },
-                    }
+                    },
                 }
             },
             store_backend_defaults=InMemoryStoreBackendDefaults(),
             anonymous_usage_statistics={
                 "enabled": False,
-            }
+            },
         )
         return context
 

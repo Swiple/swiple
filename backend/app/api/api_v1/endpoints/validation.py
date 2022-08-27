@@ -1,26 +1,25 @@
-from fastapi import APIRouter, status, HTTPException
-from fastapi.responses import JSONResponse
-
+from app.core.users import current_active_user
 from app.db.client import client
 from app.settings import settings
+from fastapi import APIRouter, HTTPException, status
 from fastapi.param_functions import Depends
-from app.core.users import current_active_user
+from fastapi.responses import JSONResponse
 
-router = APIRouter(
-    dependencies=[Depends(current_active_user)]
-)
+router = APIRouter(dependencies=[Depends(current_active_user)])
 
 
 @router.get("")
 def list_validations(
-        datasource_id: str,
-        dataset_id: str,
+    datasource_id: str,
+    dataset_id: str,
 ):
     validations_response = client.search(
         index=settings.VALIDATION_INDEX,
-        body=validations_query_body(dataset_id, datasource_id)
+        body=validations_query_body(dataset_id, datasource_id),
     )
-    validations_list = [validation["_source"] for validation in validations_response["hits"]["hits"]]
+    validations_list = [
+        validation["_source"] for validation in validations_response["hits"]["hits"]
+    ]
 
     return JSONResponse(status_code=status.HTTP_200_OK, content=validations_list)
 
@@ -40,22 +39,12 @@ def validations(dataset_id: str):
         },
         "aggs": {
             "31_day": {
-                "filter": {
-                    "range": {"run_date": {"gte": "now-31d", "lte": "now"}}
-                },
-                "aggs": {
-                    "success_counts": {
-                        "terms": {"field": "success"}
-                    }
-                }
+                "filter": {"range": {"run_date": {"gte": "now-31d", "lte": "now"}}},
+                "aggs": {"success_counts": {"terms": {"field": "success"}}},
             },
             "7_day": {
                 "filter": {"range": {"run_date": {"gte": "now-7d", "lte": "now"}}},
-                "aggs": {
-                    "success_counts": {
-                        "terms": {"field": "success"}
-                    }
-                }
+                "aggs": {"success_counts": {"terms": {"field": "success"}}},
             },
             "1_day": {
                 "filter": {
@@ -65,7 +54,7 @@ def validations(dataset_id: str):
                     "success_counts": {
                         "terms": {"field": "success"},
                     }
-                }
+                },
             },
             "validation_counts": {
                 "date_histogram": {
@@ -79,9 +68,9 @@ def validations(dataset_id: str):
                             "field": "success",
                         }
                     }
-                }
-            }
-        }
+                },
+            },
+        },
     }
 
     validation_stats = client.search(
@@ -101,17 +90,17 @@ def validations(dataset_id: str):
 
     one_day_metric = calculate_objective_pass_rate(
         buckets=aggs["1_day"]["success_counts"]["buckets"],
-        doc_count=aggs["1_day"]["doc_count"]
+        doc_count=aggs["1_day"]["doc_count"],
     )
 
     seven_day_metric = calculate_objective_pass_rate(
         buckets=aggs["7_day"]["success_counts"]["buckets"],
-        doc_count=aggs["7_day"]["doc_count"]
+        doc_count=aggs["7_day"]["doc_count"],
     )
 
     thirty_one_day_metric = calculate_objective_pass_rate(
         buckets=aggs["31_day"]["success_counts"]["buckets"],
-        doc_count=aggs["31_day"]["doc_count"]
+        doc_count=aggs["31_day"]["doc_count"],
     )
 
     return JSONResponse(
@@ -121,11 +110,13 @@ def validations(dataset_id: str):
             "7_day_avg": seven_day_metric,
             "31_day_avg": thirty_one_day_metric,
             "validations": validations_dataset,
-        }
+        },
     )
 
 
-def validations_query_body(datasource_id: str = None, dataset_id: str = None, period: int = 14):
+def validations_query_body(
+    datasource_id: str = None, dataset_id: str = None, period: int = 14
+):
     query = {
         "size": 2000,
         "query": {
@@ -135,19 +126,23 @@ def validations_query_body(datasource_id: str = None, dataset_id: str = None, pe
                 ]
             }
         },
-        "sort": [{"run_date": "asc"}]
+        "sort": [{"run_date": "asc"}],
     }
     if not dataset_id and not datasource_id:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Expected either datasource_id or dataset_id"
+            detail=f"Expected either datasource_id or dataset_id",
         )
 
     if dataset_id:
-        query["query"]["bool"]["must"].append({"match": {"dataset_id.keyword": dataset_id}})
+        query["query"]["bool"]["must"].append(
+            {"match": {"dataset_id.keyword": dataset_id}}
+        )
 
     if datasource_id:
-        query["query"]["bool"]["must"].append({"match": {"datasource_id.keyword": datasource_id}})
+        query["query"]["bool"]["must"].append(
+            {"match": {"datasource_id.keyword": datasource_id}}
+        )
 
     return query
 

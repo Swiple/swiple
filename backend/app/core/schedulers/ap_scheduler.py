@@ -1,21 +1,20 @@
-from typing import List, Dict
+import datetime
+import uuid
+from typing import Dict, List
 
-from app.core.schedulers.scheduler_interface import SchedulerInterface
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.date import DateTrigger
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.jobstores.redis import RedisJobStore
-from apscheduler.executors.pool import ProcessPoolExecutor
-from apscheduler.job import Job
-from pytz import utc
-from app.settings import settings
 import app.constants as c
 from app.api.api_v1.endpoints.dataset import validate_dataset
-
+from app.core.schedulers.scheduler_interface import SchedulerInterface
 from app.models.schedule import Schedule
-import uuid
-import datetime
+from app.settings import settings
+from apscheduler.executors.pool import ProcessPoolExecutor
+from apscheduler.job import Job
+from apscheduler.jobstores.redis import RedisJobStore
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+from pytz import utc
 
 
 class ApScheduler(SchedulerInterface):
@@ -24,21 +23,18 @@ class ApScheduler(SchedulerInterface):
 
     def start(self):
         jobstores = {
-            'default': RedisJobStore(
+            "default": RedisJobStore(
                 db=settings.SCHEDULER_REDIS_DB,
                 **settings.SCHEDULER_REDIS_KWARGS,
             )
         }
         executors = {
-            'default': ProcessPoolExecutor(
+            "default": ProcessPoolExecutor(
                 max_workers=settings.SCHEDULER_EXECUTOR_MAX_WORKERS,
                 pool_kwargs=settings.SCHEDULER_EXECUTOR_KWARGS,
             )
         }
-        job_defaults = {
-            'coalesce': False,
-            'max_instances': 3
-        }
+        job_defaults = {"coalesce": False, "max_instances": 3}
         self.ap_scheduler = AsyncIOScheduler(
             jobstores=jobstores,
             executors=executors,
@@ -59,11 +55,13 @@ class ApScheduler(SchedulerInterface):
             kwargs={"dataset_id": dataset_id},
             misfire_grace_time=schedule.misfire_grace_time,
             max_instances=schedule.max_instances,
-            **schedule.trigger.dict(exclude_none=True)
+            **schedule.trigger.dict(exclude_none=True),
         )
 
     def modify_schedule(self, schedule_id, jobstore=None, trigger=None, **trigger_args):
-        return self.ap_scheduler.reschedule_job(schedule_id, jobstore, trigger, **trigger_args)
+        return self.ap_scheduler.reschedule_job(
+            schedule_id, jobstore, trigger, **trigger_args
+        )
 
     def pause_schedule(self, schedule_id, jobstore=None):
         return self.ap_scheduler.pause_job(schedule_id, jobstore)
@@ -93,7 +91,11 @@ class ApScheduler(SchedulerInterface):
             if not datasource_id and dataset_id and schedule_dataset_id == dataset_id:
                 schedules_as_dict.append(schedule_as_dict)
 
-            if not dataset_id and datasource_id and schedule_datasource_id == datasource_id:
+            if (
+                not dataset_id
+                and datasource_id
+                and schedule_datasource_id == datasource_id
+            ):
                 schedules_as_dict.append(schedule_as_dict)
 
         return schedules_as_dict
@@ -173,9 +175,9 @@ class ApScheduler(SchedulerInterface):
             next_run_time = now
 
         for _ in range(9):
-            next_run_time = trigger_type(
-                **trigger_as_dict
-            ).get_next_fire_time(next_run_time, next_run_time)
+            next_run_time = trigger_type(**trigger_as_dict).get_next_fire_time(
+                next_run_time, next_run_time
+            )
 
             if not next_run_time:
                 break

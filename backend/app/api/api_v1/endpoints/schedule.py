@@ -1,18 +1,16 @@
+import json
 from typing import Optional
-from fastapi import APIRouter, status, HTTPException
+
+import requests
+from app.core.schedulers.scheduler import Schedule
+from app.core.users import current_active_user
+from app.settings import settings
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
-from fastapi import Request
-from app.settings import settings
-from app.core.users import current_active_user
-from app.core.schedulers.scheduler import Schedule
-import requests
-import json
 
-router = APIRouter(
-    dependencies=[Depends(current_active_user)]
-)
+router = APIRouter(dependencies=[Depends(current_active_user)])
 
 
 @router.get("/json-schema")
@@ -33,15 +31,12 @@ def list_schedules(
     if dataset_id and datasource_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="expected either 'dataset_id' or 'datasource_id'"
+            detail="expected either 'dataset_id' or 'datasource_id'",
         )
 
     response = requests.get(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
-        params={
-            "dataset_id": dataset_id,
-            "datasource_id": datasource_id
-        },
+        params={"dataset_id": dataset_id, "datasource_id": datasource_id},
         headers=request.headers,
         cookies=request.cookies,
     )
@@ -53,9 +48,9 @@ def list_schedules(
 
 @router.post("")
 def create_schedule(
-        dataset_id: str,
-        schedule: Schedule,
-        request: Request,
+    dataset_id: str,
+    schedule: Schedule,
+    request: Request,
 ):
     payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
     response = requests.post(
@@ -73,8 +68,8 @@ def create_schedule(
 
 @router.get("/{schedule_id}")
 def get_schedule(
-        schedule_id: str,
-        request: Request,
+    schedule_id: str,
+    request: Request,
 ):
     response = requests.get(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
@@ -89,9 +84,9 @@ def get_schedule(
 
 @router.put("/{schedule_id}")
 def update_schedule(
-        schedule_id: str,
-        schedule: Schedule,
-        request: Request,
+    schedule_id: str,
+    schedule: Schedule,
+    request: Request,
 ):
     payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
     response = requests.put(
@@ -108,8 +103,8 @@ def update_schedule(
 
 @router.delete("/{schedule_id}")
 def delete_schedule(
-        schedule_id: str,
-        request: Request,
+    schedule_id: str,
+    request: Request,
 ):
     response = requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
@@ -124,20 +119,20 @@ def delete_schedule(
 
 @router.delete("")
 def delete_schedules(
-        request: Request,
-        dataset_id: Optional[str] = None,
-        datasource_id: Optional[str] = None,
+    request: Request,
+    dataset_id: Optional[str] = None,
+    datasource_id: Optional[str] = None,
 ):
     if dataset_id and datasource_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="expected either 'dataset_id' or 'datasource_id'"
+            detail="expected either 'dataset_id' or 'datasource_id'",
         )
 
     if not dataset_id and not datasource_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="expected either 'dataset_id' or 'datasource_id'"
+            detail="expected either 'dataset_id' or 'datasource_id'",
         )
 
     response = None
@@ -165,8 +160,8 @@ def delete_schedules(
 
 @router.post("/next-run-times")
 def next_schedule_run_times(
-        schedule: Schedule,
-        request: Request,
+    schedule: Schedule,
+    request: Request,
 ):
     payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
     response = requests.post(
@@ -179,4 +174,3 @@ def next_schedule_run_times(
         status_code=response.status_code,
         content=response.json(),
     )
-

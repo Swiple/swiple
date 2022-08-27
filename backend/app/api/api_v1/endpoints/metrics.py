@@ -1,20 +1,17 @@
-from fastapi import APIRouter, status
-from fastapi.params import Depends
-from fastapi.responses import JSONResponse
 from app.core.users import current_active_user
 from app.db.client import client
 from app.settings import settings
+from fastapi import APIRouter, status
+from fastapi.params import Depends
+from fastapi.responses import JSONResponse
 
-router = APIRouter(
-    dependencies=[Depends(current_active_user)]
-)
+router = APIRouter(dependencies=[Depends(current_active_user)])
 
 
 @router.get("/resource-counts")
 def resource_counts():
     datasource_count = client.count(
-        index=settings.DATASOURCE_INDEX,
-        body={"query": {"match_all": {}}}
+        index=settings.DATASOURCE_INDEX, body={"query": {"match_all": {}}}
     )
 
     # schema_count = client.search(
@@ -23,22 +20,15 @@ def resource_counts():
     # )["aggregations"]["item"]["value"]
 
     dataset_count = client.count(
-        index=settings.DATASET_INDEX,
-        body={"query": {"match_all": {}}}
+        index=settings.DATASET_INDEX, body={"query": {"match_all": {}}}
     )
 
     expectation_count = client.count(
-        index=settings.EXPECTATION_INDEX,
-        body={
-            "query": {
-                "match": {"enabled": True}
-            }
-        }
+        index=settings.EXPECTATION_INDEX, body={"query": {"match": {"enabled": True}}}
     )
 
     validation_count = client.count(
-        index=settings.VALIDATION_INDEX,
-        body={"query": {"match_all": {}}}
+        index=settings.VALIDATION_INDEX, body={"query": {"match_all": {}}}
     )
 
     points = get_histogram_points()
@@ -72,50 +62,35 @@ def top_issues():
             "query": {
                 "bool": {
                     "must": [
-                        {
-                            "range": {
-                                "run_date": {
-                                    "gte": "now-1d",
-                                    "lte": "now"
-                                }
-                            }
-                        },
-                        {"match": {"exception_info.raised_exception": "false"}}
+                        {"range": {"run_date": {"gte": "now-1d", "lte": "now"}}},
+                        {"match": {"exception_info.raised_exception": "false"}},
                     ]
                 }
             },
             "aggs": {
                 "dataset_agg": {
-                    "terms": {
-                        "field": "dataset_id.keyword"
-                    },
+                    "terms": {"field": "dataset_id.keyword"},
                     "aggs": {
-                        "passed_agg": {
-                            "filter": {"term": {"success": "true"}}
-                        },
+                        "passed_agg": {"filter": {"term": {"success": "true"}}},
                         "success_rate": {
                             "bucket_script": {
                                 "buckets_path": {
                                     "doc_count": "_count",
-                                    "passed": "passed_agg._count"
+                                    "passed": "passed_agg._count",
                                 },
-                                "script": "params.passed / params.doc_count * 100"
+                                "script": "params.passed / params.doc_count * 100",
                             }
                         },
                         "success_rate_bucket_sort": {
                             "bucket_sort": {
-                                "sort": {
-                                    "success_rate": {
-                                        "order": "asc"
-                                    }
-                                },
-                                "size": 10
+                                "sort": {"success_rate": {"order": "asc"}},
+                                "size": 10,
                             }
-                        }
-                    }
+                        },
+                    },
                 }
-            }
-        }
+            },
+        },
     )
     buckets = issues_response["aggregations"]["dataset_agg"]["buckets"]
 
@@ -143,22 +118,15 @@ def top_issues():
                 "datasource_name",
                 "dataset_name",
                 "dataset_id",
-                "datasource_id"
+                "datasource_id",
             ],
             "size": 20,
-            "query": {
-                "terms": {
-                    "_id": dataset_id_terms
-                }
-            }
-        }
+            "query": {"terms": {"_id": dataset_id_terms}},
+        },
     )
 
     for hit in datasets_response["hits"]["hits"]:
-        dataset_issues.append({
-            **dataset_ids[hit["_id"]],
-            **hit["_source"]
-        })
+        dataset_issues.append({**dataset_ids[hit["_id"]], **hit["_source"]})
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
@@ -176,9 +144,7 @@ def get_histogram_points():
             {"index": settings.EXPECTATION_INDEX},
             {
                 "size": 0,
-                "query": {
-                    "match": {"enabled": True}
-                },
+                "query": {"match": {"enabled": True}},
                 "aggregations": {
                     "histogram": {
                         "date_histogram": {
@@ -187,7 +153,7 @@ def get_histogram_points():
                             "interval": "1d",
                         }
                     }
-                }
+                },
             },
             {"index": settings.VALIDATION_INDEX},
             histogram_query("run_date"),
@@ -199,7 +165,9 @@ def get_histogram_points():
 
     for i in range(len(indices)):
         temp = []
-        for point in points_response["responses"][i]["aggregations"]["histogram"]["buckets"]:
+        for point in points_response["responses"][i]["aggregations"]["histogram"][
+            "buckets"
+        ]:
             temp.append([point["key_as_string"], point["doc_count"]])
         points[indices[i]] = temp
     return points
@@ -216,5 +184,5 @@ def histogram_query(field: str):
                     "interval": "1d",
                 }
             }
-        }
+        },
     }

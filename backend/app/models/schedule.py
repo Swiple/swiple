@@ -1,15 +1,16 @@
+from datetime import datetime
+from typing import Literal, Optional, Union
+
+import app.constants as c
+from app.models.base_model import BaseModel
 from apscheduler.triggers.cron import (
     BaseField,
-    MonthField,
-    WeekField,
     DayOfMonthField,
     DayOfWeekField,
+    MonthField,
+    WeekField,
 )
-from pydantic import validator, Field, Extra
-from typing import Literal, Union, Optional
-from datetime import datetime
-from app.models.base_model import BaseModel
-import app.constants as c
+from pydantic import Extra, Field, validator
 
 
 class IntervalTrigger(BaseModel):
@@ -27,8 +28,8 @@ class IntervalTrigger(BaseModel):
 
     @validator("end_date")
     def start_date_before_end_date(cls, v, values):
-        if v and values['start_date'] and v < values['start_date']:
-            raise ValueError('end_date should not be before start_date')
+        if v and values["start_date"] and v < values["start_date"]:
+            raise ValueError("end_date should not be before start_date")
         return v
 
 
@@ -50,21 +51,23 @@ class CronTrigger(BaseModel):
 
     @validator("end_date")
     def start_date_before_end_date(cls, v, values):
-        if v and values['start_date'] and v < values['start_date']:
-            raise ValueError('end_date should not be before start_date')
+        if v and values["start_date"] and v < values["start_date"]:
+            raise ValueError("end_date should not be before start_date")
         return v
 
-    @validator("year", "month", "day_of_week", "week", "day", "hour", "minute", "second")
+    @validator(
+        "year", "month", "day_of_week", "week", "day", "hour", "minute", "second"
+    )
     def valid_expressions(cls, v, field):
         fields_map = {
-            'year': BaseField,
-            'month': MonthField,
-            'week': WeekField,
-            'day': DayOfMonthField,
-            'day_of_week': DayOfWeekField,
-            'hour': BaseField,
-            'minute': BaseField,
-            'second': BaseField
+            "year": BaseField,
+            "month": MonthField,
+            "week": WeekField,
+            "day": DayOfMonthField,
+            "day_of_week": DayOfWeekField,
+            "hour": BaseField,
+            "minute": BaseField,
+            "second": BaseField,
         }
         field_class = fields_map[field.name]
         field_class(field.name, v, False)
@@ -84,10 +87,10 @@ class Schedule(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    trigger: Union[
-        CronTrigger,
-        IntervalTrigger,
-        DateTrigger
-    ] = Field(discriminator="trigger")
-    misfire_grace_time: Optional[int] = Field(default=300, description=c.MISFIRE_GRACE_TIME)
+    trigger: Union[CronTrigger, IntervalTrigger, DateTrigger] = Field(
+        discriminator="trigger"
+    )
+    misfire_grace_time: Optional[int] = Field(
+        default=300, description=c.MISFIRE_GRACE_TIME
+    )
     max_instances: Optional[int] = Field(default=1, description=c.MAX_INSTANCES)

@@ -1,17 +1,13 @@
+from app.core.users import cookie_backend, current_active_superuser, fastapi_users
+from app.settings import settings
 from fastapi import APIRouter, Depends
 from httpx_oauth.clients.github import GitHubOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
 from httpx_oauth.clients.microsoft import MicrosoftGraphOAuth2
 from httpx_oauth.clients.okta import OktaOAuth2
-from app.core.users import fastapi_users, cookie_backend, current_active_superuser
-from app.settings import settings
 
 router = APIRouter()
-router.include_router(
-    fastapi_users.get_users_router(),
-    prefix="/user",
-    tags=["Users"]
-)
+router.include_router(fastapi_users.get_users_router(), prefix="/user", tags=["Users"])
 
 if settings.USERNAME_AND_PASSWORD_ENABLED:
     # Username + Password
@@ -25,7 +21,7 @@ if settings.USERNAME_AND_PASSWORD_ENABLED:
         fastapi_users.get_register_router(),
         prefix="/auth",
         tags=["Auth"],
-        dependencies=[Depends(current_active_superuser)]
+        dependencies=[Depends(current_active_superuser)],
     )
     router.include_router(
         fastapi_users.get_reset_password_router(),
@@ -40,7 +36,9 @@ if settings.USERNAME_AND_PASSWORD_ENABLED:
 
 if settings.GITHUB_OAUTH_ENABLED:
     # GitHub OAuth
-    github_oauth_client = GitHubOAuth2(settings.GITHUB_OAUTH_CLIENT_ID, settings.GITHUB_OAUTH_SECRET)
+    github_oauth_client = GitHubOAuth2(
+        settings.GITHUB_OAUTH_CLIENT_ID, settings.GITHUB_OAUTH_SECRET
+    )
 
     router.include_router(
         fastapi_users.get_oauth_router(
@@ -55,7 +53,9 @@ if settings.GITHUB_OAUTH_ENABLED:
 
 if settings.GOOGLE_OAUTH_ENABLED:
     # Google OAuth
-    google_oauth_client = GoogleOAuth2(settings.GOOGLE_OAUTH_CLIENT_ID, settings.GOOGLE_OAUTH_SECRET)
+    google_oauth_client = GoogleOAuth2(
+        settings.GOOGLE_OAUTH_CLIENT_ID, settings.GOOGLE_OAUTH_SECRET
+    )
 
     router.include_router(
         fastapi_users.get_oauth_router(
@@ -73,7 +73,7 @@ if settings.MICROSOFT_OAUTH_ENABLED:
     microsoft_oauth_client = MicrosoftGraphOAuth2(
         settings.MICROSOFT_OAUTH_CLIENT_ID,
         settings.MICROSOFT_OAUTH_SECRET,
-        settings.MICROSOFT_OAUTH_TENANT
+        settings.MICROSOFT_OAUTH_TENANT,
     )
 
     router.include_router(
@@ -92,7 +92,7 @@ if settings.OKTA_OAUTH_ENABLED:
     okta_oauth_client = OktaOAuth2(
         settings.OKTA_OAUTH_CLIENT_ID,
         settings.OKTA_OAUTH_SECRET,
-        settings.OKTA_OAUTH_BASE_URL
+        settings.OKTA_OAUTH_BASE_URL,
     )
 
     router.include_router(

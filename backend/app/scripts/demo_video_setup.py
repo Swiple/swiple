@@ -1,13 +1,14 @@
-from datetime import timedelta, datetime
-from opensearchpy.helpers import bulk
-from copy import deepcopy
-from app.settings import settings
-from app.db.client import client
-import uuid
+import json
 import random
+import uuid
+from copy import deepcopy
+from datetime import datetime, timedelta
+
 import pytz
 import requests
-import json
+from app.db.client import client
+from app.settings import settings
+from opensearchpy.helpers import bulk
 
 api_url = f"{settings.SWIPLE_API_URL}{settings.API_VERSION}"
 
@@ -35,12 +36,8 @@ class DemoVideoSetup:
             "client_secret": "",
         }
 
-        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        response = requests.post(
-            f"{api_url}/auth/login",
-            data=params,
-            headers=headers
-        )
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        response = requests.post(f"{api_url}/auth/login", data=params, headers=headers)
         assert response.status_code == 200, json.loads(response.text)["detail"]
         print("Successful login")
         self.cookies = response.cookies.get_dict()
@@ -52,7 +49,7 @@ class DemoVideoSetup:
         response = requests.post(
             f"{api_url}/datasources",
             cookies=self.cookies,
-            headers={'Content-Type': 'application/json'},
+            headers={"Content-Type": "application/json"},
             json={
                 "engine": "PostgreSQL",
                 "datasource_name": datasource_name,
@@ -63,7 +60,7 @@ class DemoVideoSetup:
                 "port": 5432,
                 "description": "",
             },
-            params={"test": True}
+            params={"test": True},
         )
 
         assert response.status_code == 200, json.loads(response.text)["detail"]
@@ -71,14 +68,32 @@ class DemoVideoSetup:
         return response.json()
 
     def add_datasets(
-            self,
-            datasource_id,
-            datasource_name,
+        self,
+        datasource_id,
+        datasource_name,
     ):
         datasets = [
-            {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.orders", "database": "postgres"},
-            {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.customer", "database": "postgres"},
-            {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.part", "database": "postgres"},
+            {
+                "datasource_id": datasource_id,
+                "datasource_name": datasource_name,
+                "engine": "PostgreSQL",
+                "dataset_name": "sample_data.orders",
+                "database": "postgres",
+            },
+            {
+                "datasource_id": datasource_id,
+                "datasource_name": datasource_name,
+                "engine": "PostgreSQL",
+                "dataset_name": "sample_data.customer",
+                "database": "postgres",
+            },
+            {
+                "datasource_id": datasource_id,
+                "datasource_name": datasource_name,
+                "engine": "PostgreSQL",
+                "dataset_name": "sample_data.part",
+                "database": "postgres",
+            },
         ]
 
         dataset_responses = []
@@ -87,7 +102,7 @@ class DemoVideoSetup:
             response = requests.post(
                 f"{api_url}/datasets",
                 cookies=self.cookies,
-                headers={'Content-Type': 'application/json'},
+                headers={"Content-Type": "application/json"},
                 json=dataset,
             )
 
@@ -105,17 +120,19 @@ class DemoVideoSetup:
             response = requests.post(
                 f"{api_url}/datasets/{dataset['key']}/suggest",
                 cookies=self.cookies,
-                headers={'Content-Type': 'application/json'},
+                headers={"Content-Type": "application/json"},
                 json=dataset,
             )
 
             assert response.status_code == 200, json.loads(response.text)["detail"]
-            print(f"Successfully added suggestions for dataset '{dataset['dataset_name']}'")
+            print(
+                f"Successfully added suggestions for dataset '{dataset['dataset_name']}'"
+            )
 
             suggestions = requests.get(
                 f"{api_url}/expectations",
                 cookies=self.cookies,
-                headers={'Content-Type': 'application/json'},
+                headers={"Content-Type": "application/json"},
                 params={
                     "dataset_id": dataset["key"],
                     "suggested": True,
@@ -123,7 +140,9 @@ class DemoVideoSetup:
                 },
             )
 
-            assert suggestions.status_code == 200, json.loads(suggestions.text)["detail"]
+            assert suggestions.status_code == 200, json.loads(suggestions.text)[
+                "detail"
+            ]
 
             for suggestion in suggestions.json():
                 if suggestion["expectation_type"] in expectation_types:
@@ -137,19 +156,22 @@ class DemoVideoSetup:
             response = requests.put(
                 f"{api_url}/expectations/{suggestion['key']}/enable",
                 cookies=self.cookies,
-                headers={'Content-Type': 'application/json'},
+                headers={"Content-Type": "application/json"},
             )
 
             assert response.status_code == 200, json.loads(response.text)["detail"]
 
             # set objective
-            if suggestion['expectation_type'] in ["expect_column_values_to_not_be_null", "expect_column_values_to_be_in_set"]:
+            if suggestion["expectation_type"] in [
+                "expect_column_values_to_not_be_null",
+                "expect_column_values_to_be_in_set",
+            ]:
                 expectation = response.json()
                 expectation["kwargs"]["objective"] = 0.95
                 response = requests.put(
                     f"{api_url}/expectations/{suggestion['key']}",
                     cookies=self.cookies,
-                    headers={'Content-Type': 'application/json'},
+                    headers={"Content-Type": "application/json"},
                     json=expectation,
                 )
 
@@ -162,7 +184,7 @@ class DemoVideoSetup:
             response = requests.post(
                 f"{api_url}/datasets/{dataset['key']}/validate",
                 cookies=self.cookies,
-                headers={'Content-Type': 'application/json'},
+                headers={"Content-Type": "application/json"},
             )
 
             assert response.status_code == 200, json.loads(response.text)["detail"]
@@ -181,7 +203,7 @@ class DemoVideoSetup:
             response = requests.get(
                 f"{api_url}/expectations",
                 cookies=self.cookies,
-                headers={'Content-Type': 'application/json'},
+                headers={"Content-Type": "application/json"},
                 params={
                     "dataset_id": dataset["key"],
                     "enabled": True,
@@ -203,20 +225,30 @@ class DemoVideoSetup:
                 # we want to insert 6 days of data so we have 1 week in the UI.
                 for i in range(len(run_ids)):
                     validation_copy = deepcopy(validation)
-                    validation_copy.update(run_date=str(datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(days=i + 1)))
+                    validation_copy.update(
+                        run_date=str(
+                            datetime.utcnow().replace(tzinfo=pytz.utc)
+                            - timedelta(days=i + 1)
+                        )
+                    )
                     validation_copy.update(run_id=run_ids[i])
 
                     if expectation["kwargs"].get("objective"):
                         item = random.choices(number_list, cum_weights=(10, 90), k=1)
                         validation_copy["result"]["unexpected_percent"] = item[0]
 
-                        if 100 - item[0] < validation_copy["expectation_config"]["kwargs"]["objective"] * 100:
+                        if (
+                            100 - item[0]
+                            < validation_copy["expectation_config"]["kwargs"][
+                                "objective"
+                            ]
+                            * 100
+                        ):
                             validation_copy.update(success=False)
 
                     validations.append(validation_copy)
 
                 self.insert_raw_validations(validations)
-
 
     def add_resources(self):
         datasource = self.add_datasource()
@@ -244,7 +276,7 @@ class DemoVideoSetup:
     def _datasource_exists(self, datasource_name):
         response = client.search(
             index=settings.DATASOURCE_INDEX,
-            body={"query": {"match": {"datasource_name.keyword": datasource_name}}}
+            body={"query": {"match": {"datasource_name.keyword": datasource_name}}},
         )
 
         if response["hits"]["total"]["value"] > 0:
@@ -252,7 +284,7 @@ class DemoVideoSetup:
             response = requests.delete(
                 f"{api_url}/datasources/{response['hits']['hits'][0]['_id']}",
                 cookies=self.cookies,
-                headers={'Content-Type': 'application/json'},
+                headers={"Content-Type": "application/json"},
                 json={
                     "engine": "PostgreSQL",
                     "datasource_name": "local",
@@ -263,12 +295,11 @@ class DemoVideoSetup:
                     "port": 5432,
                     "description": "",
                 },
-                params={"test": True}
+                params={"test": True},
             )
 
             assert response.status_code == 200, json.loads(response.text)["detail"]
             print(f"Successfully deleted datasource '{datasource_name}'")
-
 
 
 DemoVideoSetup().add_resources()

@@ -1,14 +1,14 @@
-from fastapi import APIRouter
 from app.api.api_v1.endpoints import (
     auth,
     dataset,
     datasource,
     expectation,
     introspect,
-    validation,
-    schedule,
     metrics,
+    schedule,
+    validation,
 )
+from fastapi import APIRouter
 
 router = APIRouter()
 router.include_router(auth.router, prefix="/auth", tags=["Auth"])

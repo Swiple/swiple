@@ -1,11 +1,12 @@
-from typing import List, Union, Literal
+from typing import List, Literal, Union
+
 from pydantic import (
     AnyHttpUrl,
     BaseSettings,
     EmailStr,
     Field,
-    validator,
     root_validator,
+    validator,
 )
 
 
@@ -27,7 +28,9 @@ class Settings(BaseSettings):
     SWIPLE_API_URL: AnyHttpUrl = Field(default="http://swiple_api:8000")
     UI_URL: AnyHttpUrl = Field(default="http://127.0.0.1:3000")
     SCHEDULER_API_URL: str = Field(default="http://scheduler:8001")
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = Field(default=["http://swiple_api:8000", "http://127.0.0.1:3000"])
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = Field(
+        default=["http://swiple_api:8000", "http://127.0.0.1:3000"]
+    )
     REDIRECT_URL: AnyHttpUrl = "http://127.0.0.1:3000/login"
 
     # Lifetime of HTTP Cookie
@@ -46,7 +49,9 @@ class Settings(BaseSettings):
     MICROSOFT_OAUTH_ENABLED: bool = Field(default=False)
     MICROSOFT_OAUTH_CLIENT_ID: str = Field(default=None)
     MICROSOFT_OAUTH_SECRET: str = Field(default=None)
-    MICROSOFT_OAUTH_TENANT: str = Field(default=None)  # defaults to "common" when not set
+    MICROSOFT_OAUTH_TENANT: str = Field(
+        default=None
+    )  # defaults to "common" when not set
 
     OKTA_OAUTH_ENABLED: bool = Field(default=False)
     OKTA_OAUTH_CLIENT_ID: str = Field(default=None)
@@ -89,7 +94,11 @@ class Settings(BaseSettings):
 
         username_and_password_enabled = values.get("USERNAME_AND_PASSWORD_ENABLED")
 
-        auth_methods = [github_oauth_enabled, okta_oauth_enabled, username_and_password_enabled]
+        auth_methods = [
+            github_oauth_enabled,
+            okta_oauth_enabled,
+            username_and_password_enabled,
+        ]
 
         if True not in auth_methods:
             raise ValueError("At lease one auth method should be enabled.")
@@ -99,27 +108,39 @@ class Settings(BaseSettings):
             github_oauth_secret = values.get("GITHUB_OAUTH_SECRET")
 
             if not github_oauth_client_id:
-                raise ValueError("GITHUB_OAUTH_CLIENT_ID is required when GITHUB_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "GITHUB_OAUTH_CLIENT_ID is required when GITHUB_OAUTH_ENABLED is true."
+                )
             if not github_oauth_secret:
-                raise ValueError("GITHUB_OAUTH_SECRET is required when GITHUB_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "GITHUB_OAUTH_SECRET is required when GITHUB_OAUTH_ENABLED is true."
+                )
 
         if google_oauth_enabled:
             google_oauth_client_id = values.get("GOOGLE_OAUTH_CLIENT_ID")
             google_oauth_secret = values.get("GOOGLE_OAUTH_SECRET")
 
             if not google_oauth_client_id:
-                raise ValueError("GOOGLE_OAUTH_CLIENT_ID is required when GOOGLE_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "GOOGLE_OAUTH_CLIENT_ID is required when GOOGLE_OAUTH_ENABLED is true."
+                )
             if not google_oauth_secret:
-                raise ValueError("GOOGLE_OAUTH_SECRET is required when GOOGLE_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "GOOGLE_OAUTH_SECRET is required when GOOGLE_OAUTH_ENABLED is true."
+                )
 
         if microsoft_oauth_enabled:
             microsoft_oauth_client_id = values.get("MICROSOFT_OAUTH_CLIENT_ID")
             microsoft_oauth_secret = values.get("MICROSOFT_OAUTH_SECRET")
 
             if not microsoft_oauth_client_id:
-                raise ValueError("MICROSOFT_OAUTH_CLIENT_ID is required when MICROSOFT_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "MICROSOFT_OAUTH_CLIENT_ID is required when MICROSOFT_OAUTH_ENABLED is true."
+                )
             if not microsoft_oauth_secret:
-                raise ValueError("MICROSOFT_OAUTH_SECRET is required when MICROSOFT_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "MICROSOFT_OAUTH_SECRET is required when MICROSOFT_OAUTH_ENABLED is true."
+                )
 
         if okta_oauth_enabled:
             okta_oauth_client_id = values.get("OKTA_OAUTH_CLIENT_ID")
@@ -127,11 +148,17 @@ class Settings(BaseSettings):
             okta_oauth_base_url = values.get("OKTA_OAUTH_BASE_URL")
 
             if not okta_oauth_client_id:
-                raise ValueError("OKTA_OAUTH_CLIENT_ID is required when OKTA_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "OKTA_OAUTH_CLIENT_ID is required when OKTA_OAUTH_ENABLED is true."
+                )
             if not okta_oauth_secret:
-                raise ValueError("OKTA_OAUTH_SECRET is required when OKTA_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "OKTA_OAUTH_SECRET is required when OKTA_OAUTH_ENABLED is true."
+                )
             if not okta_oauth_base_url:
-                raise ValueError("OKTA_OAUTH_BASE_URL is required when OKTA_OAUTH_ENABLED is true.")
+                raise ValueError(
+                    "OKTA_OAUTH_BASE_URL is required when OKTA_OAUTH_ENABLED is true."
+                )
 
         return values
 

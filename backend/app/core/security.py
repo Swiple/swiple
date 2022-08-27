@@ -1,5 +1,5 @@
-from cryptography.fernet import Fernet
 from app.settings import settings
+from cryptography.fernet import Fernet
 
 
 def encrypt_password(password: str) -> str:
@@ -7,4 +7,8 @@ def encrypt_password(password: str) -> str:
 
 
 def decrypt_password(encrypted_password: str) -> str:
-    return Fernet(settings.SECRET_KEY.encode()).decrypt(encrypted_password.encode()).decode()
+    return (
+        Fernet(settings.SECRET_KEY.encode())
+        .decrypt(encrypted_password.encode())
+        .decode()
+    )

@@ -1,6 +1,7 @@
-from app.settings import settings
-from app.core.users import create_user
 import asyncio
+
+from app.core.users import create_user
+from app.settings import settings
 
 
 async def create_admin_user():

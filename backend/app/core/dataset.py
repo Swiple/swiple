@@ -7,7 +7,7 @@ def split_dataset_resource(dataset: Dataset):
         dataset_name = dataset.dataset_name
         is_virtual = True
     else:
-        split_dataset = dataset.dataset_name.split('.')
+        split_dataset = dataset.dataset_name.split(".")
         dataset_schema, dataset_name = split_dataset
         is_virtual = False
 

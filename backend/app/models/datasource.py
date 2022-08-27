@@ -1,12 +1,12 @@
-from fastapi import HTTPException, status
-from app.models.base_model import BaseModel
-from pydantic import Field, Extra
-from typing import Optional, Literal
-from app.settings import settings
-from app.db.client import client
-from app.core import security
-from opensearchpy import NotFoundError
+from typing import Literal, Optional
 
+from app.core import security
+from app.db.client import client
+from app.models.base_model import BaseModel
+from app.settings import settings
+from fastapi import HTTPException, status
+from opensearchpy import NotFoundError
+from pydantic import Extra, Field
 
 ATHENA = "Athena"
 POSTGRESQL = "PostgreSQL"
@@ -33,18 +33,20 @@ class Datasource(BaseModel):
 
     def connection_string(self):
         """Returns a SQLAlchemy compatible connection string."""
-        pass
 
     def expectation_meta(self):
         """Returns connection metadata to be included in validation."""
-        pass
 
 
 class Athena(Datasource):
     engine: str = Field(ATHENA, const=True)
     database: str
     region: str = Field(placeholder="us-east-1", description="AWS Region")
-    s3_staging_dir: str = Field(regex="^s3://", placeholder="s3://YOUR_S3_BUCKET/path/to/", description="Navigate to 'Athena' in the AWS Console then select 'Settings' to find the 'Query result location'.")
+    s3_staging_dir: str = Field(
+        regex="^s3://",
+        placeholder="s3://YOUR_S3_BUCKET/path/to/",
+        description="Navigate to 'Athena' in the AWS Console then select 'Settings' to find the 'Query result location'.",
+    )
 
     def connection_string(self):
         if self.database:
@@ -125,7 +127,9 @@ class Snowflake(Datasource):
     role: Optional[str]
 
     def connection_string(self, schema=None):
-        connection = f"snowflake://{self.user}:{self.password}@{self.account}/{self.database}"
+        connection = (
+            f"snowflake://{self.user}:{self.password}@{self.account}/{self.database}"
+        )
 
         if schema:
             connection = f"{connection}/{schema}"
@@ -161,8 +165,8 @@ class Trino(Datasource):
     database: str
     port: int = Field(placeholder=8080)
     connection_args: Optional[str] = Field(
-        placeholder='These values are not encrypted',
-        description='Add additional connection arguments e.g. session_properties={"query_max_run_time": "1d"}&client_tags=["tag1", "tag2"]'
+        placeholder="These values are not encrypted",
+        description='Add additional connection arguments e.g. session_properties={"query_max_run_time": "1d"}&client_tags=["tag1", "tag2"]',
     )
 
     def connection_string(self):
@@ -199,14 +203,11 @@ class Trino(Datasource):
 
 def get_datasource(key: str, decrypt_pw: bool = False):
     try:
-        ds_response = client.get(
-            index=settings.DATASOURCE_INDEX,
-            id=key
-        )
+        ds_response = client.get(index=settings.DATASOURCE_INDEX, id=key)
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"datasource with id '{key}' does not exist"
+            detail=f"datasource with id '{key}' does not exist",
         )
     ds_response["_source"]["key"] = ds_response["_id"]
     ds = ds_response["_source"]

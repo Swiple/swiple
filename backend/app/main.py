@@ -1,14 +1,12 @@
-from starlette.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
-from app.api.api_v1 import auth_router
-from app.settings import settings
-from app.db.client import client, async_client
 import app.constants as c
+from app.api.api_v1 import auth_router
 from app.core.schedulers.scheduler import scheduler
+from app.db.client import async_client, client
+from app.settings import settings
+from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
-app = FastAPI(
-    openapi_url=f"{settings.API_VERSION}/openapi.json"
-)
+app = FastAPI(openapi_url=f"{settings.API_VERSION}/openapi.json")
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
@@ -24,10 +22,12 @@ app.include_router(auth_router.router, prefix=settings.API_VERSION)
 
 if settings.APP == c.APP_SWIPLE_API:
     from app.api.api_v1 import swiple_router
+
     app.include_router(swiple_router.router, prefix=settings.API_VERSION)
 
 if settings.APP == c.APP_SCHEDULER:
     from app.api.api_v1 import scheduler_router
+
     app.include_router(scheduler_router.router, prefix=settings.API_VERSION)
 
 
