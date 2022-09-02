@@ -58,7 +58,7 @@ class EncryptedStr(str):
         return security.decrypt_password(self)
 
 
-class EncryptedStrGetterSetterMixin:
+class EncryptedStrSetterMixin:
     """
     Mixin to overload the setter method of Pydantic models
     using an `EncryptedStr` field.
