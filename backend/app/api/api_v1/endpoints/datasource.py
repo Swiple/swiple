@@ -16,7 +16,6 @@ from app.settings import settings
 from app import utils
 from typing import Optional
 from opensearchpy import RequestError
-from app.core import security
 from app.models import datasource as datasourcee
 from fastapi.param_functions import Depends
 import uuid
@@ -207,14 +206,12 @@ def _update_datasource(datasource, key: str, test: bool):
 		datasource_for_test = deepcopy(datasource)
 
 		if hasattr(datasource, "password") and datasource.password:
-			if datasource.password == "*****":
+			if datasource.password.get_decrypted_value() == "*****":
 				# password hasn't changed, get it from existing datasource and decrypt password
 				datasource_for_test.password = original_datasource.password
 
 				# remove password so we don't update OpenSearch with *****
 				datasource_as_dict.pop("password")
-			else:
-				datasource_as_dict["password"] = security.encrypt_password(datasource.password)
 
 		_test_datasource(datasource_for_test)
 
@@ -277,9 +274,6 @@ def _create_datasource(datasource, test: bool, user: UserDB):
 	datasource.created_by = user.email
 	datasource.create_date = utils.current_time()
 	datasource.modified_date = utils.current_time()
-
-	if hasattr(datasource, "password") and datasource.password:
-		datasource.password = security.encrypt_password(datasource.password)
 
 	datasource_as_dict = datasource.dict(by_alias=True, exclude_none=True)
 

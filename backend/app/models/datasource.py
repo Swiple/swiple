@@ -4,7 +4,7 @@ from pydantic import Field, Extra
 from typing import Optional, Literal
 from app.settings import settings
 from app.db.client import client
-from app.core import security
+from app.models.types import EncryptedStr, EncryptedStrGetterSetterMixin
 from opensearchpy import NotFoundError
 
 
@@ -19,7 +19,7 @@ TRINO = "Trino"
 Engines = Literal[ATHENA, POSTGRESQL, MYSQL, REDSHIFT, SNOWFLAKE, TRINO]
 
 
-class Datasource(BaseModel):
+class Datasource(EncryptedStrGetterSetterMixin, BaseModel):
     class Config:
         extra = Extra.allow
 
@@ -64,13 +64,13 @@ class Athena(Datasource):
 class PostgreSQL(Datasource):
     engine: str = Field(POSTGRESQL, const=True)
     username: str
-    password: str
+    password: EncryptedStr
     database: str
     host: str
     port: int = Field(placeholder=5432)
 
     def connection_string(self):
-        return f"postgresql+psycopg2://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return f"postgresql+psycopg2://{self.username}:{self.password.get_decrypted_value()}@{self.host}:{self.port}/{self.database}"
 
     def expectation_meta(self):
         return {
@@ -82,13 +82,13 @@ class PostgreSQL(Datasource):
 class MySQL(Datasource):
     engine: str = Field(MYSQL, const=True)
     username: str
-    password: str
+    password: EncryptedStr
     database: str
     host: str
     port: int = Field(placeholder=3306)
 
     def connection_string(self):
-        return f"mysql+pymysql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return f"mysql+pymysql://{self.username}:{self.password.get_decrypted_value()}@{self.host}:{self.port}/{self.database}"
 
     def expectation_meta(self):
         return {
@@ -100,13 +100,13 @@ class MySQL(Datasource):
 class Redshift(Datasource):
     engine: str = Field(REDSHIFT, const=True)
     username: str
-    password: str
+    password: EncryptedStr
     database: str
     host: str
     port: int = Field(placeholder=5439)
 
     def connection_string(self):
-        return f"postgresql+psycopg2://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        return f"postgresql+psycopg2://{self.username}:{self.password.get_decrypted_value()}@{self.host}:{self.port}/{self.database}"
 
     def expectation_meta(self):
         return {
@@ -119,13 +119,13 @@ class Snowflake(Datasource):
     engine: str = Field(SNOWFLAKE, const=True)
     account: str
     user: str
-    password: str
+    password: EncryptedStr
     database: str
     warehouse: Optional[str]
     role: Optional[str]
 
     def connection_string(self, schema=None):
-        connection = f"snowflake://{self.user}:{self.password}@{self.account}/{self.database}"
+        connection = f"snowflake://{self.user}:{self.password.get_decrypted_value()}@{self.account}/{self.database}"
 
         if schema:
             connection = f"{connection}/{schema}"
@@ -156,7 +156,7 @@ class Snowflake(Datasource):
 class Trino(Datasource):
     engine: str = Field(TRINO, const=True)
     username: str
-    password: Optional[str]
+    password: Optional[EncryptedStr]
     host: str
     database: str
     port: int = Field(placeholder=8080)
@@ -166,7 +166,7 @@ class Trino(Datasource):
     )
 
     def connection_string(self):
-        url = f'trino://{self.username}:{self.password or ""}@{self.host}:{self.port}/{self.database}'
+        url = f'trino://{self.username}:{self.password.get_decrypted_value() if self.password else ""}@{self.host}:{self.port}/{self.database}'
         if self.connection_args and self.connection_args.startswith("?"):
             url += self.connection_args
         if self.connection_args and not self.connection_args.startswith("?"):
@@ -214,11 +214,6 @@ def get_datasource(key: str, decrypt_pw: bool = False):
     engine = engine_types[ds["engine"]]
     datasource = engine(**ds)
 
-    if hasattr(datasource, "password") and datasource.password:
-        if decrypt_pw:
-            datasource.password = security.decrypt_password(datasource.password)
-        else:
-            datasource.password = "*****"
     return datasource
 
 
