@@ -40,6 +40,7 @@ def get_jwt_strategy() -> JWTStrategy:
 cookie_transport = CookieTransport(
     cookie_name="swipleuserauth",
     cookie_max_age=settings.AUTH_LIFETIME_IN_SECONDS,
+    cookie_secure=settings.AUTH_COOKIE_SECURE,
 )
 
 cookie_backend = AuthenticationBackend(

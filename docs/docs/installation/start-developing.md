@@ -120,3 +120,6 @@ Sign in with the following credentials:
 `ADMIN_EMAIL` and `ADMIN_PASSWORD` can be set in `docker/.env` 
 :::
 
+:::note Note
+To avoid authentication issues during local development, you should set `AUTH_COOKIE_SECURE` to `False` in your `docker/.env`.
+:::

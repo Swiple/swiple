@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     # Lifetime of HTTP Cookie
     # Default: 8 hrs
     AUTH_LIFETIME_IN_SECONDS: int = Field(default="28800")
+    AUTH_COOKIE_SECURE: bool = True
     USERNAME_AND_PASSWORD_ENABLED: bool = Field(default=True)
 
     GITHUB_OAUTH_ENABLED: bool = Field(default=False)
