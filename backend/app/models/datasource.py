@@ -197,7 +197,7 @@ class Trino(Datasource):
 #         }
 
 
-def get_datasource(key: str, decrypt_pw: bool = False):
+def get_datasource(key: str):
     try:
         ds_response = client.get(
             index=settings.DATASOURCE_INDEX,

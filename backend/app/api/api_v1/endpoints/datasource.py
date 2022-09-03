@@ -185,7 +185,7 @@ def _delete_datasource(
 
 
 def _update_datasource(datasource, key: str, test: bool):
-	original_datasource = datasourcee.get_datasource(key=key, decrypt_pw=True)
+	original_datasource = datasourcee.get_datasource(key=key)
 
 	if original_datasource.datasource_name != datasource.datasource_name:
 		response = client.search(
