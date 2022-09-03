@@ -83,3 +83,5 @@ WEEKS = "Number of weeks to wait"
 
 # DateTrigger
 RUN_DATE = "The date/time to run the schedule at"
+
+SECRET_MASK = "*****"

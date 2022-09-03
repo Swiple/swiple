@@ -21,6 +21,7 @@ from fastapi.param_functions import Depends
 import uuid
 from app.core.users import current_active_user
 from app.models.users import UserDB
+from app import constants as c
 import requests
 
 router = APIRouter(
@@ -66,7 +67,7 @@ def list_datasources(
 	docs_response = []
 	for doc in docs:
 		if doc["_source"].get("password"):
-			doc["_source"]["password"] = "*****"
+			doc["_source"]["password"] = c.SECRET_MASK
 
 		doc["_source"]["key"] = doc["_id"]
 		docs_response.append(
@@ -206,7 +207,7 @@ def _update_datasource(datasource, key: str, test: bool):
 		datasource_for_test = deepcopy(datasource)
 
 		if hasattr(datasource, "password") and datasource.password:
-			if datasource.password.get_decrypted_value() == "*****":
+			if datasource.password.get_decrypted_value() == c.SECRET_MASK:
 				# password hasn't changed, get it from existing datasource and decrypt password
 				datasource_for_test.password = original_datasource.password
 
@@ -223,7 +224,7 @@ def _update_datasource(datasource, key: str, test: bool):
 	)
 
 	datasource_as_dict["key"] = key
-	datasource_as_dict["password"] = "*****"
+	datasource_as_dict["password"] = c.SECRET_MASK
 
 	# instead of performing a join on datasource_id in the GET /dataset endpoint,
 	# we will store the 'datasource_name' and 'database' properties in the
@@ -285,7 +286,7 @@ def _create_datasource(datasource, test: bool, user: UserDB):
 	)
 
 	datasource_as_dict["key"] = insert_response["_id"]
-	datasource_as_dict["password"] = "*****"
+	datasource_as_dict["password"] = c.SECRET_MASK
 
 	return JSONResponse(
 		status_code=status.HTTP_200_OK,
