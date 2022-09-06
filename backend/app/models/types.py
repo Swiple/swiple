@@ -5,9 +5,9 @@ from pydantic.utils import update_not_none
 from pydantic.validators import str_validator
 
 from app.core import security
+from app import constants as c
 
 if TYPE_CHECKING:
-    from pydantic import BaseModel
     from pydantic.typing import CallableGenerator
 
 
@@ -51,6 +51,9 @@ class EncryptedStr(str):
 
     def __repr__(self) -> str:
         return f"EncryptedStr('**********')"
+
+    def __str__(self) -> str:
+        return c.SECRET_MASK if self.get_decrypted_value() else ""
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, EncryptedStr) and self.get_decrypted_value() == other.get_decrypted_value()
