@@ -35,6 +35,7 @@ class EncryptedStr(str):
             field_schema,
             type="string",
             writeOnly=True,
+            format="password",
         )
 
     @classmethod
