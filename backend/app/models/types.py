@@ -57,29 +57,3 @@ class EncryptedStr(str):
 
     def get_decrypted_value(self) -> str:
         return security.decrypt_password(self)
-
-
-class EncryptedStrSetterMixin:
-    """
-    Mixin to overload the setter method of Pydantic models
-    using an `EncryptedStr` field.
-
-    By default, when setting an attribute like this:
-
-    ```py
-    my_object.encrypted_value = "VALUE"
-    ```
-
-    Pydantic will just store it as a plain string without
-    respecting the type we gave on the model class.
-
-    We overload this behavior by checking if the field
-    we are currently setting has the `EncryptedStr` type.
-    If it does, we take care of instantiating a proper `EncryptedStr`
-    instance so our string is correctly encrypted.
-    """
-    def __setattr__(self: "BaseModel", name: str, value: Any) -> None:
-        field = self.__fields__.get(name)
-        if field and field.type_ == EncryptedStr:
-            return super().__setattr__(name, EncryptedStr(value))
-        return super().__setattr__(name, value)

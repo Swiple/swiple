@@ -4,7 +4,7 @@ from pydantic import Field, Extra
 from typing import Optional, Literal
 from app.settings import settings
 from app.db.client import client
-from app.models.types import EncryptedStr, EncryptedStrSetterMixin
+from app.models.types import EncryptedStr
 from opensearchpy import NotFoundError
 
 
@@ -19,7 +19,7 @@ TRINO = "Trino"
 Engines = Literal[ATHENA, POSTGRESQL, MYSQL, REDSHIFT, SNOWFLAKE, TRINO]
 
 
-class Datasource(EncryptedStrSetterMixin, BaseModel):
+class Datasource(BaseModel):
     class Config:
         extra = Extra.allow
 
