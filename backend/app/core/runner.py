@@ -1,7 +1,7 @@
 from great_expectations.core import ExpectationSuite, ExpectationConfiguration
 from great_expectations.core.batch import RuntimeBatchRequest, BatchRequest
 from great_expectations.data_context import BaseDataContext
-from great_expectations.data_context.types.base import DataContextConfig
+from great_expectations.data_context.types.base import DataContextConfig, AnonymizedUsageStatisticsConfig
 from great_expectations.data_context.types.base import InMemoryStoreBackendDefaults
 from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
 from app.models.datasource import SNOWFLAKE
@@ -31,7 +31,7 @@ class Runner:
 
         data_context_config = self.get_data_context_config()
         context = BaseDataContext(project_config=data_context_config)
-        suite: ExpectationSuite = context.create_expectation_suite("suite", overwrite_existing=True)
+        suite: ExpectationSuite = context.create_expectation_suite("default", overwrite_existing=True)
 
         batch_request = self.get_batch_request(is_profile=True)
 
@@ -178,9 +178,10 @@ class Runner:
                 }
             },
             store_backend_defaults=InMemoryStoreBackendDefaults(),
-            anonymous_usage_statistics={
-                "enabled": False,
-            }
+            concurrency={
+                "enabled": True,
+            },
+            anonymous_usage_statistics=AnonymizedUsageStatisticsConfig(enabled=False)
         )
         return context
 
