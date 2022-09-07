@@ -5,11 +5,9 @@ sidebar_position: 3
 # How to Update SECRET_KEY
 
 Run the following snippet to create a Fernet Key and set `SECRET_KEY` to it.
-```python
-from cryptography.fernet import Fernet
 
-fernet_key = Fernet.generate_key()
-print(fernet_key.decode())  # your fernet_key, keep it in a secure place!
+```sh
+poetry run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
 :::note Note
