@@ -121,5 +121,5 @@ Sign in with the following credentials:
 :::
 
 :::note Note
-To avoid authentication issues during local development, you should set `AUTH_COOKIE_SECURE` to `False` in your `docker/.env`.
+To avoid authentication issues during local development, `AUTH_COOKIE_SECURE` is set to `False` in your `docker/.env`.
 :::

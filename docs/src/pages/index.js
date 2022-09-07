@@ -20,7 +20,7 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="/docs/installation/quick-start">
-            Get Started
+            Get Started in 4 Commands
           </Link>
         </div>
         <div className={clsx("margin-bottom--xl")} />
