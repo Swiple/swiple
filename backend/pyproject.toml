@@ -9,7 +9,7 @@ license = "Elastic License 2.0"
 python = ">=3.9.0,<3.10"
 numpy = ">=1.23.1"
 scipy = ">=1.9.0"
-great-expectations = "0.15.0"
+great-expectations = "^0.15.21"
 fastapi = "0.71.0"
 fastapi-users-db-opensearch = {git = "https://github.com/KentonParton/fastapi-users-db-opensearch.git", rev = "78f7aff0480400bbeac01f12c17e04f1ae21fbed"}
 APScheduler = "3.9.1"
