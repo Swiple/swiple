@@ -4,7 +4,7 @@ WORKDIR /code
 
 COPY poetry.lock pyproject.toml  /code/
 
-RUN pip install --no-cache-dir --upgrade "poetry==1.1.14"
+RUN pip install --no-cache-dir --upgrade pip poetry
 
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
