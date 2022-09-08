@@ -58,8 +58,12 @@ Sign in with the following credentials:
 - **Username**: admin@email.com
 - **Password**: admin
 
-:::note Note
-`ADMIN_EMAIL` and `ADMIN_PASSWORD` can be set in `docker/.env-non-dev` 
+:::info Important
+Before deploying to production, make the following changes to `docker/.env-non-dev` 
+
+1. Update `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+2. Set `AUTH_COOKIE_SECURE` to `True`.
+3. Generate a new `SECRET_KEY` as shown in [How to Update SECRET_KEY](../configuration/how-to-update-SECRET_KEY.md).  
 :::
 
 ### 5. Connect to Sample Database
