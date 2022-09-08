@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from app.models.base_model import BaseModel
 from pydantic import Field, Extra
-from typing import Optional, Literal
+from typing import Any, Dict, Optional, Literal, Type, TypeVar
 from app.settings import settings
 from app.db.client import client
 from app.models.types import EncryptedStr
@@ -39,6 +39,7 @@ class Datasource(BaseModel):
         """Returns connection metadata to be included in validation."""
         pass
 
+D = TypeVar("D", bound=Datasource)
 
 class Athena(Datasource):
     engine: str = Field(ATHENA, const=True)
@@ -196,6 +197,10 @@ class Trino(Datasource):
 #             "dataset": self.dataset,
 #         }
 
+def datasource_from_dict(key: str, data: Dict[str, Any]) -> D:
+    engine_class = engine_types[data["engine"]]
+    data.pop("key", None)
+    return engine_class(key=key, **data)
 
 def get_datasource(key: str):
     try:
@@ -208,16 +213,11 @@ def get_datasource(key: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"datasource with id '{key}' does not exist"
         )
-    ds_response["_source"]["key"] = ds_response["_id"]
-    ds = ds_response["_source"]
 
-    engine = engine_types[ds["engine"]]
-    datasource = engine(**ds)
-
-    return datasource
+    return datasource_from_dict(ds_response["_id"],  ds_response["_source"])
 
 
-engine_types = {
+engine_types: Dict[str, Type[D]] = {
     ATHENA: Athena,
     POSTGRESQL: PostgreSQL,
     MYSQL: MySQL,

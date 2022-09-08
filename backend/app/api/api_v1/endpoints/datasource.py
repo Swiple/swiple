@@ -1,8 +1,8 @@
 from copy import deepcopy
+from typing import List, Optional
 
 import sqlalchemy.exc
 from fastapi import APIRouter, HTTPException, status, Request
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy import create_engine
@@ -14,7 +14,6 @@ from app.models.datasource import (
 from app.db.client import client
 from app.settings import settings
 from app import utils
-from typing import Optional
 from opensearchpy import RequestError
 from app.models import datasource as datasourcee
 from fastapi.param_functions import Depends
@@ -36,10 +35,10 @@ def get_json_schema():
 	for data_source in engine_types.values():
 		data_sources.append(data_source.schema())
 
-	return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(data_sources))
+	return data_sources
 
 
-@router.get("")
+@router.get("", response_model=List[Datasource])
 def list_datasources(
 		sort_by_key: Optional[str] = "datasource_name",
 		asc: Optional[bool] = True,
@@ -66,25 +65,20 @@ def list_datasources(
 
 	docs_response = []
 	for doc in docs:
-		if doc["_source"].get("password"):
-			doc["_source"]["password"] = c.SECRET_MASK
-
-		doc["_source"]["key"] = doc["_id"]
 		docs_response.append(
-			dict(**doc["_source"])
+			datasourcee.datasource_from_dict(doc["_id"], doc["_source"])
 		)
-	return JSONResponse(status_code=status.HTTP_200_OK, content=docs_response)
+	return docs_response
 
 
-@router.get("/{key}")
+@router.get("/{key}", response_model=Datasource)
 def get_datasource(
 		key: str,
 ):
-	doc = datasourcee.get_datasource(key=key).dict(by_alias=True)
-	return JSONResponse(status_code=status.HTTP_200_OK, content=doc)
+	return datasourcee.get_datasource(key=key)
 
 
-@router.post("")
+@router.post("", response_model=Datasource)
 def create_datasource(
 		datasource: Datasource,
 		test: Optional[bool] = False,
@@ -100,13 +94,13 @@ def create_datasource(
 	except ValidationError as exc:
 		return JSONResponse(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-			content=jsonable_encoder({"detail": exc.errors(), "body": datasource}),
+			content={"detail": exc.errors(), "body": datasource},
 		)
 
 	return _create_datasource(datasource, test, user)
 
 
-@router.put("/{key}")
+@router.put("/{key}", response_model=Datasource)
 def update_datasource(
 		datasource: Datasource,
 		key: str,
@@ -122,7 +116,7 @@ def update_datasource(
 	except ValidationError as exc:
 		return JSONResponse(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-			content=jsonable_encoder({"detail": exc.errors(), "body": datasource}),
+			content={"detail": exc.errors(), "body": datasource},
 		)
 	return _update_datasource(datasource, key, test)
 
@@ -224,7 +218,6 @@ def _update_datasource(datasource, key: str, test: bool):
 	)
 
 	datasource_as_dict["key"] = key
-	datasource_as_dict["password"] = c.SECRET_MASK
 
 	# instead of performing a join on datasource_id in the GET /dataset endpoint,
 	# we will store the 'datasource_name' and 'database' properties in the
@@ -251,10 +244,8 @@ def _update_datasource(datasource, key: str, test: bool):
 			},
 			wait_for_completion=True,
 		)
-	return JSONResponse(
-		status_code=status.HTTP_200_OK,
-		content=datasource_as_dict
-	)
+
+	return datasourcee.datasource_from_dict(key, datasource_as_dict)
 
 
 def _create_datasource(datasource, test: bool, user: UserDB):
@@ -285,10 +276,4 @@ def _create_datasource(datasource, test: bool, user: UserDB):
 		refresh="wait_for",
 	)
 
-	datasource_as_dict["key"] = insert_response["_id"]
-	datasource_as_dict["password"] = c.SECRET_MASK
-
-	return JSONResponse(
-		status_code=status.HTTP_200_OK,
-		content=datasource_as_dict
-	)
+	return datasourcee.datasource_from_dict(insert_response["_id"], datasource_as_dict)
