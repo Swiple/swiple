@@ -14,10 +14,7 @@ router = APIRouter(
 
 @router.get("/schema")
 def list_schemas(datasource_id: str):
-    datasource = get_datasource(
-        key=datasource_id,
-        decrypt_pw=True
-    )
+    datasource = get_datasource(key=datasource_id)
     try:
         engine = sa.create_engine(datasource.connection_string())
         inspect = sa.inspect(engine)
@@ -32,10 +29,7 @@ def list_schemas(datasource_id: str):
 
 @router.get("/table")
 def list_tables(datasource_id: str, schema: str):
-    datasource = get_datasource(
-        key=datasource_id,
-        decrypt_pw=True
-    )
+    datasource = get_datasource(key=datasource_id)
 
     engine = sa.create_engine(datasource.connection_string())
     inspect = sa.inspect(engine)
@@ -46,10 +40,7 @@ def list_tables(datasource_id: str, schema: str):
 
 @router.get("/column")
 def list_columns(datasource_id: str, schema: str, table: str):
-    datasource = get_datasource(
-        key=datasource_id,
-        decrypt_pw=True
-    )
+    datasource = get_datasource(key=datasource_id)
     engine = sa.create_engine(datasource.connection_string())
     inspect = sa.inspect(engine)
     sa_column_list = inspect.get_columns(schema=schema, table_name=table)

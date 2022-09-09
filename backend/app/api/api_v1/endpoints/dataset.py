@@ -236,10 +236,7 @@ def sample(
         dataset: Dataset,
         response_format: bool = True
 ):
-    datasource = get_datasource(
-        key=dataset.datasource_id,
-        decrypt_pw=True,
-    )
+    datasource = get_datasource(key=dataset.datasource_id)
 
     if dataset.runtime_parameters:
         response = get_sample_query(

@@ -10,9 +10,11 @@ import { getDataSourcesJsonSchema, postDataSource, putDataSource } from '../../.
 import AsyncButton from '../../../components/AsyncButton';
 
 const Ajv = require('ajv');
+const addFormats = require('ajv-formats');
 
 const ajv = new Ajv();
 ajv.addKeyword('placeholder');
+addFormats(ajv);
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -135,7 +137,7 @@ function DatasourceModal({
               const placeholder = propObj.placeholder ? propObj.placeholder : null;
 
               let inputType = 'text';
-              if (propObj.title.toLowerCase() === 'password') {
+              if (propObj.format === 'password') {
                 inputType = 'password';
               }
 
