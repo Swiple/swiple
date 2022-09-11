@@ -205,8 +205,8 @@ def _update_datasource(datasource, key: str, test: bool):
 				# password hasn't changed, get it from existing datasource and decrypt password
 				datasource_for_test.password = original_datasource.password
 
-				# remove password so we don't update OpenSearch with *****
-				datasource_as_dict.pop("password")
+				# set password so we don't update OpenSearch with *****
+				datasource_as_dict["password"] = original_datasource.password
 
 		_test_datasource(datasource_for_test)
 
