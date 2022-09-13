@@ -1,5 +1,4 @@
-from copy import deepcopy
-from typing import List, Optional
+from typing import Optional
 
 import sqlalchemy.exc
 from fastapi import APIRouter, HTTPException, status, Request
@@ -7,11 +6,13 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy import create_engine
 from sqlalchemy.exc import DBAPIError
+from app.api.shortcuts import get_by_key_or_404
 from app.models.datasource import (
 	engine_types,
 	Datasource,
 )
 from app.db.client import client
+from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.settings import settings
 from app import utils
 from opensearchpy import RequestError
@@ -38,44 +39,38 @@ def get_json_schema():
 	return data_sources
 
 
-@router.get("", response_model=List[Datasource])
+@router.get("", response_model=list[Datasource])
 def list_datasources(
 		sort_by_key: Optional[str] = "datasource_name",
 		asc: Optional[bool] = True,
+		repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
 	# TODO implement scrolling
 	direction = "asc" if asc else "desc"
 
 	try:
-		docs = client.search(
-			index=settings.DATASOURCE_INDEX,
-			size=1000,
-			body={
+		return repository.list(
+			{
 				"query": {"match_all": {}},
 				"sort": [
 					{sort_by_key: direction}
 				]
-			}
-		)["hits"]["hits"]
+			},
+			size=1000
+		)
 	except RequestError:
 		raise HTTPException(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
 			detail=f"invalid sort_by_key"
 		)
 
-	docs_response = []
-	for doc in docs:
-		docs_response.append(
-			datasourcee.datasource_from_dict(doc["_id"], doc["_source"])
-		)
-	return docs_response
-
 
 @router.get("/{key}", response_model=Datasource)
 def get_datasource(
 		key: str,
+		repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
-	return datasourcee.get_datasource(key=key)
+	return get_by_key_or_404(key, repository)
 
 
 @router.post("", response_model=Datasource)
@@ -83,6 +78,7 @@ def create_datasource(
 		datasource: Datasource,
 		test: Optional[bool] = False,
 		user: UserDB = Depends(current_active_user),
+		repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
 	try:
 		datasource = engine_types[datasource.engine](**datasource.dict(exclude_none=True))
@@ -97,7 +93,7 @@ def create_datasource(
 			content={"detail": exc.errors(), "body": datasource},
 		)
 
-	return _create_datasource(datasource, test, user)
+	return _create_datasource(datasource, test, user, repository)
 
 
 @router.put("/{key}", response_model=Datasource)
@@ -105,6 +101,7 @@ def update_datasource(
 		datasource: Datasource,
 		key: str,
 		test: Optional[bool] = False,
+		repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
 	try:
 		datasource = engine_types[datasource.engine](**datasource.dict(exclude_none=True))
@@ -118,15 +115,16 @@ def update_datasource(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
 			content={"detail": exc.errors(), "body": datasource},
 		)
-	return _update_datasource(datasource, key, test)
+	return _update_datasource(datasource, key, test, repository)
 
 
 @router.delete("/{datasource_id}")
 def delete_datasource(
 		datasource_id: str,
 		request: Request,
+		repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
-	return _delete_datasource(datasource_id, request)
+	return _delete_datasource(datasource_id, request, repository)
 
 
 def _test_datasource(datasource: Datasource):
@@ -161,6 +159,7 @@ def _test_datasource(datasource: Datasource):
 def _delete_datasource(
 		key: str,
 		request: Request,
+		repository: DatasourceRepository,
 ):
 	body = {"query": {"match": {"datasource_id": key}}}
 	client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
@@ -172,52 +171,36 @@ def _delete_datasource(
 		headers=request.headers,
 		cookies=request.cookies,
 	)
-	client.delete(index=settings.DATASOURCE_INDEX, id=key, refresh="wait_for")
+	repository.delete(key)
 	return JSONResponse(
 		status_code=status.HTTP_200_OK,
 		content="datasource deleted"
 	)
 
 
-def _update_datasource(datasource, key: str, test: bool):
-	original_datasource = datasourcee.get_datasource(key=key)
+def _update_datasource(datasource_update: Datasource, key: str, test: bool, repository: DatasourceRepository):
+	original_datasource = get_by_key_or_404(key, repository)
 
-	if original_datasource.datasource_name != datasource.datasource_name:
-		response = client.search(
-			index=settings.DATASOURCE_INDEX,
-			body={"query": {"match": {"datasource_name.keyword": datasource.datasource_name}}}
-		)
-
-		if response["hits"]["total"]["value"] > 0:
+	if original_datasource.datasource_name != datasource_update.datasource_name:
+		if len(repository.get_by_name(datasource_update.datasource_name)) > 0:
 			raise HTTPException(
 				status_code=status.HTTP_409_CONFLICT,
-				detail=f"Data Source Name '{datasource.datasource_name}' already exists"
+				detail=f"Data Source Name '{datasource_update.datasource_name}' already exists"
 			)
-	datasource.modified_date = utils.current_time()
-	datasource.create_date = original_datasource.create_date
-	datasource.created_by = original_datasource.created_by
-	datasource_as_dict = datasource.dict(by_alias=True, exclude_none=True)
+
+	update_dict = {
+		**datasource_update.dict(exclude={"create_date", "created_by", "password"}),
+		"modified_date": utils.current_time(),
+	}
+	if hasattr(datasource_update, "password") and datasource_update.password:
+		if datasource_update.password.get_decrypted_value() != c.SECRET_MASK:
+			update_dict["password"] = datasource_update.password
+
 	if test:
-		datasource_for_test = deepcopy(datasource)
-
-		if hasattr(datasource, "password") and datasource.password:
-			if datasource.password.get_decrypted_value() == c.SECRET_MASK:
-				# password hasn't changed, get it from existing datasource and decrypt password
-				datasource_for_test.password = original_datasource.password
-
-				# set password so we don't update OpenSearch with *****
-				datasource_as_dict["password"] = original_datasource.password
-
+		datasource_for_test = original_datasource.copy(update=update_dict)
 		_test_datasource(datasource_for_test)
 
-	client.update(
-		index=settings.DATASOURCE_INDEX,
-		id=key,
-		body={"doc": datasource_as_dict},
-		refresh="wait_for",
-	)
-
-	datasource_as_dict["key"] = key
+	updated_datasource = repository.update(key, original_datasource, update_dict)
 
 	# instead of performing a join on datasource_id in the GET /dataset endpoint,
 	# we will store the 'datasource_name' and 'database' properties in the
@@ -226,11 +209,11 @@ def _update_datasource(datasource, key: str, test: bool):
 	# but we chose index simplicity over an increase in index load.
 	update_by_query_string = ""
 
-	if datasource.database != original_datasource.database:
-		update_by_query_string += f"ctx._source.database = '{datasource.database}';"
+	if datasource_update.database != original_datasource.database:
+		update_by_query_string += f"ctx._source.database = '{datasource_update.database}';"
 
-	if datasource.datasource_name != original_datasource.datasource_name:
-		update_by_query_string += f"ctx._source.datasource_name = '{datasource.datasource_name}';"
+	if datasource_update.datasource_name != original_datasource.datasource_name:
+		update_by_query_string += f"ctx._source.datasource_name = '{datasource_update.datasource_name}';"
 
 	if update_by_query_string != "":
 		client.update_by_query(
@@ -245,19 +228,14 @@ def _update_datasource(datasource, key: str, test: bool):
 			wait_for_completion=True,
 		)
 
-	return datasourcee.datasource_from_dict(key, datasource_as_dict)
+	return updated_datasource
 
 
-def _create_datasource(datasource, test: bool, user: UserDB):
+def _create_datasource(datasource: Datasource, test: bool, user: UserDB, repository: DatasourceRepository):
 	if test:
 		_test_datasource(datasource)
 
-	response = client.search(
-		index=settings.DATASOURCE_INDEX,
-		body={"query": {"match": {"datasource_name.keyword": datasource.datasource_name}}}
-	)
-
-	if response["hits"]["total"]["value"] > 0:
+	if len(repository.get_by_name(datasource.datasource_name)) > 0:
 		raise HTTPException(
 			status_code=status.HTTP_409_CONFLICT,
 			detail=f"datasource '{datasource.datasource_name}' already exists"
@@ -267,13 +245,4 @@ def _create_datasource(datasource, test: bool, user: UserDB):
 	datasource.create_date = utils.current_time()
 	datasource.modified_date = utils.current_time()
 
-	datasource_as_dict = datasource.dict(by_alias=True, exclude_none=True)
-
-	insert_response = client.index(
-		index=settings.DATASOURCE_INDEX,
-		id=str(uuid.uuid4()),
-		body=datasource_as_dict,
-		refresh="wait_for",
-	)
-
-	return datasourcee.datasource_from_dict(insert_response["_id"], datasource_as_dict)
+	return repository.create(str(uuid.uuid4()), datasource)

@@ -1,12 +1,7 @@
-from fastapi import HTTPException, status
 from app.models.base_model import BaseModel
 from pydantic import Field, Extra
-from typing import Any, Dict, Optional, Literal, Type, TypeVar
-from app.settings import settings
-from app.db.client import client
+from typing import Dict, Optional, Literal, Type, TypeVar
 from app.models.types import EncryptedStr
-from opensearchpy import NotFoundError
-
 
 ATHENA = "Athena"
 POSTGRESQL = "PostgreSQL"
@@ -196,26 +191,6 @@ class Trino(Datasource):
 #             "gcp_project": self.gcp_project,
 #             "dataset": self.dataset,
 #         }
-
-def datasource_from_dict(key: str, data: Dict[str, Any]) -> D:
-    engine_class = engine_types[data["engine"]]
-    data.pop("key", None)
-    return engine_class(key=key, **data)
-
-def get_datasource(key: str):
-    try:
-        ds_response = client.get(
-            index=settings.DATASOURCE_INDEX,
-            id=key
-        )
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"datasource with id '{key}' does not exist"
-        )
-
-    return datasource_from_dict(ds_response["_id"],  ds_response["_source"])
-
 
 engine_types: Dict[str, Type[D]] = {
     ATHENA: Athena,

@@ -7,12 +7,13 @@ from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 
 from app import utils
+from app.api.shortcuts import get_by_key_or_404
 from app.core.users import current_active_user
 from app.models.dataset import Dataset, Sample, ResponseDataset
 from app.db.client import client
+from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.settings import settings
 from app.utils import get_sample_query
-from app.models.datasource import get_datasource
 from app.models.users import UserDB
 from app.core.dataset import split_dataset_resource
 from app.core import security
@@ -94,8 +95,9 @@ def create_dataset(
         dataset: Dataset,
         test_query: bool = True,
         user: UserDB = Depends(current_active_user),
+        datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
-    datasource = _check_datasource_exists(dataset.datasource_id)
+    datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
     _check_dataset_does_not_exists(dataset)
 
     if test_query:
@@ -136,7 +138,8 @@ def create_dataset(
 @router.put("/{key}", response_model=ResponseDataset)
 def update_dataset(
         dataset: Dataset,
-        key: str
+        key: str,
+        datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
     original_dataset: Dataset = Dataset(**client.get(
         index=settings.DATASET_INDEX,
@@ -152,7 +155,7 @@ def update_dataset(
             detail="updates to dataset datasource_id are not supported",
         )
 
-    datasource = _check_datasource_exists(dataset.datasource_id)
+    datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
 
     if original_dataset.dataset_name != dataset.dataset_name:
         _check_dataset_does_not_exists(dataset)
@@ -234,9 +237,10 @@ def delete_dataset(
 @router.post("/sample")
 def sample(
         dataset: Dataset,
-        response_format: bool = True
+        response_format: bool = True,
+        datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
-    datasource = get_datasource(key=dataset.datasource_id)
+    datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
 
     if dataset.runtime_parameters:
         response = get_sample_query(
@@ -464,16 +468,6 @@ def _insert_results(results, index: str = settings.VALIDATION_INDEX):
         index=index,
         refresh="wait_for",
     )
-
-
-def _check_datasource_exists(datasource_id: str):
-    try:
-        return get_datasource(key=datasource_id)
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"datasource with id '{datasource_id}' does not exist"
-        )
 
 
 def _check_dataset_does_not_exists(dataset: Dataset):
