@@ -34,8 +34,8 @@ class BaseRepository(Generic[M]):
         return self._get_object_from_dict(document["_source"], id=document["_id"])
 
     def create(self, id: str, object: M, *, refresh: str = "wait_for") -> M:
-        response = self.client.index(index=self.index, id=id, body=object.dict(), refresh=refresh)
-        return self._get_object_from_dict(object.dict(), id=response["_id"])
+        response = self.client.index(index=self.index, id=id, body=object.dict(by_alias=True), refresh=refresh)
+        return self._get_object_from_dict(object.dict(by_alias=True), id=response["_id"])
 
     def update(self, id: str, object: M, update_dict: dict[str, Any], *, refresh: str = "wait_for") -> M:
         updated_object = object.copy(update=update_dict)
@@ -43,7 +43,7 @@ class BaseRepository(Generic[M]):
             self.client.update(
                 index=self.index,
                 id=id,
-                body={"doc": updated_object.dict()},
+                body={"doc": updated_object.dict(by_alias=True)},
                 refresh=refresh,
             )
         except OSNotFoundError as e:
@@ -57,7 +57,8 @@ class BaseRepository(Generic[M]):
             raise NotFoundError() from e
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> M:
-        return self.model_class(key=id, **d["_source"])
+        d.pop("key", None)
+        return self.model_class(key=id, **d)
 
 
 def get_repository(repository_class: Type[BaseRepository]):

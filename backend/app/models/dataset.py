@@ -1,5 +1,6 @@
-from typing import Optional
-from pydantic import Field, constr
+import json
+from typing import Any, Optional
+from pydantic import Field, constr, validator
 from app.models.base_model import BaseModel
 from app.models.datasource import Engines
 
@@ -10,7 +11,13 @@ class RuntimeParameters(BaseModel):
 
 class Sample(BaseModel):
 	columns: list[str]
-	rows: str
+	rows: list[dict[str, Any]]
+
+	@validator("rows", pre=True)
+	def parse_json_rows(cls, v: Any):
+		if isinstance(v, str):
+			return json.loads(v)
+		return v
 
 
 class Dataset(BaseModel):
@@ -28,6 +35,13 @@ class Dataset(BaseModel):
 	create_date: Optional[str]
 	modified_date: Optional[str]
 
-
-class ResponseDataset(Dataset):
-	key: str
+	def get_resource_names(self) -> tuple[str, str, bool]:
+		if self.runtime_parameters:
+			dataset_schema = self.runtime_parameters.schema_name
+			dataset_name = self.dataset_name
+			is_virtual = True
+		else:
+			split_dataset = self.dataset_name.split('.')
+			dataset_schema, dataset_name = split_dataset
+			is_virtual = False
+		return dataset_schema, dataset_name, is_virtual

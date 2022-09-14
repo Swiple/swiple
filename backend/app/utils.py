@@ -34,54 +34,6 @@ def string_to_military_time(date_string):
     return datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f%z").strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
-def get_sample_query(query, url):
-    # remove semi-colon from query
-    query = query.replace(";", "").strip()
-    query = query + " limit 10"
-
-    try:
-        with create_engine(url).connect() as con:
-            query = add_limit_clause(query)
-
-            execution = con.execute(query)
-
-            # TODO neaten up
-            result_set = []
-            columns = list(execution.keys())
-
-            for i, row in enumerate(execution.all()):
-                temp_row = {"key": i}
-                row = list(row)
-
-                for key in columns:
-                    for value in row:
-                        if isinstance(value, datetime.datetime):
-                            temp_row[key] = value.__str__()
-                        else:
-                            temp_row[key] = value
-
-                        row.remove(value)
-                        break
-
-                result_set.append(temp_row)
-
-            if len(columns) == 0:
-                return {
-                    "error": "No columns included in statement."
-                }
-
-            return {
-                "rows": result_set,
-                "columns": columns
-            }
-
-    except ProgrammingError as ex:
-        print(ex.orig.pgerror)
-        return {"exception": ex.orig.pgerror}
-    except OperationalError as ex:
-        return {"exception": str(ex.orig)}
-
-
 def add_limit_clause(query):
     query = query.strip().replace(";", "")
 
