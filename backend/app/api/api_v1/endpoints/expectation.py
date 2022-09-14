@@ -2,22 +2,21 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from app.models.expectation import Expectation
+from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
+from app.models.expectation import Expectation, ExpectationCreate, ExpectationUpdate
 from app.core.expectations import supported_unsupported_expectations
 from app import utils
 from app.db.client import client
+from app.repositories.dataset import DatasetRepository, get_dataset_repository
+from app.repositories.datasource import DatasourceRepository, get_datasource_repository
+from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.settings import settings
-from opensearchpy import NotFoundError, RequestError
-from opensearchpy.helpers import bulk
 from app.models import expectation as exp
-from copy import deepcopy
 from pydantic.error_wrappers import ValidationError
 from app.utils import json_schema_to_single_doc
 from app.api.api_v1.endpoints import validation
 from fastapi.param_functions import Depends
 from app.core.users import current_active_user
-import json
-import uuid
 
 
 router = APIRouter(
@@ -41,52 +40,22 @@ def list_supported_expectations():
     return JSONResponse(status_code=status.HTTP_200_OK, content=content)
 
 
-@router.put("/{expectation_id}/enable", response_model=Expectation)
+@router.put("/{expectation_id}/enable")
 def enable_expectation(
         expectation_id: str,
+        repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
-    try:
-        response = client.update(
-            index=settings.EXPECTATION_INDEX,
-            id=expectation_id,
-            body={"doc": {
-                "enabled": True,
-            }},
-            refresh="wait_for",
-            _source=True,
-        )
-        source = response["get"]["_source"]
-        source["kwargs"] = json.loads(source["kwargs"])
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"expectation '{expectation_id}' does not exist"
-        )
-    return JSONResponse(status_code=status.HTTP_200_OK, content=source)
+    expectation = get_by_key_or_404(expectation_id, repository)
+    return repository.update(expectation_id, expectation, {"enabled": True})
 
 
-@router.put("/{expectation_id}/disable", response_model=Expectation)
+@router.put("/{expectation_id}/disable")
 def disable_expectation(
         expectation_id: str,
+        repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
-    try:
-        response = client.update(
-            index=settings.EXPECTATION_INDEX,
-            id=expectation_id,
-            body={"doc": {
-                "enabled": False,
-            }},
-            refresh="wait_for",
-            _source=True,
-        )
-        source = response["get"]["_source"]
-        source["kwargs"] = json.loads(source["kwargs"])
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"expectation '{expectation_id}' does not exist"
-        )
-    return JSONResponse(status_code=status.HTTP_200_OK, content=source)
+    expectation = get_by_key_or_404(expectation_id, repository)
+    return repository.update(expectation_id, expectation, {"enabled": False})
 
 
 @router.get("")
@@ -97,86 +66,46 @@ def list_expectations(
         suggested: Optional[bool] = None,
         enabled: Optional[bool] = True,
         asc: Optional[bool] = False,
+        repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
-    direction = "asc" if asc else "desc"
-    sort_by_key: str = "expectation_type"
+    expectations = repository.list_by_filter(
+        datasource_id=datasource_id,
+        dataset_id=dataset_id,
+        suggested=suggested,
+        enabled=enabled,
+        asc=asc,
+    )
 
-    query = {"query": {"bool": {"must": []}}, "sort": [{sort_by_key: direction}]}
-
-    query["query"]["bool"]["must"].append({"match": {"enabled": enabled}})
-
-    if suggested is not None:
-        query["query"]["bool"]["must"].append({"match": {"suggested": suggested}})
-
-    if datasource_id is not None:
-        query["query"]["bool"]["must"].append({"match": {"datasource_id": datasource_id}})
-
-    if dataset_id is not None:
-        query["query"]["bool"]["must"].append({"match": {"dataset_id": dataset_id}})
-
-    try:
-        if include_history:
-            body = [
-                {"index": settings.EXPECTATION_INDEX},
-                {**{"size": 1000}, **query},
-                {"index": settings.VALIDATION_INDEX},
-                validation.validations_query_body(datasource_id, dataset_id),
-            ]
-
-            results = client.msearch(body=body)
-
-            expectations = results["responses"][0]["hits"]["hits"]
-            validations = results["responses"][1]["hits"]["hits"]
-
-            return JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content=zip_expectations_and_validations(expectations, validations)
-            )
-
+    if include_history:
         results = client.search(
-            index=settings.EXPECTATION_INDEX,
-            size=1000,
-            body=query
-        )["hits"]["hits"]
-    except RequestError as ex:
-        print(ex)
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"invalid sort_by_key"
+            body=validation.validations_query_body(datasource_id, dataset_id),
+            index=settings.VALIDATION_INDEX,
         )
+        validations = results["hits"]["hits"]
 
-    result_response = []
-    for result in results:
-        source = result["_source"]
-        expectation_type = source["expectation_type"]
-        source["kwargs"] = json.loads(source["kwargs"])
-        expectation = exp.type_map[expectation_type](**source)
-        source["documentation"] = expectation.documentation()
-        result_response.append(
-            dict(**{"key": result["_id"]}, **source)
-        )
-    return JSONResponse(status_code=status.HTTP_200_OK, content=result_response)
+        return zip_expectations_and_validations(expectations, validations)
+
+    return expectations
 
 
 @router.get("/{expectation_id}")
-def get_expectation(expectation_id: str):
-    doc = client.get(
-        index=settings.EXPECTATION_INDEX,
-        id=expectation_id
-    )["_source"]
-
-    doc["key"] = expectation_id
-
-    return JSONResponse(status_code=status.HTTP_200_OK, content=doc)
+def get_expectation(
+    expectation_id: str,
+    repository: ExpectationRepository = Depends(get_expectation_repository),
+):
+    return get_by_key_or_404(expectation_id, repository)
 
 
 @router.post("")
-def create_expectation(expectation: Expectation):
+def create_expectation(
+    expectation_create: ExpectationCreate,
+    repository: ExpectationRepository = Depends(get_expectation_repository),
+    datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
+    dataset_repository: DatasetRepository = Depends(get_dataset_repository),
+):
     # TODO validation, don't allow datasource_id, dataset_id, expectation_id in "meta" field. We add this fields to meta in Runner.run
     try:
-        expectation.create_date = utils.current_time()
-        expectation.modified_date = utils.current_time()
-        expectation: dict = exp.type_map[expectation.expectation_type](**expectation.dict(exclude_none=True)).dict(exclude_none=True)
+        expectation = exp.type_map[expectation_create.expectation_type](**expectation_create.dict())
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -188,81 +117,48 @@ def create_expectation(expectation: Expectation):
             content=jsonable_encoder({"detail": exc.errors(), "body": expectation}),
         )
 
-    _resource_exists(
-        expectation["datasource_id"],
-        settings.DATASOURCE_INDEX,
-        "datasource"
-    )
+    get_by_key_or_404(expectation.datasource_id, datasource_repository)
+    dataset = get_by_key_or_404(expectation.dataset_id, dataset_repository)
 
-    dataset = _resource_exists(
-        expectation["dataset_id"],
-        settings.DATASET_INDEX,
-        "dataset_id"
-    )["_source"]
-
-    if dataset.get("datasource_id") != expectation["datasource_id"]:
+    if dataset.datasource_id != expectation.datasource_id:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="expectation datasource_id does not match dataset datasource_id"
         )
 
-    expectation_copy = deepcopy(expectation)
-    expectation_copy["kwargs"] = json.dumps(expectation_copy["kwargs"])
-
-    response = client.index(
-        index=settings.EXPECTATION_INDEX,
-        id=str(uuid.uuid4()),
-        body=expectation_copy,
-        refresh="wait_for",
-    )
-    expectation_copy["key"] = response["_id"]
-    expectation_copy["kwargs"] = json.loads(expectation_copy["kwargs"])
-    return JSONResponse(status_code=status.HTTP_200_OK, content=expectation_copy)
+    return repository.create(expectation.key, expectation)
 
 
 @router.put("/{expectation_id}")
-def update_expectation(expectation: Expectation, expectation_id: str):
+def update_expectation(
+    expectation_id: str,
+    expectation_update: ExpectationUpdate,
+    repository: ExpectationRepository = Depends(get_expectation_repository),
+):
     try:
-        expectation.modified_date = utils.current_time()
-        expectation = exp.type_map[expectation.expectation_type](**expectation.dict(exclude_none=True)).dict(exclude_none=True)
+        exp.type_map[expectation_update.expectation_type](**expectation_update.dict())
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"expectation '{expectation.expectation_type}' has not been implemented"
+            detail=f"expectation '{expectation_update.expectation_type}' has not been implemented"
         )
     except ValidationError as exc:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content=jsonable_encoder({"detail": exc.errors(), "body": expectation}),
+            content=jsonable_encoder({"detail": exc.errors(), "body": expectation_update}),
         )
 
-    try:
-        original_expectation = client.get(
-            index=settings.EXPECTATION_INDEX,
-            id=expectation_id
-        )["_source"]
+    expectation = get_by_key_or_404(expectation_id, repository)
+    update_dict = expectation_update.dict()
+    update_dict["modified_date"] = utils.current_time()
 
-        expectation['create_date'] = original_expectation['create_date']
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"expectation '{expectation_id}' does not exist"
-        )
-
-    expectation_copy = deepcopy(expectation)
-    expectation_copy["kwargs"] = json.dumps(expectation_copy["kwargs"])
-
-    if original_expectation == expectation_copy:
-        expectation["key"] = expectation_id
-        return JSONResponse(status_code=status.HTTP_200_OK, content=expectation)
-
-    if original_expectation["datasource_id"] != expectation_copy["datasource_id"]:
+    if expectation.datasource_id != expectation_update.datasource_id:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="updates to expectation datasource_id are not supported",
         )
 
-    if original_expectation["dataset_id"] != expectation_copy["dataset_id"]:
+    if expectation.dataset_id != expectation_update.dataset_id:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="updates to expectation dataset_id are not supported",
@@ -275,94 +171,46 @@ def update_expectation(expectation: Expectation, expectation_id: str):
     # decide to run aggregations on validations that have been
     # run. We can't have an expectation with the same id but
     # with different expectation types
-    if original_expectation["expectation_type"] != expectation_copy["expectation_type"]:
-        response = client.index(
-            index=settings.EXPECTATION_INDEX,
-            id=str(uuid.uuid4()),
-            body=expectation_copy,
-            refresh="wait_for",
-        )
-        expectation["key"] = response["_id"]
+    if expectation.expectation_type != expectation_update.expectation_type:
+        new_expectation = exp.type_map[expectation_update.expectation_type](**expectation_update.dict())
+        new_expectation = repository.create(new_expectation.key, new_expectation)
 
-        client.delete(index=settings.EXPECTATION_INDEX, id=expectation_id, refresh="wait_for")
+        repository.delete(expectation_id)
         client.delete_by_query(
             index=settings.VALIDATION_INDEX,
             body={"query": {"match": {"expectation_id": expectation_id}}}
         )
-        return JSONResponse(status_code=status.HTTP_200_OK, content=expectation)
+        return new_expectation
 
-    response = client.update(
-        index=settings.EXPECTATION_INDEX,
-        id=expectation_id,
-        body={"doc": expectation_copy},
-        refresh="wait_for",
-    )
-    expectation["key"] = response["_id"]
-    return JSONResponse(status_code=status.HTTP_200_OK, content=expectation)
+    return repository.update(expectation_id, expectation, update_dict)
 
 
 @router.delete("/{expectation_id}")
-def delete_expectation(expectation_id: str):
-    try:
-        client.delete_by_query(
-            index=settings.VALIDATION_INDEX,
-            body={"query": {"match": {"expectation_id": expectation_id}}}
-        )
-        client.delete(index=settings.EXPECTATION_INDEX, id=expectation_id, refresh="wait_for", )
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"expectation '{expectation_id}' does not exist"
-        )
+def delete_expectation(
+    expectation_id: str,
+    repository: ExpectationRepository = Depends(get_expectation_repository),
+):
+    client.delete_by_query(
+        index=settings.VALIDATION_INDEX,
+        body={"query": {"match": {"expectation_id": expectation_id}}}
+    )
+    delete_by_key_or_404(expectation_id, repository)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content="expectation deleted"
     )
 
 
-def _resource_exists(expectation_id: str, index: str, resource_type: str):
-    try:
-        return client.get(
-            index=index,
-            id=expectation_id
-        )
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{resource_type} '{expectation_id}' does not exist"
-        )
+def zip_expectations_and_validations(expectations: list[Expectation], validations):
 
-
-def zip_expectations_and_validations(expectations, validations):
-
-    expectations_as_dict = {}
+    expectations_as_dict: dict[str, Expectation] = {}
 
     for expectation in expectations:
-        source = expectation["_source"]
-        expectation_type = source["expectation_type"]
-        source["kwargs"] = json.loads(source["kwargs"])
-        expectation_obj = exp.type_map[expectation_type](**source)
-        source["documentation"] = expectation_obj.documentation()
-        source["result_type"] = expectation_obj.result_type
-        source["validations"] = []
-        expectations_as_dict[expectation["_id"]] = dict(**{"key": expectation["_id"]}, **source)
+        expectations_as_dict[expectation.key] = expectation
 
     for v in validations:
         source = v["_source"]
         source["run_date"] = utils.string_to_military_time(source["run_date"])
-        expectations_as_dict[source["expectation_id"]]["validations"].append(source)
+        expectations_as_dict[source["expectation_id"]].validations.append(source)
 
     return list(expectations_as_dict.values())
-
-
-def _insert_results(results, index: str = settings.VALIDATION_INDEX):
-    for result in results:
-        result["enabled"] = False
-        result["suggested"] = True
-
-    bulk(
-        client,
-        results,
-        index=index,
-        refresh="wait_for",
-    )

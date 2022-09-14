@@ -61,7 +61,10 @@ class BaseRepository(Generic[M]):
         return self.model_class(key=id, **d)
 
 
-def get_repository(repository_class: Type[BaseRepository]):
-    async def _get_repository() -> BaseRepository:
+R = TypeVar('R', bound=BaseRepository)
+
+
+def get_repository(repository_class: Type[R]):
+    async def _get_repository() -> R:
         return repository_class(client)
     return _get_repository

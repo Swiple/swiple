@@ -1,11 +1,13 @@
-from typing import Optional, List, Any, Generic, TypeVar
-from pydantic import Field
-from pydantic.generics import GenericModel
-from app.models.base_model import BaseModel
-from app import constants as c
+import json
 from enum import Enum
+from typing import Optional, List, Any, Generic, Type, TypeVar
 
-KWARGS = TypeVar("KWARGS", bound=BaseModel)
+from pydantic import Extra, Field, validator
+from pydantic.generics import GenericModel
+
+from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
+from app import constants as c
+
 
 class IgnoreRowIf(str, Enum):
     both_values_are_missing = "both_values_are_missing"
@@ -13,7 +15,30 @@ class IgnoreRowIf(str, Enum):
     neither = "neither"
 
 
-class Expectation(BaseModel, GenericModel, Generic[KWARGS]):
+class BaseKwargs(BaseModel):
+    pass
+
+
+KWARGS = TypeVar("KWARGS", bound=BaseKwargs)
+
+
+class ExpectationCreate(BaseModel):
+    dataset_id: str
+    datasource_id: str
+    enabled: Optional[bool] = True
+    expectation_type: str
+    kwargs: dict[str, Any]
+
+
+class ExpectationUpdate(BaseModel):
+    dataset_id: str
+    datasource_id: str
+    enabled: Optional[bool] = True
+    expectation_type: str
+    kwargs: dict[str, Any]
+
+
+class Expectation(BaseModel, KeyModel, CreateUpdateDateModel, GenericModel, Generic[KWARGS]):
     dataset_id: str
     datasource_id: str
     enabled: Optional[bool] = True
@@ -22,11 +47,20 @@ class Expectation(BaseModel, GenericModel, Generic[KWARGS]):
     result_type: str
     kwargs: KWARGS
     meta: Optional[dict]
-    create_date: Optional[str]
-    modified_date: Optional[str]
+
+    validations: list[Any] = Field(default_factory=list)
+
+    @validator("kwargs", pre=True)
+    def parse_json_kwargs(cls, v: Any):
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
 
 
-class ExpectColumnToExistKwargs(BaseModel):
+E = TypeVar("E", bound=Expectation)
+
+
+class ExpectColumnToExistKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     column_index: Optional[int] = Field(description=c.COLUMN_INDEX)
     result_format: str = "SUMMARY"
@@ -45,7 +79,7 @@ class ExpectColumnToExist(Expectation[ExpectColumnToExistKwargs]):
         return f'Expect column "{self.kwargs.column}" to exist.'
 
 
-class ExpectTableColumnsToMatchOrderedListKwargs(BaseModel):
+class ExpectTableColumnsToMatchOrderedListKwargs(BaseKwargs):
     column_list: List[str] = Field(description=c.COLUMN_LIST, form_type="multi_column_select")
     result_format: str = "SUMMARY"
     include_config: bool = True
@@ -63,7 +97,7 @@ class ExpectTableColumnsToMatchOrderedList(Expectation[ExpectTableColumnsToMatch
         return f'Expect order of columns to match list {self.kwargs.column_list}.'
 
 
-class ExpectTableColumnsToMatchSetKwargs(BaseModel):
+class ExpectTableColumnsToMatchSetKwargs(BaseKwargs):
     column_set: List[str] = Field(description=c.COLUMN_SET, form_type="multi_column_select")
     exact_match: bool = Field(description=c.EXACT_MATCH)
     result_format: str = "SUMMARY"
@@ -83,7 +117,7 @@ class ExpectTableColumnsToMatchSet(Expectation[ExpectTableColumnsToMatchSetKwarg
 
 
 # TODO make min max values conditionally optional
-class ExpectTableRowCountToBeBetweenKwargs(BaseModel):
+class ExpectTableRowCountToBeBetweenKwargs(BaseKwargs):
     min_value: int = Field(description="The minimum number of rows, inclusive. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable rows has no minimum.")
     max_value: int = Field(description="The maximum number of rows, inclusive. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable rows has no maximum.")
     result_format: str = "SUMMARY"
@@ -102,7 +136,7 @@ class ExpectTableRowCountToBeBetween(Expectation[ExpectTableRowCountToBeBetweenK
         return f'Expect table row count to be between {self.kwargs.min_value} and {self.kwargs.max_value}.'
 
 
-class ExpectTableRowCountToEqualKwargs(BaseModel):
+class ExpectTableRowCountToEqualKwargs(BaseKwargs):
     value: int = Field(description="The expected number of rows.")
     result_format: str = "SUMMARY"
     include_config: bool = True
@@ -120,7 +154,7 @@ class ExpectTableRowCountToEqual(Expectation[ExpectTableRowCountToEqualKwargs]):
         return f'Expect the number of rows to equal {self.kwargs.value}.'
 
 
-class ExpectTableColumnCountToBeBetweenKwargs(BaseModel):
+class ExpectTableColumnCountToBeBetweenKwargs(BaseKwargs):
     min_value: int = Field(description="The minimum number of columns, inclusive. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable columns.")
     max_value: int = Field(description="The maximum number of columns, inclusive. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable columns.")
     result_format: str = "SUMMARY"
@@ -139,7 +173,7 @@ class ExpectTableColumnCountToBeBetween(Expectation[ExpectTableColumnCountToBeBe
         return f'Expect table column count to be between {self.kwargs.min_value} and {self.kwargs.max_value}.'
 
 
-class ExpectTableColumnCountToBeEqualKwargs(BaseModel):
+class ExpectTableColumnCountToBeEqualKwargs(BaseKwargs):
     value: int = Field(description="The expected number of columns.")
     result_format: str = "SUMMARY"
     include_config: bool = True
@@ -157,7 +191,7 @@ class ExpectTableColumnCountToBeEqual(Expectation[ExpectTableColumnCountToBeEqua
         return f'Expect table column count to equal {self.kwargs.value}.'
 
 
-class ExpectColumnValuesToBeUniqueKwargs(BaseModel):
+class ExpectColumnValuesToBeUniqueKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
     result_format: str = "SUMMARY"
@@ -176,7 +210,7 @@ class ExpectColumnValuesToBeUnique(Expectation[ExpectColumnValuesToBeUniqueKwarg
         return f'Expect each value in column "{self.kwargs.column}" to be unique.'
 
 
-class ExpectCompoundColumnsToBeUniqueKwargs(BaseModel):
+class ExpectCompoundColumnsToBeUniqueKwargs(BaseKwargs):
     column_list: List[str] = Field(description=c.COLUMN_LIST, form_type="multi_column_select")
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
     result_format: str = "SUMMARY"
@@ -195,7 +229,7 @@ class ExpectCompoundColumnsToBeUnique(Expectation[ExpectCompoundColumnsToBeUniqu
         return f'Expect unique combination of values for columns "{self.kwargs.column_list}".'
 
 
-class ExpectSelectColumnValuesToBeUniqueWithinRecordKwargs(BaseModel):
+class ExpectSelectColumnValuesToBeUniqueWithinRecordKwargs(BaseKwargs):
     column_list: List[str] = Field(description=c.COLUMN_LIST, form_type="multi_column_select")
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
     result_format: str = "SUMMARY"
@@ -215,7 +249,7 @@ class ExpectSelectColumnValuesToBeUniqueWithinRecord(Expectation[ExpectSelectCol
         return f'Expect the values for each record to be unique across columns "{self.kwargs.column_list}".'
 
 
-class ExpectColumnValuesToNotBeNullKwargs(BaseModel):
+class ExpectColumnValuesToNotBeNullKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
     result_format: str = "SUMMARY"
@@ -235,7 +269,7 @@ class ExpectColumnValuesToNotBeNull(Expectation[ExpectColumnValuesToNotBeNullKwa
         return f'Expect values in column "{self.kwargs.column}" to NOT be null or missing.'
 
 
-class ExpectColumnValuesToBeNullKwargs(BaseModel):
+class ExpectColumnValuesToBeNullKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
     result_format: str = "SUMMARY"
@@ -254,7 +288,7 @@ class ExpectColumnValuesToBeNull(Expectation[ExpectColumnValuesToBeNullKwargs]):
         return f'Expect values in column "{self.kwargs.column}" to be null.'
 
 
-class ExpectColumnValuesToBeInSetKwargs(BaseModel):
+class ExpectColumnValuesToBeInSetKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     value_set: List[Any] = Field(description=c.VALUE_SET)
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
@@ -275,7 +309,7 @@ class ExpectColumnValuesToBeInSet(Expectation[ExpectColumnValuesToBeInSetKwargs]
         return f'Expect each value in column "{self.kwargs.column}" to exist in set {self.kwargs.value_set}'
 
 
-class ExpectColumnValuesToNotBeInSetKwargs(BaseModel):
+class ExpectColumnValuesToNotBeInSetKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     value_set: List[Any] = Field(description=c.VALUE_SET)
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
@@ -298,7 +332,7 @@ class ExpectColumnValuesToNotBeInSet(Expectation[ExpectColumnValuesToNotBeInSetK
 # TODO make min max values conditionally optional, add validators, support cross types
 # cross types cause issues in OpenSearch as type return for min/max_value are strings
 # instead of floats.
-class ExpectColumnValuesToBeBetweenKwargs(BaseModel):
+class ExpectColumnValuesToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: float = Field(description="The minimum value for a column entry. If min_value is None, then max_value is treated as an upper bound, and there is no minimum value checked.")
     max_value: float = Field(description="The maximum value for a column entry. If max_value is None, then min_value is treated as a lower bound, and there is no maximum value checked.")
@@ -325,7 +359,7 @@ class ExpectColumnValuesToBeBetween(Expectation[ExpectColumnValuesToBeBetweenKwa
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnValueLengthsToBeBetweenKwargs(BaseModel):
+class ExpectColumnValueLengthsToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: int = Field(description="The minimum value for a column entry length. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable rows has no minimum.", default=False)
     max_value: int = Field(description="The maximum value for a column entry length. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable rows has no maximum.", default=False)
@@ -347,7 +381,7 @@ class ExpectColumnValueLengthsToBeBetween(Expectation[ExpectColumnValueLengthsTo
         return f'Expect entries for column "{self.kwargs.column}" to be strings with length between {self.kwargs.min_value} value and {self.kwargs.max_value} value (inclusive).'
 
 
-class ExpectColumnValueLengthsToEqualKwargs(BaseModel):
+class ExpectColumnValueLengthsToEqualKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     value: int = Field(description="The expected value for a column entry length.")
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
@@ -368,7 +402,7 @@ class ExpectColumnValueLengthsToEqual(Expectation[ExpectColumnValueLengthsToEqua
         return f'Expect entries for column "{self.kwargs.column}" to be strings with length equal to {self.kwargs.value}.'
 
 
-class ExpectColumnValuesToMatchRegexKwargs(BaseModel):
+class ExpectColumnValuesToMatchRegexKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     regex: str = Field(description="The regular expression the column entries should match. Valid matches can be found anywhere in the string, for example “[at]+” will identify the following strings as expected: “cat”, “hat”, “aa”, “a”, and “t”, and the following strings as unexpected: “fish”, “dog”.")
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
@@ -388,7 +422,7 @@ class ExpectColumnValuesToMatchRegex(Expectation[ExpectColumnValuesToMatchRegexK
         return f'Expect entries for column "{self.kwargs.column}" to be strings that match the regular expression "{self.kwargs.regex}".'
 
 
-class ExpectColumnValuesToNotMatchRegexKwargs(BaseModel):
+class ExpectColumnValuesToNotMatchRegexKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     regex: str = Field(description="The regular expression the column entries should NOT match. For example, “[at]+” would identify the following strings as expected: “fish”, “dog”, and the following as unexpected: “cat”, “hat”")
     objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
@@ -409,7 +443,7 @@ class ExpectColumnValuesToNotMatchRegex(Expectation[ExpectColumnValuesToNotMatch
 
 
 # TODO check enum works
-class ExpectColumnValuesToMatchRegexListKwargs(BaseModel):
+class ExpectColumnValuesToMatchRegexListKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     regex_list: List[str] = Field(description="The list of regular expressions which the column entries should match.")
     match_on: str = Field(
@@ -434,7 +468,7 @@ class ExpectColumnValuesToMatchRegexList(Expectation[ExpectColumnValuesToMatchRe
 
 
 # TODO check enum works
-class ExpectColumnValuesToNotMatchRegexListKwargs(BaseModel):
+class ExpectColumnValuesToNotMatchRegexListKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     regex_list: List[str] = Field(description="The list of regular expressions which the column entries should match.")
     match_on: str = Field(
@@ -459,7 +493,7 @@ class ExpectColumnValuesToNotMatchRegexList(Expectation[ExpectColumnValuesToNotM
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnMeanToBeBetweenKwargs(BaseModel):
+class ExpectColumnMeanToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: float = Field(description="The minimum value for the column mean. If min_value is None, then max_value is treated as an upper bound.")
     max_value: float = Field(description="The maximum value for the column mean. If max_value is None, then min_value is treated as a lower bound.")
@@ -491,7 +525,7 @@ class ExpectColumnMeanToBeBetween(Expectation[ExpectColumnMeanToBeBetweenKwargs]
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnMedianToBeBetweenKwargs(BaseModel):
+class ExpectColumnMedianToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: float = Field(description="The minimum value for the column median. If min_value is None, then max_value is treated as an upper bound.")
     max_value: float = Field(description="The maximum value for the column median. If max_value is None, then min_value is treated as a lower bound.")
@@ -522,7 +556,7 @@ class ExpectColumnMedianToBeBetween(Expectation[ExpectColumnMedianToBeBetweenKwa
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnUniqueValueCountToBeBetweenKwargs(BaseModel):
+class ExpectColumnUniqueValueCountToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: int = Field(description="The minimum number of unique values allowed. If min_value is None, then max_value is treated as an upper bound")
     max_value: int = Field(description="The maximum number of unique values allowed. If max_value is None, then min_value is treated as a lower bound")
@@ -543,7 +577,7 @@ class ExpectColumnUniqueValueCountToBeBetween(Expectation[ExpectColumnUniqueValu
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnProportionOfUniqueValuesToBeBetweenKwargs(BaseModel):
+class ExpectColumnProportionOfUniqueValuesToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: float = Field(ge=0, le=1, description="The minimum proportion of unique values. If min_value is None, then max_value is treated as an upper bound.")
     max_value: float = Field(ge=0, le=1, description="The maximum proportion of unique values. If max_value is None, then min_value is treated as a lower bound.")
@@ -575,7 +609,7 @@ class ExpectColumnProportionOfUniqueValuesToBeBetween(Expectation[ExpectColumnPr
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnSumToBeBetweenKwargs(BaseModel):
+class ExpectColumnSumToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: float = Field(description="The minimal sum allowed.")
     max_value: float = Field(description="The maximal sum allowed.")
@@ -605,7 +639,7 @@ class ExpectColumnSumToBeBetween(Expectation[ExpectColumnSumToBeBetweenKwargs]):
         return f'Expect the sum of values for column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}.'
 
 
-class ExpectMultiColumnSumToEqualKwargs(BaseModel):
+class ExpectMultiColumnSumToEqualKwargs(BaseKwargs):
     column_list: List[str] = Field(description=c.COLUMN_LIST, form_type="multi_column_select")
     sum_total: int
     result_format: str = "SUMMARY"
@@ -625,7 +659,7 @@ class ExpectMultiColumnSumToEqual(Expectation[ExpectMultiColumnSumToEqualKwargs]
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnMinToBeBetweenKwargs(BaseModel):
+class ExpectColumnMinToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: float = Field(description="The minimal column minimum allowed.")
     max_value: float = Field(description="The maximal column minimum allowed.")
@@ -664,7 +698,7 @@ class ExpectColumnMinToBeBetween(Expectation[ExpectColumnMinToBeBetweenKwargs]):
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnMaxToBeBetweenKwargs(BaseModel):
+class ExpectColumnMaxToBeBetweenKwargs(BaseKwargs):
     column: str = Field(description=c.COLUMN, form_type="column_select")
     min_value: float = Field(description="The minimal column minimum allowed.")
     max_value: float = Field(description="The maximal column minimum allowed.")
@@ -702,7 +736,7 @@ class ExpectColumnMaxToBeBetween(Expectation[ExpectColumnMaxToBeBetweenKwargs]):
         return f'Expect the maximum value in column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value} {parse_strings} {strftime_format}.'
 
 
-class ExpectColumnPairValuesToBeEqualKwargs(BaseModel):
+class ExpectColumnPairValuesToBeEqualKwargs(BaseKwargs):
     column_A: str = Field(description="The first column name.", form_type="column_select")
     column_B: str = Field(description="The second column name.", form_type="column_select")
     ignore_row_if: str = Field(
@@ -725,7 +759,7 @@ class ExpectColumnPairValuesToBeEqual(Expectation[ExpectColumnPairValuesToBeEqua
         return f'Expect values in column "{self.kwargs.column_A}" to be the same as column "{self.kwargs.column_B}" where the row is ignored if {self.kwargs.ignore_row_if}.'
 
 
-type_map = {
+type_map: dict[str, Type[E]] = {
     c.EXPECT_COLUMN_TO_EXIST: ExpectColumnToExist,
     c.EXPECT_TABLE_COLUMNS_TO_MATCH_ORDERED_LIST: ExpectTableColumnsToMatchOrderedList,
     c.EXPECT_TABLE_COLUMNS_TO_MATCH_SET: ExpectTableColumnsToMatchSet,
