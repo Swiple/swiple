@@ -109,12 +109,12 @@ def create_expectation(
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"expectation '{expectation.expectation_type}' has not been implemented"
+            detail=f"expectation '{expectation_create.expectation_type}' has not been implemented"
         )
     except ValidationError as exc:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content=jsonable_encoder({"detail": exc.errors(), "body": expectation}),
+            content=jsonable_encoder({"detail": exc.errors(), "body": expectation_create}),
         )
 
     get_by_key_or_404(expectation.datasource_id, datasource_repository)

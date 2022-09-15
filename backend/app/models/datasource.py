@@ -1,4 +1,4 @@
-from app.models.base_model import BaseModel
+from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
 from pydantic import Field, Extra
 from typing import Dict, Optional, Literal, Type, TypeVar
 from app.models.types import EncryptedStr
@@ -14,17 +14,25 @@ TRINO = "Trino"
 Engines = Literal[ATHENA, POSTGRESQL, MYSQL, REDSHIFT, SNOWFLAKE, TRINO]
 
 
-class Datasource(BaseModel):
-    class Config:
-        extra = Extra.allow
-
-    key: Optional[str]
+class BaseDatasource(BaseModel):
     engine: Engines
     datasource_name: str
     description: str
-    created_by: Optional[str]
-    create_date: Optional[str]
-    modified_date: Optional[str]
+
+    class Config:
+        extra = Extra.allow
+
+
+class DatasourceCreate(BaseDatasource):
+    pass
+
+
+class DatasourceUpdate(BaseDatasource):
+    pass
+
+
+class Datasource(BaseDatasource, KeyModel, CreateUpdateDateModel):
+    created_by: str
 
     def connection_string(self):
         """Returns a SQLAlchemy compatible connection string."""

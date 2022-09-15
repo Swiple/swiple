@@ -2,7 +2,7 @@ import json
 from enum import Enum
 from typing import Optional, List, Any, Generic, Type, TypeVar
 
-from pydantic import Extra, Field, validator
+from pydantic import Field, validator
 from pydantic.generics import GenericModel
 
 from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
@@ -22,28 +22,23 @@ class BaseKwargs(BaseModel):
 KWARGS = TypeVar("KWARGS", bound=BaseKwargs)
 
 
-class ExpectationCreate(BaseModel):
+class ExpectationBase(BaseModel):
     dataset_id: str
     datasource_id: str
     enabled: Optional[bool] = True
     expectation_type: str
+
+
+class ExpectationCreate(ExpectationBase):
     kwargs: dict[str, Any]
 
 
-class ExpectationUpdate(BaseModel):
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    expectation_type: str
+class ExpectationUpdate(ExpectationBase):
     kwargs: dict[str, Any]
 
 
-class Expectation(BaseModel, KeyModel, CreateUpdateDateModel, GenericModel, Generic[KWARGS]):
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
+class Expectation(ExpectationBase, KeyModel, CreateUpdateDateModel, GenericModel, Generic[KWARGS]):
     suggested: Optional[bool] = False
-    expectation_type: str
     result_type: str
     kwargs: KWARGS
     meta: Optional[dict]

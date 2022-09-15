@@ -8,6 +8,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import DBAPIError
 from app.api.shortcuts import get_by_key_or_404
 from app.models.datasource import (
+	DatasourceCreate,
+	DatasourceUpdate,
 	engine_types,
 	Datasource,
 )
@@ -39,7 +41,7 @@ def get_json_schema():
 	return data_sources
 
 
-@router.get("", response_model=list[Datasource])
+@router.get("")
 def list_datasources(
 		sort_by_key: Optional[str] = "datasource_name",
 		asc: Optional[bool] = True,
@@ -65,7 +67,7 @@ def list_datasources(
 		)
 
 
-@router.get("/{key}", response_model=Datasource)
+@router.get("/{key}")
 def get_datasource(
 		key: str,
 		repository: DatasourceRepository = Depends(get_datasource_repository),
@@ -73,47 +75,54 @@ def get_datasource(
 	return get_by_key_or_404(key, repository)
 
 
-@router.post("", response_model=Datasource)
+@router.post("")
 def create_datasource(
-		datasource: Datasource,
+		datasource_create: DatasourceCreate,
 		test: Optional[bool] = False,
 		user: UserDB = Depends(current_active_user),
 		repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
 	try:
-		datasource = engine_types[datasource.engine](**datasource.dict(exclude_none=True))
+		datasource = engine_types[datasource_create.engine](
+			**datasource_create.dict(),
+			created_by=user.email,
+		)
 	except KeyError:
 		raise HTTPException(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-			detail=f"datasource {datasource.engine} is not supported"
+			detail=f"datasource {datasource_create.engine} is not supported"
 		)
 	except ValidationError as exc:
 		return JSONResponse(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-			content={"detail": exc.errors(), "body": datasource},
+			content={"detail": exc.errors(), "body": datasource_create},
 		)
 
-	return _create_datasource(datasource, test, user, repository)
+	return _create_datasource(datasource, test, repository)
 
 
-@router.put("/{key}", response_model=Datasource)
+@router.put("/{key}")
 def update_datasource(
-		datasource: Datasource,
 		key: str,
+		datasource_update: DatasourceUpdate,
 		test: Optional[bool] = False,
+		user: UserDB = Depends(current_active_user),
 		repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
 	try:
-		datasource = engine_types[datasource.engine](**datasource.dict(exclude_none=True))
+		datasource = engine_types[datasource_update.engine](
+			**datasource_update.dict(),
+			created_by=user.email,
+		)
 	except KeyError:
 		raise HTTPException(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-			detail=f"datasource {datasource.engine} is not supported"
+			detail=f"datasource {datasource_update.engine} is not supported"
 		)
 	except ValidationError as exc:
 		return JSONResponse(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-			content={"detail": exc.errors(), "body": datasource},
+			content={"detail": exc.errors(), "body": datasource_update},
 		)
 	return _update_datasource(datasource, key, test, repository)
 
@@ -233,7 +242,7 @@ def _update_datasource(datasource_update: Datasource, key: str, test: bool, repo
 	return updated_datasource
 
 
-def _create_datasource(datasource: Datasource, test: bool, user: UserDB, repository: DatasourceRepository):
+def _create_datasource(datasource: Datasource, test: bool, repository: DatasourceRepository):
 	if test:
 		_test_datasource(datasource)
 
@@ -243,8 +252,4 @@ def _create_datasource(datasource: Datasource, test: bool, user: UserDB, reposit
 			detail=f"datasource '{datasource.datasource_name}' already exists"
 		)
 
-	datasource.created_by = user.email
-	datasource.create_date = utils.current_time()
-	datasource.modified_date = utils.current_time()
-
-	return repository.create(str(uuid.uuid4()), datasource)
+	return repository.create(datasource.key, datasource)
