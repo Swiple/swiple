@@ -4,7 +4,7 @@ from typing import Any
 from sqlalchemy import create_engine
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
-from app.models.dataset import Dataset, Sample
+from app.models.dataset import BaseDataset, Sample
 from app.models.datasource import Datasource
 from app.utils import add_limit_clause
 
@@ -15,7 +15,7 @@ class GetSampleException(Exception):
         super().__init__(*args)
 
 
-def get_dataset_sample(dataset: Dataset, datasource: Datasource) -> Sample:
+def get_dataset_sample(dataset: BaseDataset, datasource: Datasource) -> Sample:
     if dataset.runtime_parameters:
         return get_sample_query_results(
             query=dataset.runtime_parameters.query,

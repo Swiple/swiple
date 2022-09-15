@@ -10,7 +10,7 @@ from app import utils
 from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
 from app.core.sample import GetSampleException, get_dataset_sample
 from app.core.users import current_active_user
-from app.models.dataset import Dataset, Sample
+from app.models.dataset import BaseDataset, Dataset, DatasetCreate, DatasetUpdate, Sample
 from app.db.client import client
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
@@ -68,14 +68,20 @@ def get_dataset(key: str, repository: DatasetRepository = Depends(get_dataset_re
 
 @router.post("", response_model=Dataset)
 def create_dataset(
-        dataset: Dataset,
+        dataset_create: DatasetCreate,
         test_query: bool = True,
         user: UserDB = Depends(current_active_user),
         datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
         repository: DatasetRepository = Depends(get_dataset_repository),
 ):
-    datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
-    _check_dataset_does_not_exists(dataset, repository)
+    datasource = get_by_key_or_404(dataset_create.datasource_id, datasource_repository)
+    _check_dataset_does_not_exists(dataset_create, repository)
+
+    dataset = Dataset(
+        **dataset_create.dict(by_alias=True),
+        engine=datasource.engine,
+        created_by=user.email,
+    )
 
     if test_query:
         try:
@@ -87,27 +93,19 @@ def create_dataset(
             ) from e
         dataset.sample = sample
 
-    dataset.engine = datasource.engine
-    dataset.created_by = user.email
-    dataset.create_date = utils.current_time()
-    dataset.modified_date = utils.current_time()
-
-    return repository.create(str(uuid.uuid4()), dataset)
+    return repository.create(dataset.key, dataset)
 
 
 @router.put("/{key}", response_model=Dataset)
 def update_dataset(
-        dataset: Dataset,
+        dataset_update: DatasetUpdate,
         key: str,
         datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
         repository: DatasetRepository = Depends(get_dataset_repository),
 ):
-    original_dataset = get_by_key_or_404(key, repository)
+    dataset = get_by_key_or_404(key, repository)
 
-    if original_dataset == dataset:
-        return original_dataset
-
-    if original_dataset.datasource_id != dataset.datasource_id:
+    if dataset.datasource_id != dataset_update.datasource_id:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="updates to dataset datasource_id are not supported",
@@ -115,14 +113,14 @@ def update_dataset(
 
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
 
-    update_dict = dataset.dict(exclude_unset=True, exclude_none=True, by_alias=True)
+    update_dict = dataset_update.dict(exclude_unset=True, exclude_none=True, by_alias=True)
 
-    if original_dataset.dataset_name != dataset.dataset_name:
-        _check_dataset_does_not_exists(dataset, repository)
+    if dataset.dataset_name != dataset_update.dataset_name:
+        _check_dataset_does_not_exists(dataset_update, repository)
         # means it is a physical table.
-        if not dataset.runtime_parameters:
+        if not dataset_update.runtime_parameters:
             try:
-                sample = get_dataset_sample(dataset, datasource)
+                sample = get_dataset_sample(dataset_update, datasource)
             except GetSampleException as e:
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -131,9 +129,9 @@ def update_dataset(
             update_dict["sample"] = sample
 
     if (
-            original_dataset.runtime_parameters and
             dataset.runtime_parameters and
-            original_dataset.runtime_parameters.query != dataset.runtime_parameters.query
+            dataset_update.runtime_parameters and
+            dataset.runtime_parameters.query != dataset_update.runtime_parameters.query
     ):
         try:
             sample = get_dataset_sample(dataset, datasource)
@@ -146,7 +144,7 @@ def update_dataset(
 
     update_dict["modified_date"] = utils.current_time()
 
-    return repository.update(key, original_dataset, update_dict)
+    return repository.update(key, dataset, update_dict)
 
 
 @router.delete("/{key}")
@@ -177,7 +175,7 @@ def delete_dataset(
 
 @router.post("/sample", response_model=Sample)
 def sample(
-        dataset: Dataset,
+        dataset: DatasetCreate,
         datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
@@ -306,7 +304,7 @@ def _insert_results(results, index: str = settings.VALIDATION_INDEX):
     )
 
 
-def _check_dataset_does_not_exists(dataset: Dataset, repository: DatasetRepository):
+def _check_dataset_does_not_exists(dataset: BaseDataset, repository: DatasetRepository):
     dataset_schema, dataset_name, _ = dataset.get_resource_names()
     existing_datasources = repository.query_by_resource_name(
         datasource_name=dataset.datasource_name,
