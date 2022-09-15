@@ -9,8 +9,8 @@ class DatasourceRepository(BaseRepository[Datasource]):
     model_class = Datasource
     index = settings.DATASOURCE_INDEX
 
-    def get_by_name(self, name: str) -> list[Datasource]:
-        return self.list({"query": {"match": {"datasource_name.keyword": name}}})
+    def query_by_name(self, name: str) -> list[Datasource]:
+        return self.query({"query": {"match": {"datasource_name.keyword": name}}})
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Datasource:
         try:

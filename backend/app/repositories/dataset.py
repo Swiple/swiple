@@ -10,7 +10,7 @@ class DatasetRepository(BaseRepository[Dataset]):
     model_class = Dataset
     index = settings.DATASET_INDEX
 
-    def list_by_resource_name(
+    def query_by_resource_name(
         self,
         *,
         datasource_name: str,
@@ -39,20 +39,18 @@ class DatasetRepository(BaseRepository[Dataset]):
                 },
             ]
         }}}
-        return self.list(query)
+        return self.query(query)
 
-    def create(self, id: str, object: Dataset, *, refresh: str = "wait_for") -> Dataset:
+    def _get_dict_from_object(self, object: Dataset) -> dict[str, Any]:
+        d = object.dict(by_alias=True)
         sample = object.sample
         if sample is not None:
-            sample = {**sample.dict(exclude={"rows"}), "rows": json.dumps(sample.rows)}
-            object = object.copy(update={"sample": sample})
-        return super().create(id, object, refresh=refresh)
-
-    def update(self, id: str, object: Dataset, update_dict: dict[str, Any], *, refresh: str = "wait_for") -> Dataset:
-        sample: Sample = update_dict.get("sample")
-        if sample is not None:
-            update_dict["sample"] = {**sample.dict(exclude={"rows"}), "rows": json.dumps(sample.rows)}
-        return super().update(id, object, update_dict, refresh=refresh)
+            sample_dict = {
+                **sample.dict(exclude={"rows"}),
+                "rows": json.dumps(sample.rows),
+            }
+            d["sample"] = sample_dict
+        return d
 
 
 get_dataset_repository = get_repository(DatasetRepository)

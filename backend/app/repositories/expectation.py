@@ -10,7 +10,7 @@ class ExpectationRepository(BaseRepository[Expectation]):
     model_class = Expectation
     index = settings.EXPECTATION_INDEX
 
-    def list_by_filter(
+    def query_by_filter(
         self,
         *,
         datasource_id: Optional[str] = None,
@@ -24,7 +24,8 @@ class ExpectationRepository(BaseRepository[Expectation]):
 
         query = {"query": {"bool": {"must": []}}, "sort": [{sort_by_key: direction}]}
 
-        query["query"]["bool"]["must"].append({"match": {"enabled": enabled}})
+        if enabled is not None:
+            query["query"]["bool"]["must"].append({"match": {"enabled": enabled}})
 
         if suggested is not None:
             query["query"]["bool"]["must"].append({"match": {"suggested": suggested}})
@@ -35,24 +36,43 @@ class ExpectationRepository(BaseRepository[Expectation]):
         if dataset_id is not None:
             query["query"]["bool"]["must"].append({"match": {"dataset_id": dataset_id}})
 
-        return super().list(query, size=1000)
+        return super().query(query, size=1000)
 
-    def create(self, id: str, object: Expectation, *, refresh: str = "wait_for") -> Expectation:
-        object = object.copy(update={"kwargs": object.kwargs.json()})
-        return super().create(id, object, refresh=refresh)
+    def delete_by_filter(self,
+        *,
+        datasource_id: Optional[str] = None,
+        dataset_id: Optional[str] = None,
+        suggested: Optional[bool] = None,
+        enabled: Optional[bool] = None,
+    ) -> list[Exception]:
+        query = {"query": {"bool": {"must": []}}}
 
-    def update(self, id: str, object: Expectation, update_dict: dict[str, Any], *, refresh: str = "wait_for") -> Expectation:
-        kwargs = update_dict.get("kwargs", object.kwargs)
-        update_dict["kwargs"] = json.dumps(kwargs)
-        return super().update(id, object, update_dict, refresh=refresh)
+        if enabled is not None:
+            query["query"]["bool"]["must"].append({"match": {"enabled": enabled}})
+
+        if suggested is not None:
+            query["query"]["bool"]["must"].append({"match": {"suggested": suggested}})
+
+        if datasource_id is not None:
+            query["query"]["bool"]["must"].append({"match": {"datasource_id": datasource_id}})
+
+        if dataset_id is not None:
+            query["query"]["bool"]["must"].append({"match": {"dataset_id": dataset_id}})
+
+        return super().delete_by_query(query)
+
+    def _get_dict_from_object(self, object: Expectation) -> dict[str, Any]:
+        d = object.dict(by_alias=True)
+        kwargs = object.kwargs
+        d["kwargs"] = kwargs.json() if isinstance(kwargs, BaseKwargs) else json.dumps(kwargs)
+        return d
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Expectation:
         try:
-            d.pop("key", None)
             expectation_class = type_map[d["expectation_type"]]
-            return expectation_class(key=id, **d)
+            return expectation_class(**d)
         except KeyError:    
-            return super()._get_object_from_dict(d, id=id)
+            return super()._get_object_from_dict(d)
 
 
 get_expectation_repository = get_repository(ExpectationRepository)

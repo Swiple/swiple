@@ -14,6 +14,7 @@ from app.models.dataset import Dataset, Sample
 from app.db.client import client
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
+from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.settings import settings
 from app.models.users import UserDB
 from app.core.runner import Runner
@@ -52,7 +53,7 @@ def list_datasets(
         query = {"query": {"match": {"datasource_id": datasource_id}}, "sort": [{sort_by_key: direction}]}
 
     try:
-        return repository.list(query, size=1000)
+        return repository.query(query, size=1000)
     except RequestError:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -143,7 +144,7 @@ def update_dataset(
             ) from e
         update_dict["sample"] = sample
 
-    update_dict["modified_date"] =utils.current_time()
+    update_dict["modified_date"] = utils.current_time()
 
     return repository.update(key, original_dataset, update_dict)
 
@@ -153,11 +154,11 @@ def delete_dataset(
         key: str,
         request: Request,
         repository: DatasetRepository = Depends(get_dataset_repository),
+        expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
     body = {"query": {"match": {"dataset_id": key}}}
 
     client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
-    client.delete_by_query(index=settings.EXPECTATION_INDEX, body=body)
     requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"dataset_id": key},
@@ -165,6 +166,7 @@ def delete_dataset(
         cookies=request.cookies,
     )
 
+    expectation_repository.delete_by_filter(dataset_id=key)
     delete_by_key_or_404(key, repository)
 
     return JSONResponse(
@@ -213,26 +215,11 @@ def validate_dataset(
     key:str,
     repository: DatasetRepository = Depends(get_dataset_repository),
     datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
+    expectations_repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
     dataset = get_by_key_or_404(key, repository)
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
-
-    expectations_response = client.search(
-        index=settings.EXPECTATION_INDEX,
-        size=1000,
-        body={
-            "query": {
-                "bool": {
-                    "must": [
-                        {"match": {"dataset_id": dataset.key}},
-                        {"match": {"enabled": True}}
-                    ]
-                }
-            }
-        }
-    )["hits"]["hits"]
-
-    expectations = []
+    expectations = expectations_repository.query_by_filter(dataset_id=dataset.key, enabled=True)
 
     identifiers = {
         "run_date": utils.current_time(),
@@ -246,18 +233,17 @@ def validate_dataset(
         "dataset_name": dataset.dataset_name,
     }
 
-    for doc in expectations_response:
-        doc["_source"]["kwargs"] = json.loads(doc["_source"]["kwargs"])
-        doc["_source"]["key"] = doc["_id"]
-        doc["_source"]["meta"] = {}
-        doc["_source"]["meta"]["expectation_id"] = doc["_id"]
-        expectations.append(doc["_source"])
+    runner_expectations = []
+    for expectation in expectations:
+        runner_expectation = expectation.dict()
+        runner_expectation["meta"] = {"expectation_id": expectation.key}
+        runner_expectations.append(runner_expectation)
 
     results = Runner(
         datasource=datasource,
         batch=dataset,
         meta=meta,
-        expectations=expectations,
+        expectations=runner_expectations,
         identifiers=identifiers,
     ).validate()
 
@@ -274,6 +260,7 @@ def create_suggestions(
     key: str,
     repository: DatasetRepository = Depends(get_dataset_repository),
     datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
+    expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
     dataset = get_by_key_or_404(key, repository)
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
@@ -302,28 +289,12 @@ def create_suggestions(
         dataset_id=dataset.key,
         excluded_expectations=excluded_expectations,
     ).profile()
+    expectations = [expectation_repository._get_object_from_dict(e) for e in results]
 
-    client.delete_by_query(
-        index=settings.EXPECTATION_INDEX,
-        body={
-            "query": {
-                "bool": {
-                    "must": [
-                        {"match": {"dataset_id": dataset.key}},
-                        {"match": {"suggested": True}},
-                        {"match": {"enabled": False}},
-                    ]
-                }
-            }
-        }
-    )
+    expectation_repository.delete_by_filter(dataset_id=dataset.key, suggested=True, enabled=False)
+    expectation_repository.bulk_create(expectations)
 
-    _insert_results(results, settings.EXPECTATION_INDEX)
-
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(results),
-    )
+    return expectations
 
 
 def _insert_results(results, index: str = settings.VALIDATION_INDEX):
@@ -337,7 +308,7 @@ def _insert_results(results, index: str = settings.VALIDATION_INDEX):
 
 def _check_dataset_does_not_exists(dataset: Dataset, repository: DatasetRepository):
     dataset_schema, dataset_name, _ = dataset.get_resource_names()
-    existing_datasources = repository.list_by_resource_name(
+    existing_datasources = repository.query_by_resource_name(
         datasource_name=dataset.datasource_name,
         schema=dataset_schema,
         name=dataset_name,

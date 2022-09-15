@@ -13,10 +13,10 @@ from app.models.datasource import (
 )
 from app.db.client import client
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
+from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.settings import settings
 from app import utils
 from opensearchpy import RequestError
-from app.models import datasource as datasourcee
 from fastapi.param_functions import Depends
 import uuid
 from app.core.users import current_active_user
@@ -49,7 +49,7 @@ def list_datasources(
 	direction = "asc" if asc else "desc"
 
 	try:
-		return repository.list(
+		return repository.query(
 			{
 				"query": {"match_all": {}},
 				"sort": [
@@ -123,8 +123,9 @@ def delete_datasource(
 		datasource_id: str,
 		request: Request,
 		repository: DatasourceRepository = Depends(get_datasource_repository),
+		expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
-	return _delete_datasource(datasource_id, request, repository)
+	return _delete_datasource(datasource_id, request, repository, expectation_repository)
 
 
 def _test_datasource(datasource: Datasource):
@@ -160,10 +161,11 @@ def _delete_datasource(
 		key: str,
 		request: Request,
 		repository: DatasourceRepository,
+		expectation_repository: ExpectationRepository,
 ):
 	body = {"query": {"match": {"datasource_id": key}}}
 	client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
-	client.delete_by_query(index=settings.EXPECTATION_INDEX, body=body)
+	expectation_repository.delete_by_filter(datasource_id=key)
 	client.delete_by_query(index=settings.DATASET_INDEX, body=body)
 	requests.delete(
 		url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
@@ -182,7 +184,7 @@ def _update_datasource(datasource_update: Datasource, key: str, test: bool, repo
 	original_datasource = get_by_key_or_404(key, repository)
 
 	if original_datasource.datasource_name != datasource_update.datasource_name:
-		if len(repository.get_by_name(datasource_update.datasource_name)) > 0:
+		if len(repository.query_by_name(datasource_update.datasource_name)) > 0:
 			raise HTTPException(
 				status_code=status.HTTP_409_CONFLICT,
 				detail=f"Data Source Name '{datasource_update.datasource_name}' already exists"
@@ -235,7 +237,7 @@ def _create_datasource(datasource: Datasource, test: bool, user: UserDB, reposit
 	if test:
 		_test_datasource(datasource)
 
-	if len(repository.get_by_name(datasource.datasource_name)) > 0:
+	if len(repository.query_by_name(datasource.datasource_name)) > 0:
 		raise HTTPException(
 			status_code=status.HTTP_409_CONFLICT,
 			detail=f"datasource '{datasource.datasource_name}' already exists"

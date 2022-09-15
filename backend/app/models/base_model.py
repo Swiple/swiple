@@ -16,7 +16,7 @@ class BaseModel(PydanticBaseModel):
 
 
 def generate_key() -> str:
-    return str(uuid.uuid4)
+    return str(uuid.uuid4())
 
 
 class KeyModel(PydanticBaseModel):

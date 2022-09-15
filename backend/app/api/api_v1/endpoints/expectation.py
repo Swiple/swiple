@@ -68,7 +68,7 @@ def list_expectations(
         asc: Optional[bool] = False,
         repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
-    expectations = repository.list_by_filter(
+    expectations = repository.query_by_filter(
         datasource_id=datasource_id,
         dataset_id=dataset_id,
         suggested=suggested,

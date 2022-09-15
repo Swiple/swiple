@@ -3,6 +3,7 @@ from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 from app.core.users import current_active_user
 from app.db.client import client
+from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.settings import settings
 
 router = APIRouter(
@@ -11,7 +12,9 @@ router = APIRouter(
 
 
 @router.get("/resource-counts")
-def resource_counts():
+def resource_counts(
+    expectation_repository: ExpectationRepository = Depends(get_expectation_repository)
+):
     datasource_count = client.count(
         index=settings.DATASOURCE_INDEX,
         body={"query": {"match_all": {}}}
@@ -27,14 +30,7 @@ def resource_counts():
         body={"query": {"match_all": {}}}
     )
 
-    expectation_count = client.count(
-        index=settings.EXPECTATION_INDEX,
-        body={
-            "query": {
-                "match": {"enabled": True}
-            }
-        }
-    )
+    expectation_count = expectation_repository.count({"query": {"match": {"enabled": True}}})
 
     validation_count = client.count(
         index=settings.VALIDATION_INDEX,
