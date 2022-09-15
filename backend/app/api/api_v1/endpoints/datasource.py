@@ -14,13 +14,13 @@ from app.models.datasource import (
 	Datasource,
 )
 from app.db.client import client
+from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.settings import settings
 from app import utils
 from opensearchpy import RequestError
 from fastapi.param_functions import Depends
-import uuid
 from app.core.users import current_active_user
 from app.models.users import UserDB
 from app import constants as c
@@ -108,6 +108,7 @@ def update_datasource(
 		test: Optional[bool] = False,
 		user: UserDB = Depends(current_active_user),
 		repository: DatasourceRepository = Depends(get_datasource_repository),
+		dataset_repository: DatasetRepository = Depends(get_dataset_repository),
 ):
 	try:
 		datasource = engine_types[datasource_update.engine](
@@ -124,7 +125,7 @@ def update_datasource(
 			status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
 			content={"detail": exc.errors(), "body": datasource_update},
 		)
-	return _update_datasource(datasource, key, test, repository)
+	return _update_datasource(datasource, key, test, repository, dataset_repository)
 
 
 @router.delete("/{datasource_id}")
@@ -132,9 +133,10 @@ def delete_datasource(
 		datasource_id: str,
 		request: Request,
 		repository: DatasourceRepository = Depends(get_datasource_repository),
+		dataset_repository: DatasetRepository = Depends(get_dataset_repository),
 		expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
-	return _delete_datasource(datasource_id, request, repository, expectation_repository)
+	return _delete_datasource(datasource_id, request, repository, dataset_repository, expectation_repository)
 
 
 def _test_datasource(datasource: Datasource):
@@ -170,12 +172,13 @@ def _delete_datasource(
 		key: str,
 		request: Request,
 		repository: DatasourceRepository,
+		dataset_repository: DatasetRepository,
 		expectation_repository: ExpectationRepository,
 ):
 	body = {"query": {"match": {"datasource_id": key}}}
 	client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
-	expectation_repository.delete_by_filter(datasource_id=key)
-	client.delete_by_query(index=settings.DATASET_INDEX, body=body)
+	expectation_repository.delete_by_datasource(key)
+	dataset_repository.delete_by_datasource(key)
 	requests.delete(
 		url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
 		params={"datasource_id": key},
@@ -189,7 +192,7 @@ def _delete_datasource(
 	)
 
 
-def _update_datasource(datasource_update: Datasource, key: str, test: bool, repository: DatasourceRepository):
+def _update_datasource(datasource_update: Datasource, key: str, test: bool, repository: DatasourceRepository, dataset_repository: DatasetRepository):
 	original_datasource = get_by_key_or_404(key, repository)
 
 	if original_datasource.datasource_name != datasource_update.datasource_name:
@@ -213,31 +216,9 @@ def _update_datasource(datasource_update: Datasource, key: str, test: bool, repo
 
 	updated_datasource = repository.update(key, original_datasource, update_dict)
 
-	# instead of performing a join on datasource_id in the GET /dataset endpoint,
-	# we will store the 'datasource_name' and 'database' properties in the
-	# dataset document. Updates to 'datasource_name' and 'database' are not common
-	# actions while getting the list of datasets is. Using nested docs was considered,
-	# but we chose index simplicity over an increase in index load.
-	update_by_query_string = ""
-
-	if datasource_update.database != original_datasource.database:
-		update_by_query_string += f"ctx._source.database = '{datasource_update.database}';"
-
-	if datasource_update.datasource_name != original_datasource.datasource_name:
-		update_by_query_string += f"ctx._source.datasource_name = '{datasource_update.datasource_name}';"
-
-	if update_by_query_string != "":
-		client.update_by_query(
-			index=settings.DATASET_INDEX,
-			body={
-				"query": {"match": {"datasource_id": key}},
-				"script": {
-					"source": update_by_query_string,
-					"lang": "painless"
-				}
-			},
-			wait_for_completion=True,
-		)
+	updated_database = datasource_update.database if datasource_update.database != original_datasource.database else None
+	updated_datasource_name = datasource_update.datasource_name if datasource_update.datasource_name != original_datasource.datasource_name else None
+	dataset_repository.update_datasource(key, database=updated_database, datasource_name=updated_datasource_name)
 
 	return updated_datasource
 

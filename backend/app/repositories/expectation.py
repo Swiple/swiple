@@ -44,7 +44,7 @@ class ExpectationRepository(BaseRepository[Expectation]):
         dataset_id: Optional[str] = None,
         suggested: Optional[bool] = None,
         enabled: Optional[bool] = None,
-    ) -> list[Exception]:
+    ):
         query = {"query": {"bool": {"must": []}}}
 
         if enabled is not None:
@@ -60,6 +60,9 @@ class ExpectationRepository(BaseRepository[Expectation]):
             query["query"]["bool"]["must"].append({"match": {"dataset_id": dataset_id}})
 
         return super().delete_by_query(query)
+
+    def delete_by_datasource(self, datasource_id: str):
+        return self.delete_by_filter(datasource_id=datasource_id)
 
     def _get_dict_from_object(self, object: Expectation) -> dict[str, Any]:
         d = object.dict(by_alias=True)

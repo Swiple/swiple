@@ -1,15 +1,15 @@
 from typing import Optional
 from apscheduler.jobstores.base import JobLookupError
-from opensearchpy import NotFoundError
 from fastapi import APIRouter, status, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 
-from app.settings import settings
+from app.api.shortcuts import get_by_key_or_404
 from app.core.users import current_active_user
-from app.db.client import client
 from app.core.schedulers.scheduler import scheduler, Schedule
+from app.repositories.dataset import DatasetRepository, get_dataset_repository
+from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 
 router = APIRouter(
     dependencies=[Depends(current_active_user)]
@@ -50,11 +50,9 @@ def list_schedules(
 def create_schedule(
         dataset_id: str,
         schedule: Schedule,
+        dataset_repository: DatasetRepository = Depends(get_dataset_repository),
 ):
-    dataset = _resource_exists(
-        settings.DATASET_INDEX,
-        dataset_id,
-    )
+    dataset = get_by_key_or_404(dataset_id, dataset_repository)
 
     schedule = scheduler.add_schedule(
         schedule=schedule,
@@ -137,6 +135,8 @@ def delete_schedule(
 def delete_schedules(
         dataset_id: Optional[str] = None,
         datasource_id: Optional[str] = None,
+        dataset_repository: DatasetRepository = Depends(get_dataset_repository),
+        datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
     if dataset_id and datasource_id:
         raise HTTPException(
@@ -151,18 +151,12 @@ def delete_schedules(
         )
 
     if dataset_id:
-        _resource_exists(
-            settings.DATASET_INDEX,
-            dataset_id,
-        )
+        get_by_key_or_404(dataset_id, dataset_repository)
         scheduler.delete_by_dataset(
             dataset_id=dataset_id,
         )
     elif datasource_id:
-        _resource_exists(
-            settings.DATASOURCE_INDEX,
-            datasource_id,
-        )
+        get_by_key_or_404(datasource_id, datasource_repository)
         scheduler.delete_by_datasource(
             datasource_id=datasource_id,
         )
@@ -185,16 +179,3 @@ def next_schedule_run_times(
         status_code=status.HTTP_200_OK,
         content=jsonable_encoder(next_run_times),
     )
-
-
-def _resource_exists(index, key: str):
-    try:
-        return client.get(
-            index=index,
-            id=key
-        )
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{index} with id '{key}' does not exist"
-        )

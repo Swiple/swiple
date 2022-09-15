@@ -3,6 +3,8 @@ from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 from app.core.users import current_active_user
 from app.db.client import client
+from app.repositories.dataset import DatasetRepository, get_dataset_repository
+from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.settings import settings
 
@@ -13,22 +15,18 @@ router = APIRouter(
 
 @router.get("/resource-counts")
 def resource_counts(
+    datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
+    dataset_repository: DatasetRepository = Depends(get_dataset_repository),
     expectation_repository: ExpectationRepository = Depends(get_expectation_repository)
 ):
-    datasource_count = client.count(
-        index=settings.DATASOURCE_INDEX,
-        body={"query": {"match_all": {}}}
-    )
+    datasource_count = datasource_repository.count({"query": {"match_all": {}}})
 
     # schema_count = client.search(
     #     index=settings.DATASET_INDEX,
     #     body={"size": 0, "aggs": {"item": {"cardinality": {"field": "runtime_parameters.schema"}}}}
     # )["aggregations"]["item"]["value"]
 
-    dataset_count = client.count(
-        index=settings.DATASET_INDEX,
-        body={"query": {"match_all": {}}}
-    )
+    dataset_count = dataset_repository.count({"query": {"match_all": {}}})
 
     expectation_count = expectation_repository.count({"query": {"match": {"enabled": True}}})
 
