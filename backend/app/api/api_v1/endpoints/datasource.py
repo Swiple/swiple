@@ -202,10 +202,7 @@ def _update_datasource(datasource_update: Datasource, key: str, test: bool, repo
 				detail=f"Data Source Name '{datasource_update.datasource_name}' already exists"
 			)
 
-	update_dict = {
-		**datasource_update.dict(exclude={"create_date", "created_by", "password"}),
-		"modified_date": utils.current_time(),
-	}
+	update_dict = datasource_update.dict(exclude={"create_date", "created_by", "password"})
 	if hasattr(datasource_update, "password") and datasource_update.password:
 		if datasource_update.password.get_decrypted_value() != c.SECRET_MASK:
 			update_dict["password"] = datasource_update.password

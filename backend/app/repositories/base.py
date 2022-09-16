@@ -3,8 +3,9 @@ from typing import Any, Generic, Optional, Type, TypeVar
 from opensearchpy import OpenSearch, NotFoundError as OSNotFoundError
 from opensearchpy.helpers import bulk
 
+from app import utils
 from app.db.client import client
-from app.models.base_model import BaseModel
+from app.models.base_model import BaseModel, CreateUpdateDateModel
 
 M = TypeVar("M", bound=BaseModel)
 
@@ -43,6 +44,11 @@ class BaseRepository(Generic[M]):
 
     def update(self, id: str, object: M, update_dict: dict[str, Any], *, refresh: str = "wait_for") -> M:
         updated_object = object.copy(update=update_dict)
+
+        # Update modified_date automatically
+        if isinstance(object, CreateUpdateDateModel):
+            updated_object.modified_date = utils.current_time()
+
         try:
             self.client.update(
                 index=self.index,

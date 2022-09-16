@@ -150,7 +150,6 @@ def update_expectation(
 
     expectation = get_by_key_or_404(expectation_id, repository)
     update_dict = expectation_update.dict()
-    update_dict["modified_date"] = utils.current_time()
 
     if expectation.datasource_id != expectation_update.datasource_id:
         raise HTTPException(

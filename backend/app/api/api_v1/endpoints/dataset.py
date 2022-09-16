@@ -142,8 +142,6 @@ def update_dataset(
             ) from e
         update_dict["sample"] = sample
 
-    update_dict["modified_date"] = utils.current_time()
-
     return repository.update(key, dataset, update_dict)
 
 
