@@ -75,7 +75,6 @@ class BaseRepository(Generic[M]):
                 "_source": self._get_dict_from_object(object),
             } for object in objects
         ]
-        print(actions)
         bulk(self.client, actions, refresh=refresh)
 
     def delete_by_query(self, body: dict[str, Any]):
