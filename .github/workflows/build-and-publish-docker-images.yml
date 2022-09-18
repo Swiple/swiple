@@ -17,6 +17,9 @@ jobs:
         name: Checkout
         uses: actions/checkout@v3
       -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       -
@@ -37,6 +40,7 @@ jobs:
         with:
           context: ./backend/
           file: ./backend/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.swiple-api-meta.outputs.tags }}
           labels: ${{ steps.swiple-api-meta.outputs.labels }}
@@ -47,6 +51,9 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -68,6 +75,7 @@ jobs:
         with:
           context: ./frontend/
           file: ./frontend/Dockerfile.prod
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.swiple-ui-meta.outputs.tags }}
           labels: ${{ steps.swiple-ui-meta.outputs.labels }}
