@@ -56,7 +56,7 @@ def create_schedule(
 
     schedule = scheduler.add_schedule(
         schedule=schedule,
-        datasource_id=dataset["_source"]["datasource_id"],
+        datasource_id=dataset.datasource_id,
         dataset_id=dataset_id,
     )
     schedule_as_dict = scheduler.to_dict(schedule)
