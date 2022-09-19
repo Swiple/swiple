@@ -73,8 +73,10 @@ class ExpectationRepository(BaseRepository[Expectation]):
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Expectation:
         try:
             expectation_class = type_map[d["expectation_type"]]
-            return expectation_class(**d)
-        except KeyError:    
+            object = expectation_class(**d)
+            object.documentation = object._documentation()
+            return object
+        except KeyError:
             return super()._get_object_from_dict(d)
 
 

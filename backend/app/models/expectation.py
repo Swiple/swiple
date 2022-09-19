@@ -44,6 +44,10 @@ class Expectation(ExpectationBase, KeyModel, CreateUpdateDateModel, GenericModel
     meta: Optional[dict]
 
     validations: list[Any] = Field(default_factory=list)
+    documentation: Optional[str] = None
+
+    def _documentation(self) -> str:
+        raise NotImplementedError()
 
     @validator("kwargs", pre=True)
     def parse_json_kwargs(cls, v: Any):
@@ -70,7 +74,7 @@ class ExpectColumnToExist(Expectation[ExpectColumnToExistKwargs]):
     expectation_type: str = c.EXPECT_COLUMN_TO_EXIST
     result_type: str = c.EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect column "{self.kwargs.column}" to exist.'
 
 
@@ -88,7 +92,7 @@ class ExpectTableColumnsToMatchOrderedList(Expectation[ExpectTableColumnsToMatch
     expectation_type: str = c.EXPECT_TABLE_COLUMNS_TO_MATCH_ORDERED_LIST
     result_type: str = c.EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect order of columns to match list {self.kwargs.column_list}.'
 
 
@@ -107,7 +111,7 @@ class ExpectTableColumnsToMatchSet(Expectation[ExpectTableColumnsToMatchSetKwarg
     expectation_type: str = c.EXPECT_TABLE_COLUMNS_TO_MATCH_SET
     result_type: str = c.EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect columns to match set {self.kwargs.column_set}'
 
 
@@ -127,7 +131,7 @@ class ExpectTableRowCountToBeBetween(Expectation[ExpectTableRowCountToBeBetweenK
     expectation_type: str = c.EXPECT_TABLE_ROW_COUNT_TO_BE_BETWEEN
     result_type: str = c.EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect table row count to be between {self.kwargs.min_value} and {self.kwargs.max_value}.'
 
 
@@ -145,7 +149,7 @@ class ExpectTableRowCountToEqual(Expectation[ExpectTableRowCountToEqualKwargs]):
     expectation_type: str = c.EXPECT_TABLE_ROW_COUNT_TO_EQUAL
     result_type: str = c.EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect the number of rows to equal {self.kwargs.value}.'
 
 
@@ -164,7 +168,7 @@ class ExpectTableColumnCountToBeBetween(Expectation[ExpectTableColumnCountToBeBe
     expectation_type: str = c.EXPECT_TABLE_COLUMN_COUNT_TO_BE_BETWEEN
     result_type: str = c.EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect table column count to be between {self.kwargs.min_value} and {self.kwargs.max_value}.'
 
 
@@ -182,7 +186,7 @@ class ExpectTableColumnCountToBeEqual(Expectation[ExpectTableColumnCountToBeEqua
     expectation_type: str = c.EXPECT_TABLE_COLUMN_COUNT_TO_EQUAL
     result_type: str = c.EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect table column count to equal {self.kwargs.value}.'
 
 
@@ -201,7 +205,7 @@ class ExpectColumnValuesToBeUnique(Expectation[ExpectColumnValuesToBeUniqueKwarg
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_UNIQUE
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect each value in column "{self.kwargs.column}" to be unique.'
 
 
@@ -220,7 +224,7 @@ class ExpectCompoundColumnsToBeUnique(Expectation[ExpectCompoundColumnsToBeUniqu
     expectation_type: str = c.EXPECT_COMPOUND_COLUMNS_TO_BE_UNIQUE
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect unique combination of values for columns "{self.kwargs.column_list}".'
 
 
@@ -240,7 +244,7 @@ class ExpectSelectColumnValuesToBeUniqueWithinRecord(Expectation[ExpectSelectCol
     expectation_type: str = c.EXPECT_SELECT_COLUMN_VALUES_TO_BE_UNIQUE_WITHIN_RECORD
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect the values for each record to be unique across columns "{self.kwargs.column_list}".'
 
 
@@ -260,7 +264,7 @@ class ExpectColumnValuesToNotBeNull(Expectation[ExpectColumnValuesToNotBeNullKwa
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_BE_NULL
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect values in column "{self.kwargs.column}" to NOT be null or missing.'
 
 
@@ -279,7 +283,7 @@ class ExpectColumnValuesToBeNull(Expectation[ExpectColumnValuesToBeNullKwargs]):
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_NULL
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect values in column "{self.kwargs.column}" to be null.'
 
 
@@ -300,7 +304,7 @@ class ExpectColumnValuesToBeInSet(Expectation[ExpectColumnValuesToBeInSetKwargs]
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_IN_SET
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect each value in column "{self.kwargs.column}" to exist in set {self.kwargs.value_set}'
 
 
@@ -320,7 +324,7 @@ class ExpectColumnValuesToNotBeInSet(Expectation[ExpectColumnValuesToNotBeInSetK
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_BE_IN_SET
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect each value in column "{self.kwargs.column}" to NOT exist in set {self.kwargs.value_set}'
 
 
@@ -349,7 +353,7 @@ class ExpectColumnValuesToBeBetween(Expectation[ExpectColumnValuesToBeBetweenKwa
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries in column "{self.kwargs.column}" to be between {self.kwargs.min_value} and {self.kwargs.max_value}. '
 
 
@@ -372,7 +376,7 @@ class ExpectColumnValueLengthsToBeBetween(Expectation[ExpectColumnValueLengthsTo
     expectation_type: str = c.EXPECT_COLUMN_VALUE_LENGTHS_TO_BE_BETWEEN
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings with length between {self.kwargs.min_value} value and {self.kwargs.max_value} value (inclusive).'
 
 
@@ -393,7 +397,7 @@ class ExpectColumnValueLengthsToEqual(Expectation[ExpectColumnValueLengthsToEqua
     expectation_type: str = c.EXPECT_COLUMN_VALUE_LENGTHS_TO_EQUAL
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings with length equal to {self.kwargs.value}.'
 
 
@@ -413,7 +417,7 @@ class ExpectColumnValuesToMatchRegex(Expectation[ExpectColumnValuesToMatchRegexK
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_MATCH_REGEX
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that match the regular expression "{self.kwargs.regex}".'
 
 
@@ -433,7 +437,7 @@ class ExpectColumnValuesToNotMatchRegex(Expectation[ExpectColumnValuesToNotMatch
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_MATCH_REGEX
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that do NOT match the regular expression "{self.kwargs.regex}".'
 
 
@@ -458,7 +462,7 @@ class ExpectColumnValuesToMatchRegexList(Expectation[ExpectColumnValuesToMatchRe
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_MATCH_REGEX_LIST
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that can be matched to "{self.kwargs.match_on}" of a list of regular expressions "{self.kwargs.regex_list}".'
 
 
@@ -483,7 +487,7 @@ class ExpectColumnValuesToNotMatchRegexList(Expectation[ExpectColumnValuesToNotM
     expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_MATCH_REGEX_LIST
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that do NOT match "{self.kwargs.match_on}" of a list of regular expressions "{self.kwargs.regex_list}".'
 
 
@@ -507,7 +511,7 @@ class ExpectColumnMeanToBeBetween(Expectation[ExpectColumnMeanToBeBetweenKwargs]
     expectation_type: str = c.EXPECT_COLUMN_MEAN_TO_BE_BETWEEN
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
 
@@ -538,7 +542,7 @@ class ExpectColumnMedianToBeBetween(Expectation[ExpectColumnMedianToBeBetweenKwa
     expectation_type: str = c.EXPECT_COLUMN_MEDIAN_TO_BE_BETWEEN
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
 
@@ -567,7 +571,7 @@ class ExpectColumnUniqueValueCountToBeBetween(Expectation[ExpectColumnUniqueValu
     expectation_type: str = c.EXPECT_COLUMN_UNIQUE_VALUE_COUNT_TO_BE_BETWEEN
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect the number of unique values in column "{self.kwargs.column}" to be greater than or equal to {self.kwargs.min_value} and less than or equal to {self.kwargs.max_value}.'
 
 
@@ -591,7 +595,7 @@ class ExpectColumnProportionOfUniqueValuesToBeBetween(Expectation[ExpectColumnPr
     expectation_type: str = c.EXPECT_COLUMN_PROPORTION_OF_UNIQUE_VALUES_TO_BE_BETWEEN
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
 
@@ -622,7 +626,7 @@ class ExpectColumnSumToBeBetween(Expectation[ExpectColumnSumToBeBetweenKwargs]):
     expectation_type: str = c.EXPECT_COLUMN_SUM_TO_BE_BETWEEN
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
 
@@ -649,7 +653,7 @@ class ExpectMultiColumnSumToEqual(Expectation[ExpectMultiColumnSumToEqualKwargs]
     expectation_type: str = c.EXPECT_MULTICOLUMN_SUM_TO_EQUAL
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect the sum of row values is the same for each row, summing only values in {self.kwargs.column_list}, and equal to {self.kwargs.sum_total}.'
 
 
@@ -674,7 +678,7 @@ class ExpectColumnMinToBeBetween(Expectation[ExpectColumnMinToBeBetweenKwargs]):
     expectation_type: str = c.EXPECT_COLUMN_MIN_TO_BE_BETWEEN
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
         parse_strings = "where min, max, and all non-null values are parsed as datetimes before comparison"
@@ -713,7 +717,7 @@ class ExpectColumnMaxToBeBetween(Expectation[ExpectColumnMaxToBeBetweenKwargs]):
     expectation_type: str = c.EXPECT_COLUMN_MAX_TO_BE_BETWEEN
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
         parse_strings = "where min, max, and all non-null values are parsed as datetimes before comparison"
@@ -750,7 +754,7 @@ class ExpectColumnPairValuesToBeEqual(Expectation[ExpectColumnPairValuesToBeEqua
     expectation_type: str = c.EXPECT_COLUMN_PAIR_VALUES_TO_BE_EQUAL
     result_type: str = c.COLUMN_MAP_EXPECTATION
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect values in column "{self.kwargs.column_A}" to be the same as column "{self.kwargs.column_B}" where the row is ignored if {self.kwargs.ignore_row_if}.'
 
 
