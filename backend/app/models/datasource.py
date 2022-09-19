@@ -26,7 +26,7 @@ class Datasource(BaseModel):
     key: Optional[str]
     engine: Engines
     datasource_name: str
-    description: str
+    description: Optional[str]
     created_by: Optional[str]
     create_date: Optional[str]
     modified_date: Optional[str]
@@ -39,7 +39,9 @@ class Datasource(BaseModel):
         """Returns connection metadata to be included in validation."""
         pass
 
+
 D = TypeVar("D", bound=Datasource)
+
 
 class Athena(Datasource):
     engine: str = Field(ATHENA, const=True)
