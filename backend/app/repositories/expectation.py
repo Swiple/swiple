@@ -18,7 +18,7 @@ class ExpectationRepository(BaseRepository[Expectation]):
         suggested: Optional[bool] = None,
         enabled: Optional[bool] = None,
         asc: Optional[bool] = False,
-    ) -> list[Exception]:
+    ) -> list[Expectation]:
         direction = "asc" if asc else "desc"
         sort_by_key: str = "expectation_type"
 
