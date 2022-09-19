@@ -1,4 +1,3 @@
-import json
 from typing import Optional, List
 
 from fastapi import APIRouter, HTTPException, status, Request
@@ -12,16 +11,16 @@ from app.core.sample import GetSampleException, get_dataset_sample
 from app.core.users import current_active_user
 from app.models.dataset import BaseDataset, Dataset, DatasetCreate, DatasetUpdate, Sample
 from app.db.client import client
+from app.repositories.base import NotFoundError
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.settings import settings
 from app.models.users import UserDB
-from app.core.runner import Runner
+from app.core.runner import Runner, run_dataset_validation
 from app.core.expectations import supported_unsupported_expectations
 from app import constants as c
 from opensearchpy import RequestError
-from opensearchpy.helpers import bulk
 import uuid
 import requests
 
@@ -207,43 +206,11 @@ def update_sample(
 
 
 @router.post("/{key}/validate")
-def validate_dataset(
-    key:str,
-    repository: DatasetRepository = Depends(get_dataset_repository),
-    datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
-    expectations_repository: ExpectationRepository = Depends(get_expectation_repository),
-):
-    dataset = get_by_key_or_404(key, repository)
-    datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
-    expectations = expectations_repository.query_by_filter(dataset_id=dataset.key, enabled=True)
-
-    identifiers = {
-        "run_date": utils.current_time(),
-        "run_id": uuid.uuid4(),
-        "datasource_id": datasource.key,
-        "dataset_id": dataset.key,
-    }
-
-    meta = {
-        **datasource.expectation_meta(),
-        "dataset_name": dataset.dataset_name,
-    }
-
-    runner_expectations = []
-    for expectation in expectations:
-        runner_expectation = expectation.dict()
-        runner_expectation["meta"] = {"expectation_id": expectation.key}
-        runner_expectations.append(runner_expectation)
-
-    results = Runner(
-        datasource=datasource,
-        batch=dataset,
-        meta=meta,
-        expectations=runner_expectations,
-        identifiers=identifiers,
-    ).validate()
-
-    _insert_results(results)
+def validate_dataset(key: str):
+    try:
+        results = run_dataset_validation(key)
+    except NotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
@@ -291,15 +258,6 @@ def create_suggestions(
     expectation_repository.bulk_create(expectations)
 
     return expectations
-
-
-def _insert_results(results, index: str = settings.VALIDATION_INDEX):
-    bulk(
-        client,
-        results,
-        index=index,
-        refresh="wait_for",
-    )
 
 
 def _check_dataset_does_not_exists(dataset: BaseDataset, repository: DatasetRepository):

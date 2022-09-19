@@ -1,16 +1,25 @@
+import json
+import datetime
+import uuid
+
 from great_expectations.core import ExpectationSuite, ExpectationConfiguration
 from great_expectations.core.batch import RuntimeBatchRequest, BatchRequest
 from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import DataContextConfig, AnonymizedUsageStatisticsConfig
 from great_expectations.data_context.types.base import InMemoryStoreBackendDefaults
 from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
-from app.models.datasource import SNOWFLAKE
+from opensearchpy.helpers import bulk
 from pandas import isnull
-import json
-import datetime
+
 # TODO, add some "runner_max_batches" to datasource to control the
 # max number of batches run at any one time.
 from app import utils
+from app.db.client import client
+from app.models.datasource import SNOWFLAKE
+from app.repositories.dataset import DatasetRepository
+from app.repositories.datasource import DatasourceRepository
+from app.repositories.expectation import ExpectationRepository
+from app.settings import settings
 
 
 class Runner:
@@ -210,3 +219,44 @@ class Runner:
                 data_asset_name=self.batch.dataset_name,
                 batch_spec_passthrough={"create_temp_table": False},
             )
+
+
+def run_dataset_validation(dataset_id: str):
+    dataset = DatasetRepository(client).get(dataset_id)
+    datasource = DatasourceRepository(client).get(dataset.datasource_id)
+    expectations = ExpectationRepository(client).query_by_filter(dataset_id=dataset.key, enabled=True)
+
+    identifiers = {
+        "run_date": utils.current_time(),
+        "run_id": uuid.uuid4(),
+        "datasource_id": datasource.key,
+        "dataset_id": dataset.key,
+    }
+
+    meta = {
+        **datasource.expectation_meta(),
+        "dataset_name": dataset.dataset_name,
+    }
+
+    runner_expectations = []
+    for expectation in expectations:
+        runner_expectation = expectation.dict()
+        runner_expectation["meta"] = {"expectation_id": expectation.key}
+        runner_expectations.append(runner_expectation)
+
+    results = Runner(
+        datasource=datasource,
+        batch=dataset,
+        meta=meta,
+        expectations=runner_expectations,
+        identifiers=identifiers,
+    ).validate()
+
+    bulk(
+        client,
+        results,
+        index=settings.VALIDATION_INDEX,
+        refresh="wait_for",
+    )
+
+    return results
