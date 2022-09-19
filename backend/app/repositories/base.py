@@ -60,9 +60,9 @@ class BaseRepository(Generic[M]):
             raise NotFoundError() from e
         return updated_object
 
-    def delete(self, id: str):
+    def delete(self, id: str, *, refresh: str = "wait_for"):
         try:
-            self.client.delete(index=self.index, id=id)
+            self.client.delete(index=self.index, id=id, refresh=refresh)
         except OSNotFoundError as e:
             raise NotFoundError() from e
 
