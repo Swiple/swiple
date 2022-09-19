@@ -1,6 +1,8 @@
 import json
 from typing import Any, Optional
 
+from fastapi.encoders import jsonable_encoder
+
 from app.repositories.base import BaseRepository, get_repository
 from app.models.dataset import Dataset
 from app.settings import settings
@@ -80,7 +82,7 @@ class DatasetRepository(BaseRepository[Dataset]):
         if sample is not None:
             sample_dict = {
                 **sample.dict(exclude={"rows"}),
-                "rows": json.dumps(sample.rows),
+                "rows": json.dumps(jsonable_encoder(sample.rows)),
             }
             d["sample"] = sample_dict
         return d
