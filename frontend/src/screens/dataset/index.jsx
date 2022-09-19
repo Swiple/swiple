@@ -203,15 +203,11 @@ const Dataset = withRouter(() => {
 
     putSample(dataset.key).then((putSampleResponse) => {
       if (putSampleResponse.status === 200) {
-        getQuerySample(datasetCopy).then((getSampleResponse) => {
-          if (getSampleResponse.status === 200) {
-            setDataset({
-              ...dataset,
-              sample: getSampleResponse.data,
-            });
-          }
-          resolve();
+        setDataset({
+          ...dataset,
+          sample: putSampleResponse.data.sample,
         });
+        resolve();
       } else {
         resolve();
       }
