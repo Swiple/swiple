@@ -71,7 +71,9 @@ class ExpectationRepository(BaseRepository[Expectation]):
         d["kwargs"] = kwargs.json() if isinstance(kwargs, BaseModel) else json.dumps(kwargs)
         return d
 
-    def _get_object_from_dict(self, d: dict[str, Any]) -> Expectation:
+    def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Expectation:
+        if id is not None:
+            d["key"] = id
         object = ExpectationInput.parse_obj(d).__root__
         object.documentation = object._documentation()
         return object

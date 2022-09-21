@@ -25,7 +25,7 @@ class BaseRepository(Generic[M]):
         response = self.client.search(index=self.index, size=size, body=body)
         results = response["hits"]["hits"]
         return [
-            self._get_object_from_dict(result["_source"]) for result in results
+            self._get_object_from_dict(result["_source"], id=result["_id"]) for result in results
         ]
 
     def count(self, body: dict[str, Any]) -> int:
@@ -36,11 +36,11 @@ class BaseRepository(Generic[M]):
             document = self.client.get(index=self.index, id=id)
         except OSNotFoundError as e:
             raise NotFoundError() from e
-        return self._get_object_from_dict(document["_source"])
+        return self._get_object_from_dict(document["_source"], id=document["_id"])
 
     def create(self, id: str, object: M, *, refresh: str = "wait_for") -> M:
-        self.client.index(index=self.index, id=id, body=self._get_dict_from_object(object), refresh=refresh)
-        return self._get_object_from_dict(self._get_dict_from_object(object))
+        response = self.client.index(index=self.index, id=id, body=self._get_dict_from_object(object), refresh=refresh)
+        return self._get_object_from_dict(self._get_dict_from_object(object), id=response["_id"])
 
     def update(self, id: str, object: M, update_dict: dict[str, Any], *, refresh: str = "wait_for") -> M:
         # Make sure we don't override create_date
@@ -86,7 +86,9 @@ class BaseRepository(Generic[M]):
     def _get_dict_from_object(self, object: M) -> dict[str, Any]:
         return object.dict(by_alias=True)
 
-    def _get_object_from_dict(self, d: dict[str, Any]) -> M:
+    def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> M:
+        if id is not None:
+            d["key"] = id
         return self.model_class.parse_obj(d)
 
 
