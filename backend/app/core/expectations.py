@@ -1,5 +1,8 @@
+from typing import get_args
+
 from great_expectations.core.expectation_configuration import ExpectationConfiguration
-from app.models import expectation as exp
+
+from app.models.expectation import Expectation
 from app.utils import json_schema_to_single_doc
 
 
@@ -7,9 +10,9 @@ def supported_unsupported_expectations():
     supported_expectations = []
     unsupported_expectations = []
 
-    for expectation in exp.type_map.values():
+    for expectation in get_args(Expectation):
         json_schema = json_schema_to_single_doc(expectation.schema())
-        expectation_type = json_schema['properties']['expectation_type']['default']
+        expectation_type = json_schema['properties']['expectation_type']['value']
         supported_expectations.append(expectation_type)
 
     ge_expectations = ExpectationConfiguration.kwarg_lookup_dict.keys()

@@ -63,7 +63,7 @@ function ExpectationModal({
   const expectationOptions = expectationsJsonSchema.map((item) => (
     <Option
       key={item.title}
-      value={item.properties.expectation_type.default}
+      value={item.properties.expectation_type.value}
       label={item.title}
       title={item.title}
       className="select-option-border-bottom"
@@ -137,7 +137,7 @@ function ExpectationModal({
       return null;
     }
     const expectation = expectationsJsonSchema.filter((item) => (
-      item.properties.expectation_type.default === selectedExpectation))[0];
+      item.properties.expectation_type.value === selectedExpectation))[0];
     const kwargProps = expectation.properties.kwargs.properties;
     const requiredKwargs = expectation.properties.kwargs.required;
 
@@ -170,13 +170,13 @@ function ExpectationModal({
     const cleanedPayload = clean(payload);
 
     const expectation = expectationsJsonSchema.filter((item) => (
-      item.properties.expectation_type.default === payload.expectation_type))[0].properties;
+      item.properties.expectation_type.value === payload.expectation_type))[0].properties;
     delete cleanedPayload.expectation_type;
 
     return {
       datasource_id: dataset.datasource_id,
       dataset_id: dataset.key,
-      expectation_type: expectation.expectation_type.default,
+      expectation_type: expectation.expectation_type.value,
       kwargs: {
         ...cleanedPayload,
       },

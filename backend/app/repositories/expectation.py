@@ -1,8 +1,9 @@
 import json
 from typing import Any, Optional
 
+from app.models.base_model import BaseModel
 from app.repositories.base import BaseRepository, get_repository
-from app.models.expectation import BaseKwargs, Expectation, type_map
+from app.models.expectation import Expectation, ExpectationInput
 from app.settings import settings
 
 
@@ -67,17 +68,13 @@ class ExpectationRepository(BaseRepository[Expectation]):
     def _get_dict_from_object(self, object: Expectation) -> dict[str, Any]:
         d = object.dict(by_alias=True)
         kwargs = object.kwargs
-        d["kwargs"] = kwargs.json() if isinstance(kwargs, BaseKwargs) else json.dumps(kwargs)
+        d["kwargs"] = kwargs.json() if isinstance(kwargs, BaseModel) else json.dumps(kwargs)
         return d
 
-    def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Expectation:
-        try:
-            expectation_class = type_map[d["expectation_type"]]
-            object = expectation_class(**d)
-            object.documentation = object._documentation()
-            return object
-        except KeyError:
-            return super()._get_object_from_dict(d)
+    def _get_object_from_dict(self, d: dict[str, Any]) -> Expectation:
+        object = ExpectationInput.parse_obj(d).__root__
+        object.documentation = object._documentation()
+        return object
 
 
 get_expectation_repository = get_repository(ExpectationRepository)

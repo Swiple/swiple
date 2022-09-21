@@ -12,13 +12,12 @@ class DatasourceRepository(BaseRepository[Datasource]):
     def query_by_name(self, name: str) -> list[Datasource]:
         return self.query({"query": {"match": {"datasource_name.keyword": name}}})
 
-    def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Datasource:
+    def _get_object_from_dict(self, d: dict[str, Any]) -> Datasource:
         try:
-            d.pop("key", None)
             engine_class = engine_types[d["engine"]]
-            return engine_class(key=id, **d)
+            return engine_class(**d)
         except KeyError:    
-            return super()._get_object_from_dict(d, id=id)
+            return super()._get_object_from_dict(d)
 
 
 get_datasource_repository = get_repository(DatasourceRepository)

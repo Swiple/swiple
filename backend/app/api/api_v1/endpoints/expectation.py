@@ -1,9 +1,8 @@
-from typing import Optional
+from typing import Optional, get_args
 from fastapi import APIRouter, HTTPException, status
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
-from app.models.expectation import Expectation, ExpectationCreate, ExpectationUpdate
+from app.models.expectation import ExpectationInput, Expectation
 from app.core.expectations import supported_unsupported_expectations
 from app import utils
 from app.db.client import client
@@ -11,8 +10,6 @@ from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.settings import settings
-from app.models import expectation as exp
-from pydantic.error_wrappers import ValidationError
 from app.utils import json_schema_to_single_doc
 from app.api.api_v1.endpoints import validation
 from fastapi.param_functions import Depends
@@ -23,11 +20,14 @@ router = APIRouter(
     dependencies=[Depends(current_active_user)]
 )
 
+async def get_expectation_payload(expectation: ExpectationInput) -> Expectation:
+    return expectation.__root__
+
 
 @router.get("/json-schema")
 def get_json_schema():
     expectations = []
-    for expectation in exp.type_map.values():
+    for expectation in get_args(Expectation):
         json_schema = json_schema_to_single_doc(expectation.schema())
         expectations.append(json_schema)
 
@@ -40,7 +40,7 @@ def list_supported_expectations():
     return JSONResponse(status_code=status.HTTP_200_OK, content=content)
 
 
-@router.put("/{expectation_id}/enable")
+@router.put("/{expectation_id}/enable", response_model=Expectation)
 def enable_expectation(
         expectation_id: str,
         repository: ExpectationRepository = Depends(get_expectation_repository),
@@ -49,7 +49,7 @@ def enable_expectation(
     return repository.update(expectation_id, expectation, {"enabled": True})
 
 
-@router.put("/{expectation_id}/disable")
+@router.put("/{expectation_id}/disable", response_model=Expectation)
 def disable_expectation(
         expectation_id: str,
         repository: ExpectationRepository = Depends(get_expectation_repository),
@@ -58,7 +58,7 @@ def disable_expectation(
     return repository.update(expectation_id, expectation, {"enabled": False})
 
 
-@router.get("")
+@router.get("", response_model=list[Expectation])
 def list_expectations(
         datasource_id: Optional[str] = None,
         dataset_id: Optional[str] = None,
@@ -88,7 +88,7 @@ def list_expectations(
     return expectations
 
 
-@router.get("/{expectation_id}")
+@router.get("/{expectation_id}", response_model=Expectation)
 def get_expectation(
     expectation_id: str,
     repository: ExpectationRepository = Depends(get_expectation_repository),
@@ -96,27 +96,13 @@ def get_expectation(
     return get_by_key_or_404(expectation_id, repository)
 
 
-@router.post("")
+@router.post("", response_model=Expectation)
 def create_expectation(
-    expectation_create: ExpectationCreate,
+    expectation: Expectation = Depends(get_expectation_payload),
     repository: ExpectationRepository = Depends(get_expectation_repository),
     datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
     dataset_repository: DatasetRepository = Depends(get_dataset_repository),
 ):
-    # TODO validation, don't allow datasource_id, dataset_id, expectation_id in "meta" field. We add this fields to meta in Runner.run
-    try:
-        expectation = exp.type_map[expectation_create.expectation_type](**expectation_create.dict())
-    except KeyError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"expectation '{expectation_create.expectation_type}' has not been implemented"
-        )
-    except ValidationError as exc:
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content=jsonable_encoder({"detail": exc.errors(), "body": expectation_create}),
-        )
-
     get_by_key_or_404(expectation.datasource_id, datasource_repository)
     dataset = get_by_key_or_404(expectation.dataset_id, dataset_repository)
 
@@ -129,27 +115,14 @@ def create_expectation(
     return repository.create(expectation.key, expectation)
 
 
-@router.put("/{expectation_id}")
+@router.put("/{expectation_id}", response_model=Expectation)
 def update_expectation(
     expectation_id: str,
-    expectation_update: ExpectationUpdate,
+    expectation_update: Expectation = Depends(get_expectation_payload),
     repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
-    try:
-        exp.type_map[expectation_update.expectation_type](**expectation_update.dict())
-    except KeyError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"expectation '{expectation_update.expectation_type}' has not been implemented"
-        )
-    except ValidationError as exc:
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content=jsonable_encoder({"detail": exc.errors(), "body": expectation_update}),
-        )
-
     expectation = get_by_key_or_404(expectation_id, repository)
-    update_dict = expectation_update.dict()
+    update_dict = expectation_update.dict(exclude={"key"})
 
     if expectation.datasource_id != expectation_update.datasource_id:
         raise HTTPException(
@@ -171,8 +144,7 @@ def update_expectation(
     # run. We can't have an expectation with the same id but
     # with different expectation types
     if expectation.expectation_type != expectation_update.expectation_type:
-        new_expectation = exp.type_map[expectation_update.expectation_type](**expectation_update.dict())
-        new_expectation = repository.create(new_expectation.key, new_expectation)
+        new_expectation = repository.create(expectation_update.key, expectation_update)
 
         repository.delete(expectation_id)
         client.delete_by_query(
