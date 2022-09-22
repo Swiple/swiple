@@ -1,8 +1,14 @@
 from datetime import timedelta, datetime
+from typing import List
+
 from opensearchpy.helpers import bulk
 from copy import deepcopy
+
+from app.models.dataset import DatasetCreate
+from app.models.datasource import DatasourceInput, Engine, PostgreSQL
 from app.settings import settings
 from app.db.client import client
+from app.models.expectation import ExpectationInput
 import uuid
 import random
 import pytz
@@ -48,21 +54,23 @@ class DemoVideoSetup:
     def add_datasource(self):
         datasource_name = "postgres"
         self._datasource_exists(datasource_name=datasource_name)
-
+        datasource: DatasourceInput = DatasourceInput(
+            __root__=PostgreSQL(
+                engine=Engine.POSTGRESQL,
+                datasource_name=datasource_name,
+                description="demo",
+                username="postgres",
+                password="postgres",
+                database="postgres",
+                host="postgres",
+                port=5432,
+            )
+        )
         response = requests.post(
             f"{api_url}/datasources",
             cookies=self.cookies,
             headers={'Content-Type': 'application/json'},
-            json={
-                "engine": "PostgreSQL",
-                "datasource_name": datasource_name,
-                "username": "postgres",
-                "password": "postgres",
-                "database": "postgres",
-                "host": "postgres",
-                "port": 5432,
-                "description": "",
-            },
+            json=datasource.dict(exclude_none=True),
             params={"test": True}
         )
 
@@ -75,10 +83,25 @@ class DemoVideoSetup:
             datasource_id,
             datasource_name,
     ):
-        datasets = [
-            {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.orders", "database": "postgres"},
-            {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.customer", "database": "postgres"},
-            {"datasource_id": datasource_id, "datasource_name": datasource_name, "engine": "PostgreSQL", "dataset_name": "sample_data.part", "database": "postgres"},
+        datasets: List[DatasetCreate] = [
+            DatasetCreate(
+                datasource_id=datasource_id,
+                datasource_name=datasource_name,
+                database="postgres",
+                dataset_name="sample_data.orders",
+            ),
+            DatasetCreate(
+                datasource_id=datasource_id,
+                datasource_name=datasource_name,
+                database="postgres",
+                dataset_name="sample_data.customer",
+            ),
+            DatasetCreate(
+                datasource_id=datasource_id,
+                datasource_name=datasource_name,
+                database="postgres",
+                dataset_name="sample_data.part",
+            ),
         ]
 
         dataset_responses = []
@@ -88,11 +111,10 @@ class DemoVideoSetup:
                 f"{api_url}/datasets",
                 cookies=self.cookies,
                 headers={'Content-Type': 'application/json'},
-                json=dataset,
+                json=dataset.dict(exclude_none=True),
             )
-
             assert response.status_code == 200, json.loads(response.text)["detail"]
-            print(f"Successfully added dataset '{dataset['dataset_name']}'")
+            print(f"Successfully added dataset '{dataset.dataset_name}'")
 
             dataset_responses.append(response.json())
 
@@ -132,7 +154,6 @@ class DemoVideoSetup:
         return suggestion_responses
 
     def enable_suggestions(self, suggestions):
-
         for suggestion in suggestions:
             response = requests.put(
                 f"{api_url}/expectations/{suggestion['key']}/enable",
@@ -144,13 +165,23 @@ class DemoVideoSetup:
 
             # set objective
             if suggestion['expectation_type'] in ["expect_column_values_to_not_be_null", "expect_column_values_to_be_in_set"]:
-                expectation = response.json()
-                expectation["kwargs"]["objective"] = 0.95
+                suggested_expectation = response.json()
+                expectation: ExpectationInput = ExpectationInput(
+                    **{"__root__": {
+                        "dataset_id": suggested_expectation["dataset_id"],
+                        "datasource_id": suggested_expectation["datasource_id"],
+                        "enabled": suggested_expectation["enabled"],
+                        "expectation_type": suggested_expectation["expectation_type"],
+                        "kwargs": suggested_expectation["kwargs"],
+                    }}
+                )
+
+                expectation.__root__.kwargs.objective = 0.95
                 response = requests.put(
                     f"{api_url}/expectations/{suggestion['key']}",
                     cookies=self.cookies,
                     headers={'Content-Type': 'application/json'},
-                    json=expectation,
+                    json=expectation.dict(exclude_none=True),
                 )
 
                 assert response.status_code == 200, json.loads(response.text)["detail"]
@@ -217,7 +248,6 @@ class DemoVideoSetup:
 
                 self.insert_raw_validations(validations)
 
-
     def add_resources(self):
         datasource = self.add_datasource()
         print(datasource)
@@ -268,7 +298,6 @@ class DemoVideoSetup:
 
             assert response.status_code == 200, json.loads(response.text)["detail"]
             print(f"Successfully deleted datasource '{datasource_name}'")
-
 
 
 DemoVideoSetup().add_resources()
