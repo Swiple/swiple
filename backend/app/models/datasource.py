@@ -1,38 +1,27 @@
+from enum import Enum
+from typing import Annotated, Optional, Literal, Union
+
+from pydantic import Field
+
 from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
-from pydantic import Field, Extra
-from typing import Dict, Optional, Literal, Type, TypeVar
 from app.models.types import EncryptedStr
 
-ATHENA = "Athena"
-POSTGRESQL = "PostgreSQL"
-MYSQL = "MySQL"
-REDSHIFT = "Redshift"
-SNOWFLAKE = "Snowflake"
-BIGQUERY = "BigQuery"
-TRINO = "Trino"
 
-Engines = Literal[ATHENA, POSTGRESQL, MYSQL, REDSHIFT, SNOWFLAKE, TRINO]
+class Engine(str, Enum):
+    ATHENA = "Athena"
+    POSTGRESQL = "PostgreSQL"
+    MYSQL = "MySQL"
+    REDSHIFT = "Redshift"
+    SNOWFLAKE = "Snowflake"
+    BIGQUERY = "BigQuery"
+    TRINO = "Trino"
 
 
-class BaseDatasource(BaseModel):
-    engine: Engines
+class DatasourceBase(BaseModel, KeyModel, CreateUpdateDateModel):
+    engine: Engine
     datasource_name: str
     description: str
-
-    class Config:
-        extra = Extra.allow
-
-
-class DatasourceCreate(BaseDatasource):
-    pass
-
-
-class DatasourceUpdate(BaseDatasource):
-    pass
-
-
-class Datasource(BaseDatasource, KeyModel, CreateUpdateDateModel):
-    created_by: str
+    created_by: Optional[str]
 
     def connection_string(self):
         """Returns a SQLAlchemy compatible connection string."""
@@ -42,10 +31,9 @@ class Datasource(BaseDatasource, KeyModel, CreateUpdateDateModel):
         """Returns connection metadata to be included in validation."""
         pass
 
-D = TypeVar("D", bound=Datasource)
 
-class Athena(Datasource):
-    engine: str = Field(ATHENA, const=True)
+class Athena(DatasourceBase):
+    engine: Literal[Engine.ATHENA]
     database: str
     region: str = Field(placeholder="us-east-1", description="AWS Region")
     s3_staging_dir: str = Field(regex="^s3://", placeholder="s3://YOUR_S3_BUCKET/path/to/", description="Navigate to 'Athena' in the AWS Console then select 'Settings' to find the 'Query result location'.")
@@ -65,8 +53,8 @@ class Athena(Datasource):
         }
 
 
-class PostgreSQL(Datasource):
-    engine: str = Field(POSTGRESQL, const=True)
+class PostgreSQL(DatasourceBase):
+    engine: Literal[Engine.POSTGRESQL]
     username: str
     password: EncryptedStr
     database: str
@@ -83,8 +71,8 @@ class PostgreSQL(Datasource):
         }
 
 
-class MySQL(Datasource):
-    engine: str = Field(MYSQL, const=True)
+class MySQL(DatasourceBase):
+    engine: Literal[Engine.MYSQL]
     username: str
     password: EncryptedStr
     database: str
@@ -101,8 +89,8 @@ class MySQL(Datasource):
         }
 
 
-class Redshift(Datasource):
-    engine: str = Field(REDSHIFT, const=True)
+class Redshift(DatasourceBase):
+    engine: Literal[Engine.REDSHIFT]
     username: str
     password: EncryptedStr
     database: str
@@ -119,8 +107,8 @@ class Redshift(Datasource):
         }
 
 
-class Snowflake(Datasource):
-    engine: str = Field(SNOWFLAKE, const=True)
+class Snowflake(DatasourceBase):
+    engine: Literal[Engine.SNOWFLAKE]
     account: str
     user: str
     password: EncryptedStr
@@ -157,8 +145,8 @@ class Snowflake(Datasource):
         }
 
 
-class Trino(Datasource):
-    engine: str = Field(TRINO, const=True)
+class Trino(DatasourceBase):
+    engine: Literal[Engine.TRINO]
     username: str
     password: Optional[EncryptedStr]
     host: str
@@ -185,8 +173,8 @@ class Trino(Datasource):
 
 
 # An update to "_update_datasource" update_by_query and Dataset.js breadcrumb for BigQuery to work.
-# class BigQuery(Datasource):
-#     engine: str = Field(BIGQUERY, const=True)
+# class BigQuery(DatasourceBase):
+#     engine: Literal[Engine.BIGQUERY]
 #     gcp_project: str = Field(title="GCP Project")
 #     dataset: str
 #
@@ -200,11 +188,16 @@ class Trino(Datasource):
 #             "dataset": self.dataset,
 #         }
 
-engine_types: Dict[str, Type[D]] = {
-    ATHENA: Athena,
-    POSTGRESQL: PostgreSQL,
-    MYSQL: MySQL,
-    REDSHIFT: Redshift,
-    SNOWFLAKE: Snowflake,
-    TRINO: Trino,
-}
+
+Datasource = Union[
+    Athena,
+    PostgreSQL,
+    MySQL,
+    Redshift,
+    Snowflake,
+    Trino,
+]
+
+
+class DatasourceInput(BaseModel):
+    __root__: Annotated[Datasource, Field(discriminator="engine")]

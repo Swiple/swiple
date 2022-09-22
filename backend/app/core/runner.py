@@ -15,7 +15,7 @@ from pandas import isnull
 # max number of batches run at any one time.
 from app import utils
 from app.db.client import client
-from app.models.datasource import SNOWFLAKE
+from app.models.datasource import Engine
 from app.repositories.dataset import DatasetRepository
 from app.repositories.datasource import DatasourceRepository
 from app.repositories.expectation import ExpectationRepository
@@ -149,7 +149,7 @@ class Runner:
 
     def get_data_context_config(self):
         # Snowflake SQLAlchemy connector requires the schema in the connection string in order to create TEMP tables.
-        if self.datasource.engine == SNOWFLAKE and self.batch.runtime_parameters:
+        if self.datasource.engine == Engine.SNOWFLAKE and self.batch.runtime_parameters:
             schema = self.batch.runtime_parameters.schema_name
             connection_string = self.datasource.connection_string(schema)
         else:

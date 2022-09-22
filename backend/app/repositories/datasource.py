@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from app.repositories.base import BaseRepository, get_repository
-from app.models.datasource import Datasource, engine_types
+from app.models.datasource import Datasource, DatasourceInput
 from app.settings import settings
 
 
@@ -13,12 +13,10 @@ class DatasourceRepository(BaseRepository[Datasource]):
         return self.query({"query": {"match": {"datasource_name.keyword": name}}})
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Datasource:
-        try:
-            d.pop("key", None)
-            engine_class = engine_types[d["engine"]]
-            return engine_class(key=id, **d)
-        except KeyError:    
-            return super()._get_object_from_dict(d, id=id)
+        if id is not None:
+            d["key"] = id
+        object = DatasourceInput.parse_obj(d).__root__
+        return object
 
 
 get_datasource_repository = get_repository(DatasourceRepository)

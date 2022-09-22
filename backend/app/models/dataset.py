@@ -1,8 +1,10 @@
 import json
 from typing import Any, Optional
+
 from pydantic import Field, constr, validator
+
 from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
-from app.models.datasource import Engines
+from app.models.datasource import Engine
 
 class RuntimeParameters(BaseModel):
 	schema_name: str = Field(alias="schema")
@@ -50,6 +52,6 @@ class DatasetUpdate(BaseDataset):
 
 
 class Dataset(BaseDataset, KeyModel, CreateUpdateDateModel):
-	engine: Engines
+	engine: Engine
 	sample: Optional[Sample]
 	created_by: str
