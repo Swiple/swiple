@@ -20,7 +20,7 @@ class Engine(str, Enum):
 class DatasourceBase(BaseModel, KeyModel, CreateUpdateDateModel):
     engine: Engine
     datasource_name: str
-    description: str
+    description: Optional[str]
     created_by: Optional[str]
 
     def connection_string(self):
