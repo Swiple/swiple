@@ -36,7 +36,6 @@ import {
   getValidationStats,
   postRunnerValidateDataset,
   putSample,
-  getQuerySample,
   getSchedulesForDataset,
   deleteSchedule, suggestExpectations, enableExpectation,
 } from '../../Api';
