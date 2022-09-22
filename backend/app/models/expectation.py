@@ -1,8 +1,11 @@
-from typing import Optional, List, Any
-from pydantic import Field
-from app.models.base_model import BaseModel
-from app import constants as c
+import json
 from enum import Enum
+from typing import Annotated, Optional, List, Any, Literal, Union
+
+from pydantic import Field, validator
+
+from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
+from app import constants as c
 
 
 class IgnoreRowIf(str, Enum):
@@ -11,19 +14,38 @@ class IgnoreRowIf(str, Enum):
     neither = "neither"
 
 
-class Expectation(BaseModel):
+class ExpectationBase(BaseModel, KeyModel, CreateUpdateDateModel):
     dataset_id: str
     datasource_id: str
+    expectation_type: str
+    result_type: str
+    kwargs: Any
     enabled: Optional[bool] = True
     suggested: Optional[bool] = False
-    expectation_type: str
-    kwargs: dict
     meta: Optional[dict]
-    create_date: Optional[str]
-    modified_date: Optional[str]
+
+    validations: list[Any] = Field(default_factory=list)
+    documentation: Optional[str] = None
+
+    def _documentation(self) -> str:
+        raise NotImplementedError()
+
+    @validator("kwargs", pre=True)
+    def parse_json_kwargs(cls, v: Any):
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
+
+    class Config:
+        @staticmethod
+        def schema_extra(schema: dict[str, Any], model: type['ExpectationBase']) -> None:
+            expectation_type_schema = schema.get('properties', {}).get("expectation_type")
+            if expectation_type_schema is not None:
+                expectation_type_schema["value"] = expectation_type_schema["enum"][0]
+                schema["properties"]["expectation_type"] = expectation_type_schema
 
 
-class ExpectColumnToExist(BaseModel):
+class ExpectColumnToExist(ExpectationBase):
     """
     Expect the specified column to exist.
     """
@@ -34,22 +56,15 @@ class ExpectColumnToExist(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_TO_EXIST
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_to_exist"]
     result_type: str = c.EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect column "{self.kwargs.column}" to exist.'
 
 
-class ExpectTableColumnsToMatchOrderedList(BaseModel):
+class ExpectTableColumnsToMatchOrderedList(ExpectationBase):
     """
     Expect the columns to exactly match a specified list.
     """
@@ -59,22 +74,15 @@ class ExpectTableColumnsToMatchOrderedList(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_TABLE_COLUMNS_TO_MATCH_ORDERED_LIST
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_table_columns_to_match_ordered_list"]
     result_type: str = c.EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect order of columns to match list {self.kwargs.column_list}.'
 
 
-class ExpectTableColumnsToMatchSet(BaseModel):
+class ExpectTableColumnsToMatchSet(ExpectationBase):
     """
     Expect the columns to match a specified set.
     """
@@ -86,23 +94,16 @@ class ExpectTableColumnsToMatchSet(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_TABLE_COLUMNS_TO_MATCH_SET
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_table_columns_to_match_set"]
     result_type: str = c.EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect columns to match set {self.kwargs.column_set}'
 
 
 # TODO make min max values conditionally optional
-class ExpectTableRowCountToBeBetween(BaseModel):
+class ExpectTableRowCountToBeBetween(ExpectationBase):
     """
     Expect the number of rows to be between two values.
     """
@@ -113,22 +114,15 @@ class ExpectTableRowCountToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_TABLE_ROW_COUNT_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_table_row_count_to_be_between"]
     result_type: str = c.EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect table row count to be between {self.kwargs.min_value} and {self.kwargs.max_value}.'
 
 
-class ExpectTableRowCountToEqual(BaseModel):
+class ExpectTableRowCountToEqual(ExpectationBase):
     """
     Expect the number of rows to equal a value.
     """
@@ -138,22 +132,15 @@ class ExpectTableRowCountToEqual(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_TABLE_ROW_COUNT_TO_EQUAL
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_table_row_count_to_equal"]
     result_type: str = c.EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect the number of rows to equal {self.kwargs.value}.'
 
 
-class ExpectTableColumnCountToBeBetween(BaseModel):
+class ExpectTableColumnCountToBeBetween(ExpectationBase):
     """
     Expect the number of columns to be between two values.
     """
@@ -164,22 +151,15 @@ class ExpectTableColumnCountToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_TABLE_COLUMN_COUNT_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_table_column_count_to_be_between"]
     result_type: str = c.EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect table column count to be between {self.kwargs.min_value} and {self.kwargs.max_value}.'
 
 
-class ExpectTableColumnCountToBeEqual(BaseModel):
+class ExpectTableColumnCountToBeEqual(ExpectationBase):
     """
     Expect the number of columns to equal a value.
     """
@@ -189,22 +169,15 @@ class ExpectTableColumnCountToBeEqual(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_TABLE_COLUMN_COUNT_TO_EQUAL
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_table_column_count_to_equal"]
     result_type: str = c.EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect table column count to equal {self.kwargs.value}.'
 
 
-class ExpectColumnValuesToBeUnique(BaseModel):
+class ExpectColumnValuesToBeUnique(ExpectationBase):
     """
     Expect each column value to be unique.
     """
@@ -215,22 +188,15 @@ class ExpectColumnValuesToBeUnique(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_UNIQUE
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_be_unique"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect each value in column "{self.kwargs.column}" to be unique.'
 
 
-class ExpectCompoundColumnsToBeUnique(BaseModel):
+class ExpectCompoundColumnsToBeUnique(ExpectationBase):
     """
     Expect that the columns are unique together, e.g. a multi-column primary key
     """
@@ -241,22 +207,15 @@ class ExpectCompoundColumnsToBeUnique(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COMPOUND_COLUMNS_TO_BE_UNIQUE
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_compound_columns_to_be_unique"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect unique combination of values for columns "{self.kwargs.column_list}".'
 
 
-class ExpectSelectColumnValuesToBeUniqueWithinRecord(BaseModel):
+class ExpectSelectColumnValuesToBeUniqueWithinRecord(ExpectationBase):
     """
     Expect the values for each record to be unique across the columns listed.
     Note that records can be duplicated.
@@ -268,22 +227,15 @@ class ExpectSelectColumnValuesToBeUniqueWithinRecord(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_SELECT_COLUMN_VALUES_TO_BE_UNIQUE_WITHIN_RECORD
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_select_column_values_to_be_unique_within_record"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect the values for each record to be unique across columns "{self.kwargs.column_list}".'
 
 
-class ExpectColumnValuesToNotBeNull(BaseModel):
+class ExpectColumnValuesToNotBeNull(ExpectationBase):
     """
     Expect column values to NOT be null. Values must be explicitly null or missing.
     Empty strings don’t count as null unless they have been coerced to a null type.
@@ -295,22 +247,15 @@ class ExpectColumnValuesToNotBeNull(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_BE_NULL
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_not_be_null"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect values in column "{self.kwargs.column}" to NOT be null or missing.'
 
 
-class ExpectColumnValuesToBeNull(BaseModel):
+class ExpectColumnValuesToBeNull(ExpectationBase):
     """
     Expect column values to be null.
     """
@@ -321,22 +266,15 @@ class ExpectColumnValuesToBeNull(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_NULL
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_be_null"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect values in column "{self.kwargs.column}" to be null.'
 
 
-class ExpectColumnValuesToBeInSet(BaseModel):
+class ExpectColumnValuesToBeInSet(ExpectationBase):
     """
     Expect each column value to be in a given set.
     """
@@ -349,22 +287,15 @@ class ExpectColumnValuesToBeInSet(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_IN_SET
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_be_in_set"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect each value in column "{self.kwargs.column}" to exist in set {self.kwargs.value_set}'
 
 
-class ExpectColumnValuesToNotBeInSet(BaseModel):
+class ExpectColumnValuesToNotBeInSet(ExpectationBase):
     """
     Expect each column value to NOT be in a given set.
     """
@@ -376,25 +307,18 @@ class ExpectColumnValuesToNotBeInSet(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_BE_IN_SET
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_not_be_in_set"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect each value in column "{self.kwargs.column}" to NOT exist in set {self.kwargs.value_set}'
 
 
 # TODO make min max values conditionally optional, add validators, support cross types
 # cross types cause issues in OpenSearch as type return for min/max_value are strings
 # instead of floats.
-class ExpectColumnValuesToBeBetween(BaseModel):
+class ExpectColumnValuesToBeBetween(ExpectationBase):
     """
     Expect column entries to be between a minimum value and a maximum value.
     """
@@ -412,23 +336,16 @@ class ExpectColumnValuesToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_be_between"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries in column "{self.kwargs.column}" to be between {self.kwargs.min_value} and {self.kwargs.max_value}. '
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnValueLengthsToBeBetween(BaseModel):
+class ExpectColumnValueLengthsToBeBetween(ExpectationBase):
     """
     Expect column entries to be strings with length between a minimum value and a maximum value.
     This expectation only works for string-type values.
@@ -442,22 +359,15 @@ class ExpectColumnValueLengthsToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUE_LENGTHS_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_value_lengths_to_be_between"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings with length between {self.kwargs.min_value} value and {self.kwargs.max_value} value (inclusive).'
 
 
-class ExpectColumnValueLengthsToEqual(BaseModel):
+class ExpectColumnValueLengthsToEqual(ExpectationBase):
     """
     Expect column entries to be strings with length equal to the provided value.
     This expectation only works for string-type values.
@@ -470,22 +380,15 @@ class ExpectColumnValueLengthsToEqual(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUE_LENGTHS_TO_EQUAL
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_value_lengths_to_equal"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings with length equal to {self.kwargs.value}.'
 
 
-class ExpectColumnValuesToMatchRegex(BaseModel):
+class ExpectColumnValuesToMatchRegex(ExpectationBase):
     """
     Expect column entries to be strings that match a given regular expression.
     """
@@ -497,22 +400,15 @@ class ExpectColumnValuesToMatchRegex(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_MATCH_REGEX
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_match_regex"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that match the regular expression "{self.kwargs.regex}".'
 
 
-class ExpectColumnValuesToNotMatchRegex(BaseModel):
+class ExpectColumnValuesToNotMatchRegex(ExpectationBase):
     """
     Expect column entries to be strings that do NOT match a given regular expression. The regex must NOT match any portion of the provided string. .
     """
@@ -524,23 +420,16 @@ class ExpectColumnValuesToNotMatchRegex(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_MATCH_REGEX
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_not_match_regex"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that do NOT match the regular expression "{self.kwargs.regex}".'
 
 
 # TODO check enum works
-class ExpectColumnValuesToMatchRegexList(BaseModel):
+class ExpectColumnValuesToMatchRegexList(ExpectationBase):
     """
     Expect the column entries to be strings that can be matched to either any of or all of a list of regular expressions. Matches can be anywhere in the string.
     """
@@ -556,23 +445,16 @@ class ExpectColumnValuesToMatchRegexList(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_MATCH_REGEX_LIST
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_match_regex_list"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that can be matched to "{self.kwargs.match_on}" of a list of regular expressions "{self.kwargs.regex_list}".'
 
 
 # TODO check enum works
-class ExpectColumnValuesToNotMatchRegexList(BaseModel):
+class ExpectColumnValuesToNotMatchRegexList(ExpectationBase):
     """
     Expect the column entries to be strings that do not match any of a list of regular expressions. Matches can be anywhere in the string.
     """
@@ -588,23 +470,16 @@ class ExpectColumnValuesToNotMatchRegexList(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_VALUES_TO_NOT_MATCH_REGEX_LIST
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_values_to_not_match_regex_list"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that do NOT match "{self.kwargs.match_on}" of a list of regular expressions "{self.kwargs.regex_list}".'
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnMeanToBeBetween(BaseModel):
+class ExpectColumnMeanToBeBetween(ExpectationBase):
     """
     Expect the column mean to be between a minimum value and a maximum value (inclusive).
     min_value and max_value are both inclusive unless strict_min or strict_max are set to True.
@@ -621,18 +496,11 @@ class ExpectColumnMeanToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_MEAN_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_mean_to_be_between"]
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
 
@@ -645,7 +513,7 @@ class ExpectColumnMeanToBeBetween(BaseModel):
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnMedianToBeBetween(BaseModel):
+class ExpectColumnMedianToBeBetween(ExpectationBase):
     """
     Expect the column median to be between a minimum value and a maximum value.
     """
@@ -659,18 +527,11 @@ class ExpectColumnMedianToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_MEDIAN_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_median_to_be_between"]
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
 
@@ -683,7 +544,7 @@ class ExpectColumnMedianToBeBetween(BaseModel):
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnUniqueValueCountToBeBetween(BaseModel):
+class ExpectColumnUniqueValueCountToBeBetween(ExpectationBase):
     """
     Expect the number of unique values to be between a minimum value and a maximum value. (inclusive)
     """
@@ -695,23 +556,16 @@ class ExpectColumnUniqueValueCountToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_UNIQUE_VALUE_COUNT_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_unique_value_count_to_be_between"]
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect the number of unique values in column "{self.kwargs.column}" to be greater than or equal to {self.kwargs.min_value} and less than or equal to {self.kwargs.max_value}.'
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnProportionOfUniqueValuesToBeBetween(BaseModel):
+class ExpectColumnProportionOfUniqueValuesToBeBetween(ExpectationBase):
     """
     Expect the proportion of unique values to be between a minimum value and a maximum value.
     For example, in a column containing [1, 2, 2, 3, 3, 3, 4, 4, 4, 4], there are 4 unique values and 10 total values for a proportion of 0.4.
@@ -726,18 +580,11 @@ class ExpectColumnProportionOfUniqueValuesToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_PROPORTION_OF_UNIQUE_VALUES_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_proportion_of_unique_values_to_be_between"]
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
 
@@ -750,7 +597,7 @@ class ExpectColumnProportionOfUniqueValuesToBeBetween(BaseModel):
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnSumToBeBetween(BaseModel):
+class ExpectColumnSumToBeBetween(ExpectationBase):
     """
     Expect the column to sum to be between an min and max value
     """
@@ -764,18 +611,11 @@ class ExpectColumnSumToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_SUM_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_sum_to_be_between"]
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
 
@@ -787,7 +627,7 @@ class ExpectColumnSumToBeBetween(BaseModel):
         return f'Expect the sum of values for column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}.'
 
 
-class ExpectMultiColumnSumToEqual(BaseModel):
+class ExpectMultiColumnSumToEqual(ExpectationBase):
     """
     Expect the sum of row values is the same for each row, summing only values in column_list, and equal to sum_total.
     """
@@ -798,23 +638,16 @@ class ExpectMultiColumnSumToEqual(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_MULTICOLUMN_SUM_TO_EQUAL
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_multicolumn_sum_to_equal"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect the sum of row values is the same for each row, summing only values in {self.kwargs.column_list}, and equal to {self.kwargs.sum_total}.'
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnMinToBeBetween(BaseModel):
+class ExpectColumnMinToBeBetween(ExpectationBase):
     """
     Expect the column minimum to be between an min and max value
     """
@@ -830,18 +663,11 @@ class ExpectColumnMinToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_MIN_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_min_to_be_between"]
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
         parse_strings = "where min, max, and all non-null values are parsed as datetimes before comparison"
@@ -860,7 +686,7 @@ class ExpectColumnMinToBeBetween(BaseModel):
 
 
 # TODO make min max values conditionally optional
-class ExpectColumnMaxToBeBetween(BaseModel):
+class ExpectColumnMaxToBeBetween(ExpectationBase):
     """
     Expect the column maximum to be between an min and max value
     """
@@ -876,18 +702,11 @@ class ExpectColumnMaxToBeBetween(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_MAX_TO_BE_BETWEEN
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_max_to_be_between"]
     result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         greater_than = "greater than"
         less_than = "less than"
         parse_strings = "where min, max, and all non-null values are parsed as datetimes before comparison"
@@ -905,7 +724,7 @@ class ExpectColumnMaxToBeBetween(BaseModel):
         return f'Expect the maximum value in column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value} {parse_strings} {strftime_format}.'
 
 
-class ExpectColumnPairValuesToBeEqual(BaseModel):
+class ExpectColumnPairValuesToBeEqual(ExpectationBase):
     """
     Expect the values in column A to be the same as column B.
     """
@@ -920,50 +739,47 @@ class ExpectColumnPairValuesToBeEqual(BaseModel):
         include_config: bool = True
         catch_exceptions: bool = True
 
-    dataset_id: str
-    datasource_id: str
-    enabled: Optional[bool] = True
-    suggested: Optional[bool] = False
-    expectation_type: str = c.EXPECT_COLUMN_PAIR_VALUES_TO_BE_EQUAL
-    kwargs: Kwargs
-    meta: Optional[dict]
+    expectation_type: Literal["expect_column_pair_values_to_be_equal"]
     result_type: str = c.COLUMN_MAP_EXPECTATION
-    create_date: Optional[str]
-    modified_date: Optional[str]
+    kwargs: Kwargs
 
-    def documentation(self):
+    def _documentation(self):
         return f'Expect values in column "{self.kwargs.column_A}" to be the same as column "{self.kwargs.column_B}" where the row is ignored if {self.kwargs.ignore_row_if}.'
 
 
-type_map = {
-    c.EXPECT_COLUMN_TO_EXIST: ExpectColumnToExist,
-    c.EXPECT_TABLE_COLUMNS_TO_MATCH_ORDERED_LIST: ExpectTableColumnsToMatchOrderedList,
-    c.EXPECT_TABLE_COLUMNS_TO_MATCH_SET: ExpectTableColumnsToMatchSet,
-    c.EXPECT_TABLE_ROW_COUNT_TO_BE_BETWEEN: ExpectTableRowCountToBeBetween,
-    c.EXPECT_TABLE_ROW_COUNT_TO_EQUAL: ExpectTableRowCountToEqual,
-    c.EXPECT_TABLE_COLUMN_COUNT_TO_BE_BETWEEN: ExpectTableColumnCountToBeBetween,
-    c.EXPECT_TABLE_COLUMN_COUNT_TO_EQUAL: ExpectTableColumnCountToBeEqual,
-    c.EXPECT_COLUMN_VALUES_TO_BE_UNIQUE: ExpectColumnValuesToBeUnique,
-    c.EXPECT_COMPOUND_COLUMNS_TO_BE_UNIQUE: ExpectCompoundColumnsToBeUnique,
-    c.EXPECT_SELECT_COLUMN_VALUES_TO_BE_UNIQUE_WITHIN_RECORD: ExpectSelectColumnValuesToBeUniqueWithinRecord,
-    c.EXPECT_COLUMN_VALUES_TO_NOT_BE_NULL: ExpectColumnValuesToNotBeNull,
-    c.EXPECT_COLUMN_VALUES_TO_BE_NULL: ExpectColumnValuesToBeNull,
-    c.EXPECT_COLUMN_VALUES_TO_BE_IN_SET: ExpectColumnValuesToBeInSet,
-    c.EXPECT_COLUMN_VALUES_TO_NOT_BE_IN_SET: ExpectColumnValuesToNotBeInSet,
-    c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN: ExpectColumnValuesToBeBetween,
-    c.EXPECT_COLUMN_VALUE_LENGTHS_TO_BE_BETWEEN: ExpectColumnValueLengthsToBeBetween,
-    c.EXPECT_COLUMN_VALUE_LENGTHS_TO_EQUAL: ExpectColumnValueLengthsToEqual,
-    c.EXPECT_COLUMN_VALUES_TO_MATCH_REGEX: ExpectColumnValuesToMatchRegex,
-    c.EXPECT_COLUMN_VALUES_TO_NOT_MATCH_REGEX: ExpectColumnValuesToNotMatchRegex,
-    c.EXPECT_COLUMN_VALUES_TO_MATCH_REGEX_LIST: ExpectColumnValuesToMatchRegexList,
-    c.EXPECT_COLUMN_VALUES_TO_NOT_MATCH_REGEX_LIST: ExpectColumnValuesToNotMatchRegexList,
-    c.EXPECT_COLUMN_MEAN_TO_BE_BETWEEN: ExpectColumnMeanToBeBetween,
-    c.EXPECT_COLUMN_MEDIAN_TO_BE_BETWEEN: ExpectColumnMedianToBeBetween,
-    c.EXPECT_COLUMN_UNIQUE_VALUE_COUNT_TO_BE_BETWEEN: ExpectColumnUniqueValueCountToBeBetween,
-    c.EXPECT_COLUMN_PROPORTION_OF_UNIQUE_VALUES_TO_BE_BETWEEN: ExpectColumnProportionOfUniqueValuesToBeBetween,
-    c.EXPECT_COLUMN_SUM_TO_BE_BETWEEN: ExpectColumnSumToBeBetween,
-    c.EXPECT_MULTICOLUMN_SUM_TO_EQUAL: ExpectMultiColumnSumToEqual,
-    c.EXPECT_COLUMN_MIN_TO_BE_BETWEEN: ExpectColumnMinToBeBetween,
-    c.EXPECT_COLUMN_MAX_TO_BE_BETWEEN: ExpectColumnMaxToBeBetween,
-    c.EXPECT_COLUMN_PAIR_VALUES_TO_BE_EQUAL: ExpectColumnPairValuesToBeEqual,
-}
+Expectation = Union[
+    ExpectColumnToExist,
+    ExpectTableColumnsToMatchOrderedList,
+    ExpectTableColumnsToMatchSet,
+    ExpectTableRowCountToBeBetween,
+    ExpectTableRowCountToEqual,
+    ExpectTableColumnCountToBeBetween,
+    ExpectTableColumnCountToBeEqual,
+    ExpectColumnValuesToBeUnique,
+    ExpectCompoundColumnsToBeUnique,
+    ExpectSelectColumnValuesToBeUniqueWithinRecord,
+    ExpectColumnValuesToNotBeNull,
+    ExpectColumnValuesToBeNull,
+    ExpectColumnValuesToBeInSet,
+    ExpectColumnValuesToNotBeInSet,
+    ExpectColumnValuesToBeBetween,
+    ExpectColumnValueLengthsToBeBetween,
+    ExpectColumnValueLengthsToEqual,
+    ExpectColumnValuesToMatchRegex,
+    ExpectColumnValuesToNotMatchRegex,
+    ExpectColumnValuesToMatchRegexList,
+    ExpectColumnValuesToNotMatchRegexList,
+    ExpectColumnMeanToBeBetween,
+    ExpectColumnMedianToBeBetween,
+    ExpectColumnUniqueValueCountToBeBetween,
+    ExpectColumnProportionOfUniqueValuesToBeBetween,
+    ExpectColumnSumToBeBetween,
+    ExpectMultiColumnSumToEqual,
+    ExpectColumnMinToBeBetween,
+    ExpectColumnMaxToBeBetween,
+    ExpectColumnPairValuesToBeEqual,
+]
+
+
+class ExpectationInput(BaseModel):
+    __root__: Annotated[Expectation, Field(discriminator="expectation_type")]
