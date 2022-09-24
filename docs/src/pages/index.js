@@ -16,11 +16,16 @@ function HomepageHeader() {
       <div className="container">
         <h1 className="hero__title">{siteConfig.title}</h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
+        <div>
           <Link
-            className="button button--secondary button--lg"
+            className="button button--secondary button--lg margin-right--md"
             to="/docs/installation/quick-start">
-            Get Started in 4 Commands
+            Get Started in 4 Commands 🚀
+          </Link>
+          <Link
+            className={clsx("button button--secondary button--lg", styles.buttonStar)}
+            to="/docs/installation/quick-start">
+            Give Swiple a Star ⭐️
           </Link>
         </div>
         <div className={clsx("margin-bottom--xl")} />
