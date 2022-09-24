@@ -72,16 +72,12 @@ function DatasourceModal({
 
   const isFormComplete = () => form.validateFields()
     .then((values) => ({ complete: true, values }))
-    .catch((validationInfo) => {
-      console.log('Validations failed: ', validationInfo);
-      return { complete: false, values: {} };
-    });
+    .catch(() => ({ complete: false, values: {} }));
 
   const onFormSubmitInternal = async () => {
     const { complete, values } = await isFormComplete();
     if (complete) {
       const { status, data } = await createOrUpdateDatasourceRequest(values);
-
       if (status === 200) {
         setResponseStatus({ success: true });
 
@@ -92,6 +88,8 @@ function DatasourceModal({
           setSelectedEngine('');
           form.resetFields();
         }, 500);
+      } else if (status === 422 && data.message) {
+        setResponseStatus({ success: false, msg: data.message });
       } else if (status === undefined) {
         message.error('API appears to be down.', 5);
       } else if (data?.detail !== undefined) {
