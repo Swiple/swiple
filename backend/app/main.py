@@ -5,6 +5,7 @@ from app.settings import settings
 from app.db.client import client, async_client
 import app.constants as c
 from app.core.schedulers.scheduler import scheduler
+from app.api import exception_handlers
 
 app = FastAPI(
     openapi_url=f"{settings.API_VERSION}/openapi.json"
@@ -29,6 +30,8 @@ if settings.APP == c.APP_SWIPLE_API:
 if settings.APP == c.APP_SCHEDULER:
     from app.api.api_v1 import scheduler_router
     app.include_router(scheduler_router.router, prefix=settings.API_VERSION)
+
+exception_handlers.add(app)
 
 
 @app.router.on_event("startup")

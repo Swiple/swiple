@@ -6,17 +6,8 @@ COPY poetry.lock pyproject.toml  /code/
 
 RUN pip install --no-cache-dir --upgrade pip poetry
 
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi
-
-# Add Connectors
-RUN poetry install \
-    -E postgres    \
-    -E redshift    \
-    -E mysql       \
-    -E trino       \
-    -E athena      \
-    -E snowflake
+RUN poetry config virtualenvs.create false &&  \
+    poetry install --no-interaction --no-ansi --extras "postgres redshift mysql trino athena snowflake"
 
 COPY app /code/app
 
