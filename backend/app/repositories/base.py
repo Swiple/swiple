@@ -29,7 +29,7 @@ class BaseRepository(Generic[M]):
         ]
 
     def count(self, body: dict[str, Any]) -> int:
-        return self.client.count(index=self.index, body=body)
+        return self.client.count(index=self.index, body=body)["count"]
 
     def get(self, id: str) -> M:
         try:

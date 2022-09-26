@@ -19,6 +19,7 @@ class ExpectationRepository(BaseRepository[Expectation]):
         suggested: Optional[bool] = None,
         enabled: Optional[bool] = None,
         asc: Optional[bool] = False,
+        expectation_type: Optional[str] = None
     ) -> list[Expectation]:
         direction = "asc" if asc else "desc"
         sort_by_key: str = "expectation_type"
@@ -37,9 +38,13 @@ class ExpectationRepository(BaseRepository[Expectation]):
         if dataset_id is not None:
             query["query"]["bool"]["must"].append({"match": {"dataset_id": dataset_id}})
 
+        if expectation_type is not None:
+            query["query"]["bool"]["must"].append({"match": {"expectation_type": expectation_type}})
+
         return super().query(query, size=1000)
 
-    def delete_by_filter(self,
+    def delete_by_filter(
+        self,
         *,
         datasource_id: Optional[str] = None,
         dataset_id: Optional[str] = None,
