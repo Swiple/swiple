@@ -6,6 +6,7 @@ from pydantic import Field, constr, validator
 from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
 from app.models.datasource import Engine
 
+
 class RuntimeParameters(BaseModel):
 	schema_name: str = Field(alias="schema")
 	query: Optional[str]
