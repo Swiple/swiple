@@ -27,7 +27,7 @@ function ExpectationHistory({ validations, resultType }) {
     }
 
     return {
-      value: [row.run_date, resultValue],
+      value: [row.run_time, resultValue],
       itemStyle: {
         color,
       },
@@ -54,7 +54,7 @@ function ExpectationHistory({ validations, resultType }) {
         percentageValue(validations[i]),
       );
       values.objectiveValues.push(
-        [validations[i].run_date, objectiveValue(validations[i])],
+        [validations[i].run_time, objectiveValue(validations[i])],
       );
     }
     return values;

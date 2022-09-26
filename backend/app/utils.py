@@ -7,13 +7,22 @@ from re import search
 import emails
 from emails.template import JinjaTemplate
 from pathlib import Path
-from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
 import pytz
 
 
 def current_time():
     return str(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
+
+
+def remove_t_from_date_string(date_string) -> datetime:
+    """
+    Converts a date string in the format
+    2021-10-11T09:10:44.330614+00:00
+    to
+    2021-10-11 09:10:44.330614+00:00
+    """
+    return date_string.replace("T", " ")
 
 
 def string_to_utc_time(date_string):

@@ -112,6 +112,12 @@ validations:
   index_name: validations
   mappings:
     properties:
-      run_date:
-        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
-        type: date
+      meta:
+        type: object
+        properties:
+          run_id:
+            type: object
+            properties:
+              run_time:
+                format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+                type: date
