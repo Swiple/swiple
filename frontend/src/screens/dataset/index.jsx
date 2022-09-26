@@ -278,6 +278,9 @@ const Dataset = withRouter(() => {
                     setSuggestions(suggestions.filter((item) => item.key !== record.key));
                     setRefreshExpectations(true);
                     resolve();
+                  } else if (response.status === 422) {
+                    message.warn(response.data.detail, 10);
+                    resolve();
                   }
                 }).catch(() => reject());
               })}

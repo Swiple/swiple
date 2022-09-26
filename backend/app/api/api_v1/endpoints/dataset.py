@@ -1,16 +1,15 @@
 from typing import Optional, List
 
 from fastapi import APIRouter, HTTPException, status, Request
-from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 
-from app import utils
 from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
 from app.core.sample import GetSampleException, get_dataset_sample
 from app.core.users import current_active_user
 from app.models.dataset import BaseDataset, Dataset, DatasetCreate, DatasetUpdate, Sample
 from app.db.client import client
+from app.models.validation import Validation
 from app.repositories.base import NotFoundError
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
@@ -21,7 +20,6 @@ from app.core.runner import Runner, run_dataset_validation
 from app.core.expectations import supported_unsupported_expectations
 from app import constants as c
 from opensearchpy import RequestError
-import uuid
 import requests
 
 
@@ -84,13 +82,13 @@ def create_dataset(
 
     if test_query:
         try:
-            sample = get_dataset_sample(dataset, datasource)
+            data_sample = get_dataset_sample(dataset, datasource)
         except GetSampleException as e:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=e.error,
             ) from e
-        dataset.sample = sample
+        dataset.sample = data_sample
 
     return repository.create(dataset.key, dataset)
 
@@ -119,13 +117,13 @@ def update_dataset(
         # means it is a physical table.
         if not dataset_update.runtime_parameters:
             try:
-                sample = get_dataset_sample(dataset_update, datasource)
+                data_sample = get_dataset_sample(dataset_update, datasource)
             except GetSampleException as e:
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=e.error,
                 ) from e
-            update_dict["sample"] = sample
+            update_dict["sample"] = data_sample
 
     if (
             dataset.runtime_parameters and
@@ -133,13 +131,13 @@ def update_dataset(
             dataset.runtime_parameters.query != dataset_update.runtime_parameters.query
     ):
         try:
-            sample = get_dataset_sample(dataset, datasource)
+            data_sample = get_dataset_sample(dataset, datasource)
         except GetSampleException as e:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=e.error,
             ) from e
-        update_dict["sample"] = sample
+        update_dict["sample"] = data_sample
 
     return repository.update(key, dataset, update_dict)
 
@@ -194,28 +192,25 @@ def update_sample(
     dataset = get_by_key_or_404(key, repository)
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
     try:
-        sample = get_dataset_sample(dataset, datasource)
+        data_sample = get_dataset_sample(dataset, datasource)
     except GetSampleException as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=e.error,
         ) from e
 
-    dataset = repository.update(dataset.key, dataset, {"sample": sample})
+    dataset = repository.update(dataset.key, dataset, {"sample": data_sample})
     return dataset
 
 
-@router.post("/{key}/validate")
+@router.post("/{key}/validate", response_model=Validation)
 def validate_dataset(key: str):
     try:
-        results = run_dataset_validation(key)
+        validation: Validation = run_dataset_validation(key)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
 
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(results),
-    )
+    return validation
 
 
 @router.post("/{key}/suggest")
@@ -229,8 +224,6 @@ def create_suggestions(
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
 
     identifiers = {
-        "run_date": utils.current_time(),
-        "run_id": uuid.uuid4(),
         "datasource_id": datasource.key,
         "dataset_id": dataset.key,
     }

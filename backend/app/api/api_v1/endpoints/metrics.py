@@ -6,6 +6,7 @@ from app.db.client import client
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
+from app.repositories.validation import ValidationRepository, get_validation_repository
 from app.settings import settings
 
 router = APIRouter(
@@ -17,40 +18,35 @@ router = APIRouter(
 def resource_counts(
     datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
     dataset_repository: DatasetRepository = Depends(get_dataset_repository),
-    expectation_repository: ExpectationRepository = Depends(get_expectation_repository)
+    expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
+    validation_repository: ValidationRepository = Depends(get_validation_repository),
 ):
-    datasource_count = datasource_repository.count({"query": {"match_all": {}}})
-
     # schema_count = client.search(
     #     index=settings.DATASET_INDEX,
     #     body={"size": 0, "aggs": {"item": {"cardinality": {"field": "runtime_parameters.schema"}}}}
     # )["aggregations"]["item"]["value"]
 
+    datasource_count = datasource_repository.count({"query": {"match_all": {}}})
     dataset_count = dataset_repository.count({"query": {"match_all": {}}})
-
     expectation_count = expectation_repository.count({"query": {"match": {"enabled": True}}})
-
-    validation_count = client.count(
-        index=settings.VALIDATION_INDEX,
-        body={"query": {"match_all": {}}}
-    )
+    validation_count = validation_repository.count({"query": {"match_all": {}}})
 
     points = get_histogram_points()
     response = {
         "datasource": {
-            "count": datasource_count["count"],
+            "count": datasource_count,
             "points": points["datasource"],
         },
         "dataset": {
-            "count": dataset_count["count"],
+            "count": dataset_count,
             "points": points["dataset"],
         },
         "expectation": {
-            "count": expectation_count["count"],
+            "count": expectation_count,
             "points": points["expectation"],
         },
         "validation": {
-            "count": validation_count["count"],
+            "count": validation_count,
             "points": points["validation"],
         },
     }
@@ -68,32 +64,44 @@ def top_issues():
                     "must": [
                         {
                             "range": {
-                                "run_date": {
-                                    "gte": "now-1d",
+                                "meta.run_id.run_time": {
+                                    "gte": "now-2d",
                                     "lte": "now"
                                 }
                             }
                         },
-                        {"match": {"exception_info.raised_exception": "false"}}
+                        {
+                            "range": {
+                                "statistics.unsuccessful_expectations": {"gte": 1}
+                            }
+                        }
                     ]
                 }
             },
             "aggs": {
                 "dataset_agg": {
                     "terms": {
-                        "field": "dataset_id.keyword"
+                        "field": "meta.dataset_id.keyword"
                     },
                     "aggs": {
                         "passed_agg": {
-                            "filter": {"term": {"success": "true"}}
+                            "sum": {
+                                "field": "statistics.successful_expectations"
+                            }
+                        },
+                        "failed_agg": {
+                            "sum": {
+                                "field": "statistics.unsuccessful_expectations"
+                            }
+                        },
+                        "total_agg": {
+                            "sum": {
+                                "field": "statistics.evaluated_expectations"
+                            }
                         },
                         "success_rate": {
-                            "bucket_script": {
-                                "buckets_path": {
-                                    "doc_count": "_count",
-                                    "passed": "passed_agg._count"
-                                },
-                                "script": "params.passed / params.doc_count * 100"
+                            "avg": {
+                                "field": "statistics.success_percent"
                             }
                         },
                         "success_rate_bucket_sort": {
@@ -120,11 +128,12 @@ def top_issues():
     for bucket in buckets:
         dataset_id_terms.append(bucket["key"])
 
-        pass_count = bucket["passed_agg"]["doc_count"]
-        fail_count = bucket["doc_count"] - bucket["passed_agg"]["doc_count"]
+        pass_count = int(bucket["passed_agg"]["value"])
+        fail_count = int(bucket["failed_agg"]["value"])
+        total_count = int(bucket["total_agg"]["value"])
         dataset_ids[bucket["key"]] = {
             "rate": f'{bucket["success_rate"]["value"]} %',
-            "#_failures": f'{fail_count} of {bucket["doc_count"]}',
+            "#_failures": f'{fail_count} of {total_count}',
             "pass_count": pass_count,
             "fail_count": fail_count,
             "dataset_id": bucket["key"],
@@ -184,7 +193,7 @@ def get_histogram_points():
                 }
             },
             {"index": settings.VALIDATION_INDEX},
-            histogram_query("run_date"),
+            histogram_query("meta.run_id.run_time"),
         ]
     )
     # order of list should be the same as order of indices in "body" above

@@ -6,14 +6,16 @@ from app.models.expectation import ExpectationInput, Expectation
 from app.core.expectations import supported_unsupported_expectations
 from app import utils
 from app.db.client import client
+from app.models.validation import Validation
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
+from app.repositories.validation import ValidationRepository, get_validation_repository
 from app.settings import settings
 from app.utils import json_schema_to_single_doc
-from app.api.api_v1.endpoints import validation
 from fastapi.param_functions import Depends
 from app.core.users import current_active_user
+import app.constants as c
 
 
 router = APIRouter(
@@ -46,6 +48,7 @@ def enable_expectation(
         repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
     expectation = get_by_key_or_404(expectation_id, repository)
+    _table_level_expectation_already_exists(expectation, repository)
     return repository.update(expectation_id, expectation, {"enabled": True})
 
 
@@ -67,6 +70,7 @@ def list_expectations(
         enabled: Optional[bool] = True,
         asc: Optional[bool] = False,
         repository: ExpectationRepository = Depends(get_expectation_repository),
+        validation_repository: ValidationRepository = Depends(get_validation_repository),
 ):
     expectations = repository.query_by_filter(
         datasource_id=datasource_id,
@@ -77,11 +81,10 @@ def list_expectations(
     )
 
     if include_history:
-        results = client.search(
-            body=validation.validations_query_body(datasource_id, dataset_id),
-            index=settings.VALIDATION_INDEX,
+        validations: list[Validation] = validation_repository.query_by_filter(
+            datasource_id=datasource_id,
+            dataset_id=dataset_id,
         )
-        validations = results["hits"]["hits"]
 
         return zip_expectations_and_validations(expectations, validations)
 
@@ -112,6 +115,7 @@ def create_expectation(
             detail="expectation datasource_id does not match dataset datasource_id"
         )
 
+    _table_level_expectation_already_exists(expectation, repository)
     return repository.create(expectation.key, expectation)
 
 
@@ -172,16 +176,38 @@ def delete_expectation(
     )
 
 
-def zip_expectations_and_validations(expectations: list[Expectation], validations):
-
+def zip_expectations_and_validations(expectations: list[Expectation], validations: list[Validation]):
     expectations_as_dict: dict[str, Expectation] = {}
 
     for expectation in expectations:
         expectations_as_dict[expectation.key] = expectation
 
-    for v in validations:
-        source = v["_source"]
-        source["run_date"] = utils.string_to_military_time(source["run_date"])
-        expectations_as_dict[source["expectation_id"]].validations.append(source)
+    for validation in validations:
+        run_time = utils.string_to_military_time(validation.meta.run_id.run_time)
+
+        for result in validation.results:
+            result_as_dict = result.dict()
+            result_as_dict["run_time"] = run_time
+
+            # when an expectation is deleted, the corresponding validation results are not deleted. Instead, validations
+            # should be expired/ deleted after some portion of time. For this reason, we only want to zip/join
+            # a validation result to an expectation that hasn't been deleted.
+            if expectations_as_dict.get(result.expectation_id):
+                expectations_as_dict[result.expectation_id].validations.append(result_as_dict)
 
     return list(expectations_as_dict.values())
+
+
+def _table_level_expectation_already_exists(expectation: Expectation, repository: ExpectationRepository):
+    # Duplicate Table level/ result_type="expectation", expectations are removed by GE when validations are run.
+    # Because of this, we want to prevent duplicate table level expectations from being added.
+    if expectation.result_type == c.EXPECTATION:
+        if len(repository.query_by_filter(
+                dataset_id=expectation.dataset_id,
+                enabled=True,
+                expectation_type=expectation.expectation_type
+        )) > 0:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Table level expectation_type '{expectation.expectation_type}' already exists"
+            )
