@@ -196,7 +196,7 @@ function DatasetModal({
               <img
                 style={{ position: 'relative' }}
                 src={imgPath}
-                alt="Girl in a jacket"
+                alt="Engine Icon"
                 width="20"
                 height="20"
               />
