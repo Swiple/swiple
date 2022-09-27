@@ -75,7 +75,7 @@ poetry config virtualenvs.in-project true
 ### Install Dependencies
 ```bash
 cd backend
-poetry install --extras "postgres redshift mysql trino athena snowflake" --with aws-secrets,gcp,azure-secrets
+poetry install --with postgres,redshift,mysql,trino,athena,snowflake,aws-secrets,gcp,azure-secrets
 cd ..
 ```
 
