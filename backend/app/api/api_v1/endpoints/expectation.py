@@ -81,7 +81,7 @@ def list_expectations(
     )
 
     if include_history:
-        validations: list[Validation] = validation_repository.query_by_filter(
+        validations = validation_repository.query_by_filter(
             datasource_id=datasource_id,
             dataset_id=dataset_id,
         )
@@ -183,7 +183,7 @@ def zip_expectations_and_validations(expectations: list[Expectation], validation
         expectations_as_dict[expectation.key] = expectation
 
     for validation in validations:
-        run_time = utils.string_to_military_time(validation.meta.run_id.run_time)
+        run_time = utils.string_to_utc_time(validation.meta.run_id.run_time)
 
         for result in validation.results:
             result_as_dict = result.dict()
@@ -202,11 +202,11 @@ def _table_level_expectation_already_exists(expectation: Expectation, repository
     # Duplicate Table level/ result_type="expectation", expectations are removed by GE when validations are run.
     # Because of this, we want to prevent duplicate table level expectations from being added.
     if expectation.result_type == c.EXPECTATION:
-        if len(repository.query_by_filter(
+        if repository.count_by_filter(
                 dataset_id=expectation.dataset_id,
                 enabled=True,
                 expectation_type=expectation.expectation_type
-        )) > 0:
+        ) > 0:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"Table level expectation_type '{expectation.expectation_type}' already exists"
