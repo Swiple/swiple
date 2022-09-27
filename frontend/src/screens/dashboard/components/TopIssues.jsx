@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card, Table } from 'antd';
+import {
+  Card, Empty, Table,
+} from 'antd';
 import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -49,6 +51,11 @@ function TopIssues({ loading, data }) {
           pageSize: 5,
         }}
         rowKey={() => uuidv4()}
+        locale={{
+          emptyText: (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No issues here" />
+          ),
+        }}
       />
     </Card>
   );

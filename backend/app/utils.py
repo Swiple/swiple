@@ -7,7 +7,6 @@ from re import search
 import emails
 from emails.template import JinjaTemplate
 from pathlib import Path
-from sqlalchemy.exc import ProgrammingError, OperationalError
 import json
 import pytz
 
@@ -16,15 +15,17 @@ def current_time():
     return str(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
 
 
+def remove_t_from_date_string(date_string) -> datetime:
+    """
+    Converts a date string in the format
+    2021-10-11T09:10:44.330614+00:00
+    to
+    2021-10-11 09:10:44.330614+00:00
+    """
+    return date_string.replace("T", " ")
+
+
 def string_to_utc_time(date_string):
-    return datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f%z")
-
-
-def days_between_dates(start_date: datetime, end_date: datetime):
-    return (end_date - start_date).days
-
-
-def string_to_military_time(date_string):
     """
     Converts a date string in the format
     2021-10-11 09:10:44.330614+00:00
@@ -32,6 +33,10 @@ def string_to_military_time(date_string):
     2021-10-11T09:10:44.330614Z
     """
     return datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f%z").strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
+def days_between_dates(start_date: datetime, end_date: datetime):
+    return (end_date - start_date).days
 
 
 def add_limit_clause(query):

@@ -16,6 +16,7 @@ from pandas import isnull
 from app import utils
 from app.db.client import client
 from app.models.datasource import Engine
+from app.models.validation import Validation
 from app.repositories.dataset import DatasetRepository
 from app.repositories.datasource import DatasourceRepository
 from app.repositories.expectation import ExpectationRepository
@@ -74,7 +75,7 @@ class Runner:
 
         batch_request = self.get_batch_request()
 
-        suite: ExpectationSuite = context.create_expectation_suite("suite", overwrite_existing=True)
+        suite: ExpectationSuite = context.create_expectation_suite("default", overwrite_existing=True)
 
         try:
             validator = context.get_validator(
@@ -100,11 +101,11 @@ class Runner:
                     record[column] = None
         return {'columns': list(columns), 'rows': rows}
 
-    def validate(self):
+    def validate(self) -> Validation:
         data_context_config = self.get_data_context_config()
         context = BaseDataContext(project_config=data_context_config)
 
-        suite: ExpectationSuite = context.create_expectation_suite("suite", overwrite_existing=True)
+        suite: ExpectationSuite = context.create_expectation_suite("default", overwrite_existing=True)
 
         for expectation in self.expectations:
             if self.batch.runtime_parameters:
@@ -131,9 +132,13 @@ class Runner:
             batch_request=batch_request, expectation_suite=suite,
         )
 
-        results = validator.validate().to_json_dict()["results"]
+        validation = validator.validate().to_json_dict()
+        validation["meta"]["run_id"]["run_time"] = utils.remove_t_from_date_string(
+            validation["meta"]["run_id"]["run_time"])
+        validation["meta"]["run_id"]["run_name"] = str(uuid.uuid4())
+        validation["meta"].update(self.identifiers)
 
-        for result in results:
+        for result in validation["results"]:
             # GE "mostly" is synonymous for Swiple "objective"
             if result["expectation_config"]["kwargs"].get("mostly"):
                 result["expectation_config"]["kwargs"]["objective"] = result["expectation_config"]["kwargs"].pop("mostly")
@@ -142,10 +147,9 @@ class Runner:
                 result["result"]["observed_value_list"] = result["result"].pop("observed_value")
 
             utils.list_to_string_mapper(result)
-            self.identifiers["expectation_id"] = result["expectation_config"]["meta"].pop("expectation_id")
-            result.update(self.identifiers)
+            result["expectation_id"] = result["expectation_config"]["meta"].pop("expectation_id")
 
-        return results
+        return Validation(**validation)
 
     def get_data_context_config(self):
         # Snowflake SQLAlchemy connector requires the schema in the connection string in order to create TEMP tables.
@@ -227,8 +231,6 @@ def run_dataset_validation(dataset_id: str):
     expectations = ExpectationRepository(client).query_by_filter(dataset_id=dataset.key, enabled=True)
 
     identifiers = {
-        "run_date": utils.current_time(),
-        "run_id": uuid.uuid4(),
         "datasource_id": datasource.key,
         "dataset_id": dataset.key,
     }
@@ -244,7 +246,7 @@ def run_dataset_validation(dataset_id: str):
         runner_expectation["meta"] = {"expectation_id": expectation.key}
         runner_expectations.append(runner_expectation)
 
-    results = Runner(
+    validation = Runner(
         datasource=datasource,
         batch=dataset,
         meta=meta,
@@ -252,11 +254,11 @@ def run_dataset_validation(dataset_id: str):
         identifiers=identifiers,
     ).validate()
 
-    bulk(
-        client,
-        results,
+    client.index(
         index=settings.VALIDATION_INDEX,
+        id=str(uuid.uuid4()),
+        body=validation.dict(),
         refresh="wait_for",
     )
 
-    return results
+    return validation
