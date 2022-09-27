@@ -35,6 +35,26 @@ class ValidationRepository(BaseRepository[Validation]):
 
         return super().query(query, size=2000)
 
+    def delete_by_filter(
+        self,
+        dataset_id: str = None,
+        datasource_id: str = None,
+    ):
+        query = {"query": {"bool": {"must": []}}}
+
+        if dataset_id is not None:
+            query["query"]["bool"]["must"].append({"match": {"meta.dataset_id.keyword": dataset_id}})
+        if datasource_id is not None:
+            query["query"]["bool"]["must"].append({"match": {"meta.datasource_id.keyword": datasource_id}})
+
+        return super().delete_by_query(query)
+
+    def delete_by_dataset(self, dataset_id: str):
+        return self.delete_by_filter(dataset_id=dataset_id)
+
+    def delete_by_datasource(self, datasource_id: str):
+        return self.delete_by_filter(datasource_id=datasource_id)
+
     def statistics(self, dataset_id):
         query = {
             "query": {
