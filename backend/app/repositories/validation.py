@@ -26,11 +26,6 @@ class ValidationRepository(BaseRepository[Validation]):
             },
             "sort": [{"meta.run_id.run_time": "asc"}]
         }
-        if not dataset_id and not datasource_id:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Expected either datasource_id or dataset_id"
-            )
 
         if dataset_id:
             query["query"]["bool"]["must"].append({"match": {"meta.dataset_id.keyword": dataset_id}})

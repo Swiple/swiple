@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from app.models.validation import Validation, Stats
 from app.repositories.validation import ValidationRepository, get_validation_repository
 from fastapi.param_functions import Depends
@@ -17,6 +17,12 @@ def list_validations(
         dataset_id: Optional[str] = None,
         repository: ValidationRepository = Depends(get_validation_repository),
 ):
+    if not dataset_id and not datasource_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Expected either datasource_id or dataset_id"
+        )
+
     return repository.query_by_filter(
         datasource_id=datasource_id,
         dataset_id=dataset_id,
