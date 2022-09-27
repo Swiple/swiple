@@ -65,7 +65,7 @@ def top_issues():
                         {
                             "range": {
                                 "meta.run_id.run_time": {
-                                    "gte": "now-2d",
+                                    "gte": "now-1d",
                                     "lte": "now"
                                 }
                             }
