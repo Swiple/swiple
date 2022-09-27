@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # How to use AWS Secret Manager, GCP Secret Manager, & Azure Key Vault
 
-Secrets from **AWS Secret Manager**, **GCP Secret Manager**, & **Azure Key Vault** can be used in any **Secure** field which looks like the following:
+Secrets from **AWS Secret Manager**, **GCP Secret Manager** & **Azure Key Vault** can be used in any **Secure** field which looks like the following:
 
 ![Example banner](/img/secure-field.png)
 
