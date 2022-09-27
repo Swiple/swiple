@@ -15,7 +15,6 @@ def decrypt_password(encrypted_password: str) -> str:
 
 def substitute_value_from_secret_store(value: str):
     """Retrieves Secrets from AWS Secrets Manager, GCP Secret Manager & Azure Key Vault"""
-    print(value)
     try:
         value: str = util.substitute_value_from_secret_store(value)
     except ImportError as e:
