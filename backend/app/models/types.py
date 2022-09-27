@@ -3,10 +3,9 @@ from typing import TYPE_CHECKING, Any, Dict
 from cryptography.fernet import InvalidToken
 from pydantic.utils import update_not_none
 from pydantic.validators import str_validator
-from great_expectations.data_context import util
-from app.core import security, exceptions
+from app.core import security
 from app import constants as c
-import botocore.exceptions
+
 
 if TYPE_CHECKING:
     from pydantic.typing import CallableGenerator
@@ -64,12 +63,4 @@ class EncryptedStr(str):
         # if the decrypted_value matches the regex of a secrets provider,
         # e.g. AWS Secrets Manager, GCP Secret Manager, Azure Key Vault
         # get secret value from provider
-        try:
-            value: str = util.substitute_value_from_secret_store(decrypted_value)
-        except ImportError as e:
-            raise exceptions.SecretsModuleNotFoundError(e.msg)
-        except KeyError as e:
-            raise exceptions.SecretsKeyError(e.__str__())
-        except botocore.exceptions.ClientError as e:
-            raise exceptions.SecretClientError(e)
-        return value
+        return security.substitute_value_from_secret_store(decrypted_value)
