@@ -7,7 +7,7 @@ COPY poetry.lock pyproject.toml  /code/
 RUN pip install --no-cache-dir --upgrade pip poetry
 
 RUN poetry config virtualenvs.create false &&  \
-    poetry install --no-interaction --no-ansi --extras "postgres redshift mysql trino athena snowflake"
+    poetry install --no-interaction --no-ansi --with postgres,redshift,mysql,trino,athena,snowflake
 
 COPY app /code/app
 

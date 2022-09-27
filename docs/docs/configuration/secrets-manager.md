@@ -17,7 +17,7 @@ Secrets from **AWS Secret Manager**, **GCP Secret Manager** & **Azure Key Vault*
 ## AWS Secrets Manager Setup
 To use AWS Secrets Manager, you will need to install the `aws-secrets` dependency group. For example:
 ```bash
-poetry install --extras "postgres redshift mysql trino athena snowflake" --with aws-secrets
+poetry install --with postgres,redshift,mysql,trino,athena,snowflake --with aws-secrets
 ```
 
 
@@ -43,7 +43,7 @@ Or like this: <br/>
 ## GCP Secret Manager Setup
 To use GCP Secret Manager, you will need to install the `gcp` dependency group:
 ```bash
-poetry install --extras "postgres redshift mysql trino athena snowflake" --with gcp
+poetry install --with postgres,redshift,mysql,trino,athena,snowflake --with gcp
 ```
 
 Instead of providing your raw secret, you can now provide the name of the GCP Secret Manager secret like so (latest version): <br/>
@@ -65,7 +65,7 @@ Or like this: <br/>
 ## Azure Key Vault Setup
 To use Azure Key Vault, you will need to install the `azure-secrets` dependency group:
 ```bash
-poetry install --extras "postgres redshift mysql trino athena snowflake" --with azure-secrets
+poetry install --with postgres,redshift,mysql,trino,athena,snowflake --with azure-secrets
 ```
 
 Instead of providing your raw secret, you can now provide the name of the Azure Key Vault secret like so (latest version): <br/>
@@ -87,5 +87,5 @@ Or like this:
 To install all Secret Managers:
 
 ```bash
-poetry install --extras "postgres redshift mysql trino athena snowflake" --with aws-secrets,gcp,azure-secrets
+poetry install --with postgres,redshift,mysql,trino,athena,snowflake --with aws-secrets,gcp,azure-secrets
 ```
