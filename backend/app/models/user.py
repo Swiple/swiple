@@ -1,8 +1,6 @@
-from typing import Optional
-from pydantic import Field
-from app.models.base_model import BaseModel, validator
+from pydantic import validator
+from app.models.base_model import BaseModel
 from pydantic import EmailStr
-from app import utils
 
 
 class User(BaseModel):
