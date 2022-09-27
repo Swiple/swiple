@@ -149,7 +149,6 @@ class Runner:
             utils.list_to_string_mapper(result)
             result["expectation_id"] = result["expectation_config"]["meta"].pop("expectation_id")
 
-        print(validation)
         return Validation(**validation)
 
     def get_data_context_config(self):
@@ -247,7 +246,7 @@ def run_dataset_validation(dataset_id: str):
         runner_expectation["meta"] = {"expectation_id": expectation.key}
         runner_expectations.append(runner_expectation)
 
-    validation: Validation = Runner(
+    validation = Runner(
         datasource=datasource,
         batch=dataset,
         meta=meta,
