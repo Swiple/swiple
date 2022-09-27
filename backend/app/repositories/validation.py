@@ -62,7 +62,6 @@ class ValidationRepository(BaseRepository[Validation]):
                     "must": [
                         {"match": {"meta.dataset_id.keyword": dataset_id}},
                         {"range": {"meta.run_id.run_time": {"gte": "now-31d", "lte": "now"}}},
-                        # {"match": {"exception_info.raised_exception": "false"}},
                     ]
                 }
             },
@@ -99,7 +98,7 @@ class ValidationRepository(BaseRepository[Validation]):
                     "date_histogram": {
                         "field": "meta.run_id.run_time",
                         "calendar_interval": "1d",
-                        "format": "yyyy-MM-dd'T'HH:mm:ssZZZZZ",  # yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+                        "format": "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
                     },
                     "aggs": {
                         "1_day": {
@@ -117,8 +116,6 @@ class ValidationRepository(BaseRepository[Validation]):
         )
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Validation:
-        # if id is not None:
-        #     d["key"] = id
         return Validation.parse_obj(d)
 
     def _get_dict_from_object(self, object: Validation) -> dict[str, Any]:
