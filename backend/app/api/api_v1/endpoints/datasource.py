@@ -15,6 +15,7 @@ from app.models.users import UserDB
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
+from app.repositories.validation import ValidationRepository, get_validation_repository
 from app.settings import settings
 from app import constants as c
 
@@ -127,7 +128,6 @@ def update_datasource(
 	return updated_datasource
 
 
-
 @router.delete("/{key}")
 def delete_datasource(
 		key: str,
@@ -135,9 +135,10 @@ def delete_datasource(
 		repository: DatasourceRepository = Depends(get_datasource_repository),
 		dataset_repository: DatasetRepository = Depends(get_dataset_repository),
 		expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
+		validation_repository: ValidationRepository = Depends(get_validation_repository),
 ):
-	body = {"query": {"match": {"datasource_id": key}}}
-	client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
+
+	validation_repository.delete_by_datasource(datasource_id=key)
 	expectation_repository.delete_by_datasource(key)
 	dataset_repository.delete_by_datasource(key)
 	requests.delete(
@@ -151,7 +152,6 @@ def delete_datasource(
 		status_code=status.HTTP_200_OK,
 		content="datasource deleted"
 	)
-
 
 
 def _test_datasource(datasource: Datasource):

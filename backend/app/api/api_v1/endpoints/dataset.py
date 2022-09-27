@@ -14,6 +14,7 @@ from app.repositories.base import NotFoundError
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
+from app.repositories.validation import get_validation_repository, ValidationRepository
 from app.settings import settings
 from app.models.users import UserDB
 from app.core.runner import Runner, run_dataset_validation
@@ -148,10 +149,9 @@ def delete_dataset(
         request: Request,
         repository: DatasetRepository = Depends(get_dataset_repository),
         expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
+        validation_repository: ValidationRepository = Depends(get_validation_repository)
 ):
-    body = {"query": {"match": {"dataset_id": key}}}
-
-    client.delete_by_query(index=settings.VALIDATION_INDEX, body=body)
+    validation_repository.delete_by_dataset(dataset_id=key)
     requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"dataset_id": key},
