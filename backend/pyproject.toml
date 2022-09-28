@@ -9,48 +9,72 @@ license = "Elastic License 2.0"
 python = ">=3.9.0,<3.10"
 numpy = ">=1.23.1"
 scipy = ">=1.9.0"
-great-expectations = "^0.15.21"
+great-expectations = {version = "^0.15.24"}
 fastapi = "0.73.0"
 fastapi-users-db-opensearch = {git = "https://github.com/KentonParton/fastapi-users-db-opensearch.git", rev = "78f7aff0480400bbeac01f12c17e04f1ae21fbed"}
 APScheduler = "3.9.1"
-boto3 = ">=1.24.7"
 opensearch-py = {version = "1.0.0", extras = ["async"]}
-uvicorn = "^0.18.2"
+uvicorn = "^0.18.3"
 SQLAlchemy = "==1.4.27"
 asyncio = "^3.4.3"
 redis = "^4.3.4"
 emails = "^0.6"
 fastapi-users = "9.3.2"
-httpx-oauth = "^0"
+httpx-oauth = "^0.10.1"
 PyYAML = "^6.0"
 
-psycopg2-binary = { version = ">=2.7.6", optional = true }
-snowflake-connector-python = { version = ">=2.7.11", optional = true }
-snowflake-sqlalchemy = { version = ">=1.4.1", optional = true }
-PyMySQL = { version = ">=0.9.3,<0.10", optional = true }
-pyathena = { version = ">=1.11", optional = true }
-sqlalchemy-redshift = { version = ">=0.7.7", optional = true }
-trino = { version = ">=0.310.0", optional = true }
-pydantic = {extras = ["dotenv"], version = "^1.9.2"}
-
-[tool.poetry.extras]
-postgres = ["psycopg2-binary"]
-redshift = [
-    "sqlalchemy-redshift",
-    "psycopg2-binary"
-]
-snowflake = [
-    "snowflake-connector-python",
-    "snowflake-sqlalchemy"
-]
-mysql = ["PyMySQL"]
-athena = ["pyathena"]
-trino = ["trino"]
+pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 
 
 [tool.poetry.dev-dependencies]
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.group.postgres]
+optional = true
+[tool.poetry.group.postgres.dependencies]
+psycopg2-binary = { version = ">=2.7.6" }
 
+[tool.poetry.group.redshift]
+optional = true
+[tool.poetry.group.redshift.dependencies]
+psycopg2-binary = { version = ">=2.7.6" }
+sqlalchemy-redshift = { version = ">=0.7.7"}
+
+[tool.poetry.group.snowflake]
+optional = true
+[tool.poetry.group.snowflake.dependencies]
+snowflake-connector-python = { version = ">=2.7.11" }
+snowflake-sqlalchemy = { version = ">=1.4.1" }
+
+[tool.poetry.group.mysql]
+optional = true
+[tool.poetry.group.mysql.dependencies]
+PyMySQL = { version = ">=0.9.3,<0.10" }
+
+[tool.poetry.group.athena]
+optional = true
+[tool.poetry.group.athena.dependencies]
+pyathena = { version = ">=1.11" }
+
+[tool.poetry.group.trino]
+optional = true
+[tool.poetry.group.trino.dependencies]
+trino = { version = ">=0.310.0" }
+
+[tool.poetry.group.aws-secrets]
+optional = true
+[tool.poetry.group.aws-secrets.dependencies]
+great-expectations = {extras = ["aws_secrets"], version = "^0.15.24"}
+
+[tool.poetry.group.azure-secrets]
+optional = true
+[tool.poetry.group.azure-secrets.dependencies]
+great-expectations = {extras = ["azure_secrets"], version = "^0.15.24"}
+
+[tool.poetry.group.gcp]
+optional = true
+[tool.poetry.group.gcp.dependencies]
+great-expectations = {extras = ["gcp"], version = "^0.15.24"}
+
+[build-system]
+requires = ["poetry-core>=1.2.0"]
+build-backend = "poetry.core.masonry.api"

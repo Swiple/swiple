@@ -1,18 +1,18 @@
-from fastapi import HTTPException
+class SwipleError(Exception):
+    pass
 
 
-UsernameAlreadyTaken = HTTPException(
-    status_code=400,
-    detail="A user with this name already exists."
-)
-
-InvalidUserName = HTTPException(
-    status_code=400,
-    detail="No user with this name exists."
-)
+class SecretsError(SwipleError):
+    pass
 
 
-InvalidPermissions = HTTPException(
-    status_code=401,
-    detail="You do not have permission for this action."
-)
+class SecretsModuleNotFoundError(SecretsError):
+    pass
+
+
+class SecretsKeyError(SecretsError):
+    pass
+
+
+class SecretClientError(SecretsError):
+    pass

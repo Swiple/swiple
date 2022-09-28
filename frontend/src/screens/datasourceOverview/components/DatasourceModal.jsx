@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import {
   Button, Form, Input, message, Row, Select, Space, Typography,
 } from 'antd';
-import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
+import {
+  CheckCircleTwoTone, CloseCircleTwoTone, LockOutlined, EyeTwoTone, EyeInvisibleOutlined,
+} from '@ant-design/icons';
 import Modal from '../../../components/Modal';
 import { getEngineIcon } from '../../../Utils';
 import { getDataSourcesJsonSchema, postDataSource, putDataSource } from '../../../Api';
@@ -16,6 +18,7 @@ const ajv = new Ajv();
 ajv.addKeyword('placeholder');
 addFormats(ajv);
 
+const { TextArea } = Input;
 const { Option } = Select;
 const { Text } = Typography;
 const layout = {
@@ -69,16 +72,12 @@ function DatasourceModal({
 
   const isFormComplete = () => form.validateFields()
     .then((values) => ({ complete: true, values }))
-    .catch((validationInfo) => {
-      console.log('Validations failed: ', validationInfo);
-      return { complete: false, values: {} };
-    });
+    .catch(() => ({ complete: false, values: {} }));
 
   const onFormSubmitInternal = async () => {
     const { complete, values } = await isFormComplete();
     if (complete) {
       const { status, data } = await createOrUpdateDatasourceRequest(values);
-
       if (status === 200) {
         setResponseStatus({ success: true });
 
@@ -89,6 +88,8 @@ function DatasourceModal({
           setSelectedEngine('');
           form.resetFields();
         }, 500);
+      } else if (status === 422 && data.message) {
+        setResponseStatus({ success: false, msg: data.message });
       } else if (status === undefined) {
         message.error('API appears to be down.', 5);
       } else if (data?.detail !== undefined) {
@@ -121,6 +122,39 @@ function DatasourceModal({
     return errorString;
   };
 
+  const usePasswordIconRender = (isVisible) => {
+    if (type !== CREATE_TYPE) return null;
+    return isVisible ? <EyeTwoTone /> : <EyeInvisibleOutlined />;
+  };
+
+  const getFormInput = (propObj, placeholder, formItem) => {
+    if (propObj.type === 'integer') {
+      return (
+        <Input
+          placeholder={placeholder}
+          onChange={(e) => handleNumberInput(e.target.value, formItem)}
+        />
+      );
+    }
+
+    if (propObj.format === 'password') {
+      return (
+        <Input.Password
+          placeholder={placeholder}
+          type="password"
+          prefix={<LockOutlined />}
+          iconRender={(isVisible) => usePasswordIconRender(isVisible)}
+        />
+      );
+    }
+
+    return (
+      <Input
+        placeholder={placeholder}
+        type="text"
+      />
+    );
+  };
   /**
    * Uses OpenAPI datasource model schema to dynamically build a form.
    */
@@ -135,11 +169,6 @@ function DatasourceModal({
             if (!ignoredFormItem.includes(formItem)) {
               const propObj = formItemObj.properties[formItem];
               const placeholder = propObj.placeholder ? propObj.placeholder : null;
-
-              let inputType = 'text';
-              if (propObj.format === 'password') {
-                inputType = 'password';
-              }
 
               return (
                 <Form.Item
@@ -163,16 +192,7 @@ function DatasourceModal({
                     },
                   ]}
                 >
-                  {
-                    propObj.type === 'integer'
-                      ? (
-                        <Input
-                          placeholder={placeholder}
-                          onChange={(e) => handleNumberInput(e.target.value, formItem)}
-                        />
-                      )
-                      : <Input placeholder={placeholder} type={inputType} />
-                  }
+                  { getFormInput(propObj, placeholder, formItem) }
                 </Form.Item>
               );
             }
@@ -293,14 +313,13 @@ function DatasourceModal({
         <Form.Item
           label="Description"
           name="description"
-          rules={[
-            {
-              required: true,
-              message: 'Enter a description',
-            },
-          ]}
         >
-          <Input />
+          <TextArea
+            autoSize={{
+              minRows: 2,
+              maxRows: 5,
+            }}
+          />
         </Form.Item>
         <Form.Item
           name="engine"

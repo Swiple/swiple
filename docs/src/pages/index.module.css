@@ -38,3 +38,9 @@ body, html {
     border-radius: 7px;
   }
 }
+
+@media screen and (max-width: 638px) {
+  .buttonStar {
+    margin-top: 20px
+  }
+}

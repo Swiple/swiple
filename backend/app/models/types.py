@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Any, Dict
 from cryptography.fernet import InvalidToken
 from pydantic.utils import update_not_none
 from pydantic.validators import str_validator
-
 from app.core import security
 from app import constants as c
+
 
 if TYPE_CHECKING:
     from pydantic.typing import CallableGenerator
@@ -59,4 +59,8 @@ class EncryptedStr(str):
         return isinstance(other, EncryptedStr) and self.get_decrypted_value() == other.get_decrypted_value()
 
     def get_decrypted_value(self) -> str:
-        return security.decrypt_password(self)
+        decrypted_value: str = security.decrypt_password(self)
+        # if the decrypted_value matches the regex of a secrets provider,
+        # e.g. AWS Secrets Manager, GCP Secret Manager, Azure Key Vault
+        # get secret value from provider
+        return security.substitute_value_from_secret_store(decrypted_value)
