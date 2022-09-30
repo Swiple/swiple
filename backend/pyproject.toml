@@ -28,6 +28,14 @@ pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 
 [tool.poetry.dev-dependencies]
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+asgi-lifespan = "*"
+httpx = "*"
+black = "*"
+
 [tool.poetry.group.postgres]
 optional = true
 [tool.poetry.group.postgres.dependencies]
