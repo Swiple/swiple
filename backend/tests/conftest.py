@@ -11,6 +11,7 @@ from openmock import _get_openmock
 from app.main import app
 from app.db.client import get_client
 from app.scripts.setup_opensearch import create_indicies
+from tests.data import create_test_data
 
 
 @pytest.fixture(scope="session")
@@ -25,6 +26,7 @@ def event_loop():
 def opensearch_client() -> Generator[OpenSearch, None, None]:
     mock_client = _get_openmock()
     create_indicies(mock_client)
+    create_test_data(mock_client)
     yield mock_client
 
 
