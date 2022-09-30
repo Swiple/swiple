@@ -35,6 +35,7 @@ pytest-asyncio = "*"
 asgi-lifespan = "*"
 httpx = "*"
 black = "*"
+openmock = "*"
 
 [tool.poetry.group.postgres]
 optional = true

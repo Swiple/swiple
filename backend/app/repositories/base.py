@@ -1,10 +1,11 @@
 from typing import Any, Generic, Optional, Type, TypeVar
 
+from fastapi import Depends
 from opensearchpy import OpenSearch, NotFoundError as OSNotFoundError
 from opensearchpy.helpers import bulk
 
 from app import utils
-from app.db.client import client
+from app.db.client import get_client
 from app.models.base_model import BaseModel, CreateUpdateDateModel
 
 M = TypeVar("M", bound=BaseModel)
@@ -96,6 +97,6 @@ R = TypeVar('R', bound=BaseRepository)
 
 
 def get_repository(repository_class: Type[R]):
-    async def _get_repository() -> R:
+    async def _get_repository(client: OpenSearch = Depends(get_client)) -> R:
         return repository_class(client)
     return _get_repository

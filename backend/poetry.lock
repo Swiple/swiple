@@ -1601,6 +1601,18 @@ signals = ["blinker (>=1.4.0)"]
 signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
+name = "openmock"
+version = "2.0.0"
+description = "Python OpenSearch Mock for test purposes"
+category = "dev"
+optional = false
+python-versions = ">=3.8,<4"
+
+[package.dependencies]
+opensearch-py = "*"
+python-dateutil = "*"
+
+[[package]]
 name = "opensearch-py"
 version = "1.0.0"
 description = "Python low-level client for OpenSearch"
@@ -2705,7 +2717,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9.0,<3.10"
-content-hash = "27941026d931cb2e23bb3672871f6963b6613e17a39a8e96f8d11c18b237099f"
+content-hash = "bf8b86c5d7811cb7a17ab1233002c8932c5f3ce47fcba9871fb50d426e1a2187"
 
 [metadata.files]
 aiohttp = [
@@ -3783,6 +3795,9 @@ numpy = [
 oauthlib = [
     {file = "oauthlib-3.2.1-py3-none-any.whl", hash = "sha256:88e912ca1ad915e1dcc1c06fc9259d19de8deacd6fd17cc2df266decc2e49066"},
     {file = "oauthlib-3.2.1.tar.gz", hash = "sha256:1565237372795bf6ee3e5aba5e2a85bd5a65d0e2aa5c628b9a97b7d7a0da3721"},
+]
+openmock = [
+    {file = "openmock-2.0.0-py3-none-any.whl", hash = "sha256:dbc242a3bd6107f432e3a31a0115029f9b0953a34cb821961e942a938211afa9"},
 ]
 opensearch-py = [
     {file = "opensearch-py-1.0.0.tar.gz", hash = "sha256:fa952836cabfa1b2fb05f852edc1a373342494345e89fd52b7124daf4d296bb4"},
