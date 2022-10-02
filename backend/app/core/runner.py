@@ -1,6 +1,7 @@
 import json
 import datetime
 import uuid
+from typing import Literal
 
 from great_expectations.core import ExpectationSuite, ExpectationConfiguration
 from great_expectations.core.batch import RuntimeBatchRequest, BatchRequest
@@ -8,12 +9,10 @@ from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import DataContextConfig, AnonymizedUsageStatisticsConfig
 from great_expectations.data_context.types.base import InMemoryStoreBackendDefaults
 from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
-from opensearchpy.helpers import bulk
 from pandas import isnull
 
-# TODO, add some "runner_max_batches" to datasource to control the
-# max number of batches run at any one time.
 from app import utils
+from app.core.actions import action_dispatcher
 from app.db.client import client
 from app.models.datasource import Engine
 from app.models.validation import Validation
@@ -149,6 +148,13 @@ class Runner:
             utils.list_to_string_mapper(result)
             result["expectation_id"] = result["expectation_config"]["meta"].pop("expectation_id")
 
+        action_dispatcher.dispatch(
+            resource_key=self.identifiers["dataset_id"],
+            action_type="validation",
+            action_status=self._get_status(validation["success"]),
+            validation=validation,
+        )
+
         return Validation(**validation)
 
     def get_data_context_config(self):
@@ -223,6 +229,13 @@ class Runner:
                 data_asset_name=self.batch.dataset_name,
                 batch_spec_passthrough={"create_temp_table": False},
             )
+
+    @staticmethod
+    def _get_status(success: bool) -> Literal["success", "failure"]:
+        action_status: Literal["failure"] = "failure"
+        if success:
+            action_status: Literal["success"] = "success"
+        return action_status
 
 
 def run_dataset_validation(dataset_id: str):
