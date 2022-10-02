@@ -22,7 +22,7 @@ emails = "^0.6"
 fastapi-users = "9.3.2"
 httpx-oauth = "^0.10.1"
 PyYAML = "^6.0"
-
+apprise = {git = "https://github.com/caronc/apprise.git", rev = "master"}
 pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 
 
