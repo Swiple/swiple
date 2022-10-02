@@ -121,3 +121,60 @@ validations:
               run_time:
                 format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
                 type: date
+actions:
+  index_name: actions
+  mappings:
+    properties:
+      resource_key:  # the ID of resource_type
+        type: keyword
+      resource_type:  # datasource, dataset etc
+        type: keyword
+      action_type:
+        type: keyword  # validation, freshness etc
+      destination:
+        type: object
+        properties:
+          key:
+            type: keyword
+          destination_name:
+            fielddata: true
+            fields:
+              keyword:
+                type: keyword
+            type: text
+          destination_type:
+            fielddata: true
+            fields:
+              keyword:
+                type: keyword
+            type: text
+          kwargs:
+            type: object
+          create_date:
+            format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+            type: date
+          created_by:
+            type: keyword
+          modified_date:
+            format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+            type: date
+destinations:
+  index_name: destinations
+  mappings:
+    properties:
+      destination_name:
+        fielddata: true
+        fields:
+          keyword:
+            type: keyword
+        type: text
+      destination_type:
+        fielddata: true
+        fields:
+          keyword:
+            type: keyword
+        type: text
+      kwargs:
+        type: object
+      create_date:
+        format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
