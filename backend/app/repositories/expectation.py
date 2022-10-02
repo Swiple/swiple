@@ -74,10 +74,9 @@ class ExpectationRepository(BaseRepository[Expectation]):
         return self.delete_by_filter(datasource_id=datasource_id)
 
     def _get_dict_from_object(self, object: Expectation) -> dict[str, Any]:
-        d = object.dict(by_alias=True)
+        d = object.dict(by_alias=True, exclude={"documentation"})
         kwargs = object.kwargs
         d["kwargs"] = kwargs.json() if isinstance(kwargs, BaseModel) else json.dumps(kwargs)
-        del d["documentation"]
         return d
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Expectation:
