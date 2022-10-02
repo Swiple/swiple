@@ -8,6 +8,9 @@ from app.api.api_v1.endpoints import (
     validation,
     schedule,
     metrics,
+    destination,
+    action,
+    user,
 )
 
 router = APIRouter()
@@ -19,3 +22,6 @@ router.include_router(validation.router, prefix="/validations", tags=["Validatio
 router.include_router(introspect.router, prefix="/introspect", tags=["Introspect"])
 router.include_router(metrics.router, prefix="/metrics", tags=["Metrics"])
 router.include_router(schedule.router, prefix="/schedules", tags=["Schedule"])
+router.include_router(destination.router, prefix="/destinations", tags=["Destinations"])
+router.include_router(action.router, prefix="/actions", tags=["Actions"])
+router.include_router(user.router, prefix="/user", tags=["Users"])
