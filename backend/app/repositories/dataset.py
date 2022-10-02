@@ -76,8 +76,8 @@ class DatasetRepository(BaseRepository[Dataset]):
                 wait_for_completion=True,
             )
 
-    def _get_dict_from_object(self, object: Dataset) -> dict[str, Any]:
-        d = object.dict(by_alias=True)
+    def _get_dict_from_object(self, object: Dataset, **kwargs) -> dict[str, Any]:
+        d = object.dict(by_alias=True, **kwargs)
         sample = object.sample
         if sample is not None:
             sample_dict = {
