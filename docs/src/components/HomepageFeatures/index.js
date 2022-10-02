@@ -51,6 +51,15 @@ const FeatureRow2 = [
       </>
     ),
   },
+  {
+    title: 'Notifications',
+    Svg: require('@site/static/img/notifications.svg').default,
+    description: (
+      <>
+        Dispatch event specific notifications to your favorite messaging and alerting apps. Email, Slack, Microsoft Teams, OpsGenie and PagerDuty
+      </>
+    ),
+  },
 ];
 
 function Feature({Svg, title, description}) {
