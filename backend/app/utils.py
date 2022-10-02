@@ -1,6 +1,7 @@
 from typing import Dict, Any
 
-from sqlalchemy import create_engine
+import app.constants as c
+from app.models.types import EncryptedStr
 from app.settings import settings
 import datetime
 from re import search
@@ -94,6 +95,21 @@ def list_to_string_mapper(d, sep="."):
         else:
             raise NotImplementedError(f't is of type, {type(t)}, which is not implemented.')
     recurse(d)
+    return d
+
+def remove_masked_key_value(d):
+    if isinstance(d, dict):
+        return {
+            k: v
+            for k, v in ((k, remove_masked_key_value(v)) for k, v in d.items())
+            if type(v) != EncryptedStr or (type(v) == EncryptedStr and v.get_decrypted_value() != c.SECRET_MASK)
+        }
+    if isinstance(d, list):
+        return [
+            v
+            for v in map(remove_masked_key_value, d)
+            if type(v) != EncryptedStr or (type(v) == EncryptedStr and v.get_decrypted_value() != c.SECRET_MASK)
+        ]
     return d
 
 
