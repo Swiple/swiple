@@ -77,6 +77,7 @@ class ExpectationRepository(BaseRepository[Expectation]):
         d = object.dict(by_alias=True)
         kwargs = object.kwargs
         d["kwargs"] = kwargs.json() if isinstance(kwargs, BaseModel) else json.dumps(kwargs)
+        del d["documentation"]
         return d
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Expectation:

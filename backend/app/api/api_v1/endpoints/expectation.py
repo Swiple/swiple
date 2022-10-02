@@ -22,6 +22,7 @@ router = APIRouter(
     dependencies=[Depends(current_active_user)]
 )
 
+
 async def get_expectation_payload(expectation: ExpectationInput) -> Expectation:
     return expectation.__root__
 
