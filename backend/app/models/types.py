@@ -50,7 +50,7 @@ class EncryptedStr(str):
         return cls(value)
 
     def __repr__(self) -> str:
-        return f"EncryptedStr('**********')"
+        return f"EncryptedStr('{self}')"
 
     def __str__(self) -> str:
         return c.SECRET_MASK if self.get_decrypted_value() else ""
