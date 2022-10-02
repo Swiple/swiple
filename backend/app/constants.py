@@ -85,3 +85,13 @@ WEEKS = "Number of weeks to wait"
 RUN_DATE = "The date/time to run the schedule at"
 
 SECRET_MASK = "*****"
+
+# Destinations
+EMAIL = "Email"
+OPS_GENIE = "OpsGenie"
+SLACK = "Slack"
+MICROSOFT_TEAMS = "Microsoft Teams"
+PAGER_DUTY = "PagerDuty"
+
+# Action Types
+VALIDATION = "validation"
