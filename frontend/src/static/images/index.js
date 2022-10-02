@@ -9,6 +9,11 @@ import Logo from './logo.png';
 import MicrosoftIcon from './microsoft-icon.png';
 import GoogleIcon from './google-icon.png';
 import OktaIcon from './okta-icon.png';
+import MicrosoftTeamsIcon from './microsoft-teams-icon.svg';
+import OpsGenieIcon from './opsgenie-icon.svg';
+import PagerDutyIcon from './pagerduty-icon.svg';
+import SlackIcon from './slack-icon.svg';
+import MailIcon from './mail-icon.svg';
 
 export {
   AthenaIcon,
@@ -22,4 +27,9 @@ export {
   GoogleIcon,
   MicrosoftIcon,
   OktaIcon,
+  MicrosoftTeamsIcon,
+  OpsGenieIcon,
+  PagerDutyIcon,
+  SlackIcon,
+  MailIcon,
 };

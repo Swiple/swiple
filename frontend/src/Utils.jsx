@@ -1,5 +1,16 @@
 import {
-  AthenaIcon, BigqueryIcon, MysqlIcon, PostgresqlIcon, RedshiftIcon, SnowflakeIcon, TrinoIcon,
+  AthenaIcon,
+  BigqueryIcon,
+  MicrosoftTeamsIcon,
+  MysqlIcon,
+  OpsGenieIcon,
+  PagerDutyIcon,
+  SlackIcon,
+  PostgresqlIcon,
+  RedshiftIcon,
+  SnowflakeIcon,
+  TrinoIcon,
+  MailIcon,
 } from './static/images';
 
 const splitDatasetResource = (dataset) => {
@@ -44,6 +55,24 @@ const formatErrorMsg = (errorResponse) => {
   });
 };
 
+const getDestinationIcon = (action) => {
+  const engineIconMap = {
+    postgresql: PostgresqlIcon,
+    redshift: RedshiftIcon,
+    snowflake: SnowflakeIcon,
+    mysql: MysqlIcon,
+    bigquery: BigqueryIcon,
+    athena: AthenaIcon,
+    trino: TrinoIcon,
+    'Microsoft Teams': MicrosoftTeamsIcon,
+    OpsGenie: OpsGenieIcon,
+    PagerDuty: PagerDutyIcon,
+    Slack: SlackIcon,
+    Email: MailIcon,
+  };
+  return engineIconMap[action];
+};
+
 const getEngineIcon = (engine) => {
   const engineIconMap = {
     postgresql: PostgresqlIcon,
@@ -57,4 +86,11 @@ const getEngineIcon = (engine) => {
   return engineIconMap[engine.toLowerCase()];
 };
 
-export { formatErrorMsg, splitDatasetResource, getEngineIcon };
+const capitalizeFirstLetter = (s) => {
+  if (typeof s !== 'string') return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+export {
+  formatErrorMsg, splitDatasetResource, getEngineIcon, getDestinationIcon, capitalizeFirstLetter,
+};
