@@ -137,15 +137,19 @@ def delete_datasource(
         expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
         validation_repository: ValidationRepository = Depends(get_validation_repository),
 ):
+    get_by_key_or_404(key, repository)
     validation_repository.delete_by_datasource(datasource_id=key)
     expectation_repository.delete_by_datasource(key)
     dataset_repository.delete_by_datasource(key)
+
+    # TODO: use an internal function for this rather than making an HTTP request
     requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"datasource_id": key},
         headers=request.headers,
         cookies=request.cookies,
     )
+
     repository.delete(key)
     return JSONResponse(
         status_code=status.HTTP_200_OK,

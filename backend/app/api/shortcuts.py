@@ -9,7 +9,7 @@ def get_by_key_or_404(key: str, repository: BaseRepository[M]) -> M:
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{repository.model_class.__name__} with id '{key}' does not exist"
+            detail=f"{repository.model_class} with id '{key}' does not exist"
         )
 
 
@@ -19,5 +19,5 @@ def delete_by_key_or_404(key: str, repository: BaseRepository[M]) -> None:
     except NotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{repository.model_class.__name__} with id '{key}' does not exist"
+            detail=f"{repository.model_class} with id '{key}' does not exist"
         )
