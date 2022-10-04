@@ -3,10 +3,12 @@ from opensearchpy import OpenSearch
 
 from app.models.datasource import Datasource, MySQL, PostgreSQL, Engine
 from app.models.dataset import Dataset
+from app.models.expectation import ExpectColumnToExist, ExpectTableColumnsToMatchOrderedList, Expectation
 from app.models.validation import Validation
 from app.repositories.base import M, R
 from app.repositories.dataset import DatasetRepository
 from app.repositories.datasource import DatasourceRepository
+from app.repositories.expectation import ExpectationRepository
 
 DATASOURCES: dict[str, Datasource] = {
     "postgres": PostgreSQL(
@@ -76,9 +78,51 @@ DATASETS: dict[str, Dataset] = {
     ),
 }
 
+EXPECTATIONS: dict[str, Expectation] = {
+    "postgres_table_products_expect_column_to_exist": ExpectColumnToExist(
+        key="0815f53c-a3da-42e5-b010-560d9486830e",
+        create_date="2022-10-04 13:37:00.000000+00:00",
+        modified_date="2022-10-04 13:37:00.000000+00:00",
+        dataset_id=DATASETS["postgres_table_products"].key,
+        datasource_id=DATASOURCES["postgres"].key,
+        expectation_type="expect_column_to_exist",
+        kwargs={"column": "product_name"},
+    ),
+    "postgres_table_orders_expect_column_to_exist": ExpectColumnToExist(
+        key="2292afa9-01bf-4f5a-9398-e5ed5a9f7995",
+        create_date="2022-10-04 13:37:00.000000+00:00",
+        modified_date="2022-10-04 13:37:00.000000+00:00",
+        dataset_id=DATASETS["postgres_table_orders"].key,
+        datasource_id=DATASOURCES["postgres"].key,
+        expectation_type="expect_column_to_exist",
+        kwargs={"column": "order_name"},
+    ),
+    "mysql_table_products_expect_column_to_exist": ExpectColumnToExist(
+        key="be3fb099-8bde-430c-b155-0488ef766e0f",
+        create_date="2022-10-04 13:37:00.000000+00:00",
+        modified_date="2022-10-04 13:37:00.000000+00:00",
+        dataset_id=DATASETS["mysql_table_products"].key,
+        datasource_id=DATASOURCES["mysql"].key,
+        expectation_type="expect_column_to_exist",
+        kwargs={"column": "product_name"},
+    ),
+    "postgres_table_products_suggested_disabled": ExpectTableColumnsToMatchOrderedList(
+        key="e6a9a967-e12b-4c25-bf15-4636a78ca2c2",
+        create_date="2022-10-04 13:37:00.000000+00:00",
+        modified_date="2022-10-04 13:37:00.000000+00:00",
+        dataset_id=DATASETS["postgres_table_products"].key,
+        datasource_id=DATASOURCES["postgres"].key,
+        expectation_type="expect_table_columns_to_match_ordered_list",
+        kwargs={"column_list": ["id", "product_name", "product_price"]},
+        enabled=False,
+        suggested=True,
+    )
+}
+
 TEST_DATA: dict[Type[R], dict[str, M]] = {
     DatasourceRepository: DATASOURCES,
     DatasetRepository: DATASETS,
+    ExpectationRepository: EXPECTATIONS,
 }
 
 

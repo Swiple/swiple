@@ -10,6 +10,32 @@ class FakeOpenSearch(openmock.FakeOpenSearch):
     """openmock.FakeOpenSearch completed with some missing methods we use."""
 
     @query_params(
+        "allow_no_indices",
+        "analyze_wildcard",
+        "analyzer",
+        "default_operator",
+        "df",
+        "expand_wildcards",
+        "ignore_throttled",
+        "ignore_unavailable",
+        "lenient",
+        "min_score",
+        "preference",
+        "q",
+        "routing",
+        "terminate_after",
+    )
+    def count(self, body=None, index=None, doc_type=None, params=None, headers=None):
+        results = self.search(index, doc_type=doc_type, body=body, params=params, headers=headers)
+
+        result = {
+            "count": results["hits"]["total"]["value"],
+            "_shards": {"successful": 1, "skipped": 0, "failed": 0, "total": 1},
+        }
+
+        return result
+
+    @query_params(
         "_source",
         "_source_excludes",
         "_source_includes",
