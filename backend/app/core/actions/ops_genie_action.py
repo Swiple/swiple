@@ -1,16 +1,17 @@
+from app.core.actions.base import BaseAction
 from app.models.destinations.destination import OpsGenie
 from app.settings import settings
 import apprise
 from apprise import Apprise
 
 
-class OpsGenieAction:
-    def notify(self, action: OpsGenie, action_type: str, **kwargs: dict) -> tuple[Apprise, str, str]:
+class OpsGenieAction(BaseAction):
+    def notify(self, destination: OpsGenie, action_type: str, **kwargs: dict) -> tuple[Apprise, str, str]:
         """
         Send a notification to OpsGenie
-        :param action: OpsGenie action
+        :param destination: OpsGenie
         :param action_type: Action type e.g. validation
-        :param kwargs: Such as, GE Validation
+        :param kwargs: details of the event. E.g. validation
         :return: True if the notification was sent successfully
         """
         if action_type == "validation":
@@ -19,11 +20,15 @@ class OpsGenieAction:
             raise NotImplementedError(f"action_type '{action_type}' is not implemented.")
 
         ar = apprise.Apprise()
-        ar.add(f"opsgenie://{action.api_key.get_decrypted_value()}?priority={action.priority}")
+        ar.add(f"opsgenie://{destination.api_key.get_decrypted_value()}?priority={destination.priority}")
 
         return ar, title, body
 
     def get_validation(self, validation: dict):
+        """
+        Creates a message to be dispatched for a validation event.
+        :param validation: Details of the validation
+        """
         evaluated_expectations = validation["statistics"]["evaluated_expectations"]
         successful_expectations = validation["statistics"]["successful_expectations"]
 
@@ -49,6 +54,6 @@ class OpsGenieAction:
         Summary: {successful_expectations} of {evaluated_expectations} expectations were met.
 
         View Results: {settings.UI_URL}/dataset/home?dataset-id={dataset_id}
-                """
+        """
         title = f"{validation_status} - {datasource_name}.{dataset_name} [{suite}]"
         return title, body

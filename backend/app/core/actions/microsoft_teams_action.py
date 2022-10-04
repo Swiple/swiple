@@ -1,3 +1,4 @@
+from app.core.actions.base import BaseAction
 from app.models.destinations.destination import MicrosoftTeams
 from app.settings import settings
 import apprise
@@ -5,13 +6,13 @@ from apprise import Apprise
 import pathlib
 
 
-class MicrosoftTeamsAction:
-    def notify(self, action: MicrosoftTeams, action_type: str, **kwargs: dict) -> tuple[Apprise, str, str]:
+class MicrosoftTeamsAction(BaseAction):
+    def notify(self, destination: MicrosoftTeams, action_type: str, **kwargs: dict) -> tuple[Apprise, str, str]:
         """
-        Send a notification to Email
-        :param action: Email action
+        Send a notification to Microsoft Teams
+        :param destination: MicrosoftTeams
         :param action_type: Action type e.g. validation
-        :param kwargs: Such as, GE Validation
+        :param kwargs: details of the event. E.g. validation
         :return: True if the notification was sent successfully
         """
         if action_type == "validation":
@@ -23,11 +24,15 @@ class MicrosoftTeamsAction:
         template_path = f"{teams_template_dir}/microsoft_teams_template.json"
 
         ar = apprise.Apprise()
-        ar.add(f"{action.webhook.get_decrypted_value()}?template={template_path}")
+        ar.add(f"{destination.webhook.get_decrypted_value()}?template={template_path}")
 
         return ar, title, body
 
     def get_validation(self, validation: dict):
+        """
+        Creates a message to be dispatched for a validation event.
+        :param validation: Details of the validation
+        """
         evaluated_expectations = validation["statistics"]["evaluated_expectations"]
         successful_expectations = validation["statistics"]["successful_expectations"]
 

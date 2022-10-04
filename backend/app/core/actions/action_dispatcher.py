@@ -55,7 +55,7 @@ def dispatch(
             body: str
 
             ar, title, body = dispatch_action().notify(
-                action=action.destination.kwargs,
+                destination=action.destination.kwargs,
                 action_type=action_type,
                 **kwargs,
             )

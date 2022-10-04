@@ -1,16 +1,17 @@
+from app.core.actions.base import BaseAction
 from app.models.destinations.destination import Email
 from app.settings import settings
 import apprise
 from apprise import Apprise
 
 
-class EmailAction:
-    def notify(self, action: Email, action_type: str, **kwargs: dict) -> tuple[Apprise, str, str]:
+class EmailAction(BaseAction):
+    def notify(self, destination: Email, action_type: str, **kwargs: dict) -> tuple[Apprise, str, str]:
         """
         Send a notification to Email
-        :param action: Email action
+        :param destination: Email
         :param action_type: Action type e.g. validation
-        :param kwargs: Such as, GE Validation
+        :param kwargs: details of the event. E.g. validation
         :return: True if the notification was sent successfully
         """
         if action_type == "validation":
@@ -18,16 +19,19 @@ class EmailAction:
         else:
             raise NotImplementedError(f"action_type '{action_type}' is not implemented.")
 
-        receiver_emails_string = ','.join(action.receiver_emails)
+        receiver_emails_string = ','.join(destination.receiver_emails)
 
         ar = apprise.Apprise()
-        ar.add(f"mailtos://{action.smtp_address}:{action.smtp_port}?"
-               f"user={action.username}&pass={action.password.get_decrypted_value()}"
-               f"&from={action.sender_alias}&name=Swiple&to={receiver_emails_string}")
+        ar.add(f"mailtos://{destination.smtp_address}:{destination.smtp_port}?"
+               f"user={destination.username}&pass={destination.password.get_decrypted_value()}"
+               f"&from={destination.sender_alias}&name=Swiple&to={receiver_emails_string}")
 
         return ar, title, body
 
     def get_validation(self, validation: dict):
+        """
+        Creates a message to be dispatched for a validation event.
+        """
         evaluated_expectations = validation["statistics"]["evaluated_expectations"]
         successful_expectations = validation["statistics"]["successful_expectations"]
 
@@ -56,7 +60,7 @@ class EmailAction:
         Summary: {successful_expectations} of {evaluated_expectations} expectations were met.{double_line_break}
 
         View Results: {settings.UI_URL}/dataset/home?dataset-id={dataset_id}
-                """
+        """
         title = f"{validation_status} - {datasource_name}.{dataset_name} [{suite}]"
 
         return title, body
