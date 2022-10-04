@@ -6,7 +6,6 @@ import httpx
 import pytest
 import pytest_asyncio
 from opensearchpy import OpenSearch
-from openmock import _get_openmock
 
 from app.core.users import current_active_user
 from app.db.client import get_client
@@ -14,6 +13,7 @@ from app.main import app
 from app.models.auth import User
 from app.scripts.setup_opensearch import create_indicies
 from tests.data import create_test_data
+from tests.fake_opensearch import FakeOpenSearch
 
 
 @pytest.fixture(scope="session")
@@ -24,9 +24,9 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def opensearch_client() -> Generator[OpenSearch, None, None]:
-    mock_client = _get_openmock()
+    mock_client = FakeOpenSearch()
     create_indicies(mock_client)
     create_test_data(mock_client)
     yield mock_client

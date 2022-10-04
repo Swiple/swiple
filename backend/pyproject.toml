@@ -37,6 +37,7 @@ httpx = "*"
 black = "*"
 openmock = "*"
 pytest-cov = "*"
+pytest-mock = "*"
 
 [tool.poetry.group.postgres]
 optional = true
