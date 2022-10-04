@@ -97,21 +97,6 @@ def list_to_string_mapper(d, sep="."):
     recurse(d)
     return d
 
-def remove_masked_key_value(d):
-    if isinstance(d, dict):
-        return {
-            k: v
-            for k, v in ((k, remove_masked_key_value(v)) for k, v in d.items())
-            if type(v) != EncryptedStr or (type(v) == EncryptedStr and v.get_decrypted_value() != c.SECRET_MASK)
-        }
-    if isinstance(d, list):
-        return [
-            v
-            for v in map(remove_masked_key_value, d)
-            if type(v) != EncryptedStr or (type(v) == EncryptedStr and v.get_decrypted_value() != c.SECRET_MASK)
-        ]
-    return d
-
 
 def send_email(
     email_to: str,

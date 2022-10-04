@@ -13,7 +13,7 @@ from app.models.destinations.destination import (
 from app.models.users import UserDB
 from app.repositories.action import ActionRepository, get_action_repository
 from app.repositories.destination import DestinationRepository, get_destination_repository
-from app.utils import json_schema_to_single_doc, remove_masked_key_value
+from app.utils import json_schema_to_single_doc
 
 
 router = APIRouter(
@@ -86,7 +86,7 @@ def update_destination(
         )
 
     # remove fields that are EncryptedStr types and have not been updated
-    destination_update_as_dict = remove_masked_key_value(destination_update.dict(exclude_none=True))
+    destination_update_as_dict = destination_update.dict(exclude_none=True)
 
     # if a destination is associated with any actions, we need to update the actions.
     if action_repository.count_by_filter(

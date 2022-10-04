@@ -23,6 +23,8 @@ class EncryptedStr(str):
 
         Otherwise, we encrypt it immediately.
         """
+        if value == c.SECRET_MASK:
+            return None
         try:
             security.decrypt_password(value)
             return super(EncryptedStr, cls).__new__(cls, value)
