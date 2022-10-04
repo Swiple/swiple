@@ -8,13 +8,14 @@ from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import DataContextConfig, AnonymizedUsageStatisticsConfig
 from great_expectations.data_context.types.base import InMemoryStoreBackendDefaults
 from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
-from opensearchpy.helpers import bulk
+from opensearchpy import OpenSearch
 from pandas import isnull
 
 # TODO, add some "runner_max_batches" to datasource to control the
 # max number of batches run at any one time.
+from app import constants as c
 from app import utils
-from app.db.client import client
+from app.core.expectations import supported_unsupported_expectations
 from app.models.datasource import Engine
 from app.models.validation import Validation
 from app.repositories.dataset import DatasetRepository
@@ -225,7 +226,7 @@ class Runner:
             )
 
 
-def run_dataset_validation(dataset_id: str):
+def run_dataset_validation(dataset_id: str, client: OpenSearch):
     dataset = DatasetRepository(client).get(dataset_id)
     datasource = DatasourceRepository(client).get(dataset.datasource_id)
     expectations = ExpectationRepository(client).query_by_filter(dataset_id=dataset.key, enabled=True)
@@ -262,3 +263,33 @@ def run_dataset_validation(dataset_id: str):
     )
 
     return validation
+
+
+def create_dataset_suggestions(dataset_id: str, client: OpenSearch):
+    dataset = DatasetRepository(client).get(dataset_id)
+    datasource = DatasourceRepository(client).get(dataset.datasource_id)
+    
+    identifiers = {
+        "datasource_id": datasource.key,
+        "dataset_id": dataset.key,
+    }
+
+    meta = {
+        **datasource.expectation_meta(),
+        "dataset_name": dataset.dataset_name,
+    }
+
+    excluded_expectations = supported_unsupported_expectations()["unsupported_expectations"]
+    excluded_expectations.append(c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN)
+
+    results = Runner(
+        datasource=datasource,
+        batch=dataset,
+        meta=meta,
+        identifiers=identifiers,
+        datasource_id=dataset.datasource_id,
+        dataset_id=dataset.key,
+        excluded_expectations=excluded_expectations,
+    ).profile()
+
+    return results
