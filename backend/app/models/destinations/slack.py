@@ -13,14 +13,9 @@ class SlackDestination(BaseModel):
     webhook: EncryptedStr = Field(placeholder="https://hooks.slack.com/services/.../.../...")
 
 
-class SlackDestination(BaseModel):
+class SlackDetails(BaseModel):
     class Config:
         title = c.SLACK
-    destination_type: Literal[c.SLACK]
-    webhook: EncryptedStr = Field(placeholder="https://hooks.slack.com/services/.../.../...")
-
-
-class SlackDetails(BaseModel):
     destination_type: Literal[c.SLACK]
     notify_on: Literal["all", "failure", "success"]
 

@@ -2,33 +2,7 @@ from typing import Literal, Optional
 from pydantic.fields import Field
 
 from app.models.base_model import BaseModel, KeyModel, CreateUpdateDateModel
-from app.models.destinations.destination import Destination
 from app.models.destinations.destination import DestinationDetails, DestinationAction
-
-
-class DatasetActionRequest(BaseModel):
-    resource_key: str
-    resource_type: Literal["dataset"]
-    destination_key: str
-    create_date: Optional[str]
-    created_by: Optional[str]
-    modified_date: Optional[str]
-
-
-class DatasetAction(BaseModel):
-    resource_key: str
-    resource_type: Literal["dataset"]
-    destination: Destination
-    create_date: Optional[str]
-    created_by: Optional[str]
-    modified_date: Optional[str]
-
-
-class ActionRequest(BaseModel):
-    resource_key: str
-    resource_type: Literal["dataset"]
-    action_type: Literal["validation"]
-    destination: DestinationDetails
 
 
 class BaseAction(BaseModel):
@@ -39,8 +13,11 @@ class BaseAction(BaseModel):
     created_by: Optional[str]
 
 
-class ActionUpdate(BaseAction):
-    pass
+class ActionCreateOrUpdate(BaseModel):
+    resource_key: str
+    resource_type: Literal["dataset"]
+    action_type: Literal["validation"]
+    destination: DestinationDetails
 
 
 class Action(BaseAction, KeyModel, CreateUpdateDateModel):

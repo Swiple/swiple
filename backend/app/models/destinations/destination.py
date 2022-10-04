@@ -29,25 +29,30 @@ from app.models.destinations.ops_genie import (
     OpsGenieDetails,
 )
 
+DestinationKwargs = Union[
+    OpsGenieDestination,
+    SlackDestination,
+    EmailDestination,
+    MicrosoftTeamsDestination,
+    PagerDutyDestination,
+]
+
 
 class BaseDestination(BaseModel):
     destination_name: str
-    kwargs: Union[
-        OpsGenieDestination,
-        SlackDestination,
-        EmailDestination,
-        MicrosoftTeamsDestination,
-        PagerDutyDestination,
-    ] = Field(discriminator="destination_type")
+    kwargs: DestinationKwargs = Field(discriminator="destination_type")
     created_by: Optional[str]
 
 
-class DestinationUpdate(BaseDestination):
-    pass
-
-
-class Destination(BaseDestination, KeyModel, CreateUpdateDateModel):
-    pass
+class DestinationDetails(BaseModel):
+    destination_name: str
+    kwargs: Union[
+        OpsGenieDetails,
+        SlackDetails,
+        EmailDetails,
+        MicrosoftTeamsDetails,
+        PagerDutyDetails,
+    ] = Field(discriminator="destination_type")
 
 
 class DestinationAction(BaseModel):
@@ -62,15 +67,12 @@ class DestinationAction(BaseModel):
     ] = Field(discriminator="destination_type")
 
 
-class DestinationDetails(BaseModel):
-    destination_name: str
-    kwargs: Union[
-        OpsGenieDetails,
-        SlackDetails,
-        EmailDetails,
-        MicrosoftTeamsDetails,
-        PagerDutyDetails,
-    ] = Field(discriminator="destination_type")
+class DestinationUpdate(BaseDestination):
+    pass
+
+
+class Destination(BaseDestination, KeyModel, CreateUpdateDateModel):
+    pass
 
 
 destinations_map = {

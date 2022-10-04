@@ -8,7 +8,6 @@ from app.models.types import EncryptedStr
 class PagerDutyDestination(BaseModel):
     class Config:
         title = c.PAGER_DUTY
-
     destination_type: Literal[c.PAGER_DUTY]
     integration_key: EncryptedStr
     api_key: EncryptedStr
@@ -17,6 +16,8 @@ class PagerDutyDestination(BaseModel):
 
 
 class PagerDutyDetails(BaseModel):
+    class Config:
+        title = c.PAGER_DUTY
     destination_type: Literal[c.PAGER_DUTY]
     notify_on: Literal["all", "failure", "success"]
 

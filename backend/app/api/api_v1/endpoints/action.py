@@ -6,7 +6,7 @@ from pydantic.error_wrappers import ValidationError
 from typing import Optional, List
 
 from app.core.users import current_active_user
-from app.models.action import Action, ActionRequest
+from app.models.action import Action, ActionCreateOrUpdate
 from app.models.destinations.destination import destination_details_map, DestinationAction
 from app.models.users import UserDB
 from app.repositories.action import ActionRepository, get_action_repository
@@ -50,7 +50,7 @@ def list_actions(
 
 @router.post("", response_model=Action, status_code=status.HTTP_201_CREATED)
 def create_action(
-    action_request: ActionRequest,
+    action_request: ActionCreateOrUpdate,
     user: UserDB = Depends(current_active_user),
     repository: ActionRepository = Depends(get_action_repository),
     destination_repository: DestinationRepository = Depends(get_destination_repository),
@@ -97,7 +97,7 @@ def create_action(
 
 @router.put("/{key}", response_model=Action)
 def update_action(
-    action_request: ActionRequest,
+    action_request: ActionCreateOrUpdate,
     key: str,
     user: UserDB = Depends(current_active_user),
     repository: ActionRepository = Depends(get_action_repository),

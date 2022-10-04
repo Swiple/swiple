@@ -15,7 +15,7 @@ class MicrosoftTeamsDestination(BaseModel):
 
 class MicrosoftTeamsDetails(BaseModel):
     class Config:
-        title = f"{c.MICROSOFT_TEAMS}Details"
+        title = c.MICROSOFT_TEAMS
     destination_type: Literal[c.MICROSOFT_TEAMS]
     notify_on: Literal["all", "failure", "success"]
 

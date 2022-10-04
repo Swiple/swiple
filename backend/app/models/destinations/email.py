@@ -17,6 +17,8 @@ class EmailDestination(BaseModel):
 
 
 class EmailDetails(BaseModel):
+    class Config:
+        title = c.EMAIL
     destination_type: Literal[c.EMAIL]
     notify_on: Literal["all", "failure", "success"]
     receiver_emails: List[EmailStr] = Field(form_type="multi_column_select")

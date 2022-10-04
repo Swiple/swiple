@@ -249,7 +249,7 @@ function ActionModal({
         (item) => item.destination_name === selectedDestination,
       )[0].kwargs.destination_type;
       return jsonSchema.map((formItemObj) => {
-        if (`${destinationType}Details` === formItemObj.title) {
+        if (destinationType === formItemObj.title) {
           return Object.keys(formItemObj.properties).map((formItem) => {
             if (!ignoredFormItem.includes(formItem)) {
               const propObj = formItemObj.properties[formItem];
