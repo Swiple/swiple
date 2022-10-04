@@ -36,6 +36,7 @@ asgi-lifespan = "*"
 httpx = "*"
 black = "*"
 openmock = "*"
+pytest-cov = "*"
 
 [tool.poetry.group.postgres]
 optional = true
@@ -87,3 +88,14 @@ great-expectations = {extras = ["gcp"], version = "^0.15.24"}
 [build-system]
 requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--cov app/ --cov-report=term-missing"
+markers = [
+    "user",
+]
+# Ignore warnings from some third-party dependencies
+filterwarnings = [
+    "ignore::DeprecationWarning:great_expectations.*:",
+    "ignore::DeprecationWarning:marshmallow.*:"
+]
