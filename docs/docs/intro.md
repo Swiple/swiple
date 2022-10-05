@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # About Swiple
 
-Swiple is the data observability web application that allows teams to quickly understand the state of their data, validate & improve it.
+We developed Swiple to build trust in every dataset by helping data teams discover, prioritize, and resolve data quality issues.
 
 ## Features
 * Measure the data quality of a **SQL query**, **table**, or **view**.
@@ -12,6 +12,7 @@ Swiple is the data observability web application that allows teams to quickly un
 * **Schedule** validations to run on any recurrence interval.
 * **Automated Data Docs**
 * Add **Objectives / SLA's** for your data.
+* Get **notified** when the quality of your data changes. Email, Slack, Microsoft Teams, OpsGenie and PagerDuty.
 
 
 # Supported Databases
@@ -31,6 +32,12 @@ Swiple is the data observability web application that allows teams to quickly un
   * Microsoft
   * Okta
 
+## Notifications
+* Email
+* Slack
+* Microsoft Teams
+* OpsGenie
+* PagerDuty
 
 ## Get Started!
 * ### [Quickstart With Docker Compose](./installation/quick-start)

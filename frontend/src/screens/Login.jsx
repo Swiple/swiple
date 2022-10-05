@@ -16,6 +16,7 @@ import {
   authenticate, getAuthMethods, getMe, oauthCallback, login,
 } from '../Api';
 import { useAuth } from '../Auth';
+import { capitalizeFirstLetter } from '../Utils';
 
 function useQuery() {
   const { search } = useLocation();
@@ -132,9 +133,7 @@ const Login = withRouter(() => {
   const formFilled = async () => {
     await form.validateFields().then(() => {
       setLoginCredentials(true);
-    }).catch((validationInfo) => {
-      console.log(validationInfo);
-    });
+    }).catch(() => {});
   };
 
   const getLoginDetail = () => {
@@ -203,11 +202,6 @@ const Login = withRouter(() => {
     );
   };
 
-  const capitalize = (s) => {
-    if (typeof s !== 'string') return '';
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  };
-
   const oauthMethods = () => authMethods.map((authMethod) => {
     if (authMethod === 'username_and_password') return null;
     const meta = {
@@ -272,7 +266,7 @@ const Login = withRouter(() => {
       >
         Login with
         {' '}
-        {capitalize(authMethod)}
+        {capitalizeFirstLetter(authMethod)}
       </Button>
     );
   });

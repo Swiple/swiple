@@ -74,6 +74,29 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "apprise"
+version = "1.0.0"
+description = "Push Notifications that work with just about every platform!"
+category = "main"
+optional = false
+python-versions = ">=2.7"
+develop = false
+
+[package.dependencies]
+click = ">=5.0"
+markdown = "*"
+PyYAML = "*"
+requests = "*"
+requests-oauthlib = "*"
+six = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/caronc/apprise.git"
+reference = "master"
+resolved_reference = "e9f040a2d0e2eb8714a08f1859afee6d4cd90d5f"
+
+[[package]]
 name = "APScheduler"
 version = "3.9.1"
 description = "In-process task scheduler with Cron-like capabilities"
@@ -1321,6 +1344,20 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "Markdown"
+version = "3.4.1"
+description = "Python implementation of Markdown."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+importlib-metadata = {version = ">=4.4", markers = "python_version < \"3.10\""}
+
+[package.extras]
+testing = ["coverage", "pyyaml"]
+
+[[package]]
 name = "MarkupSafe"
 version = "2.1.1"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -1539,7 +1576,7 @@ python-versions = ">=3.8"
 name = "oauthlib"
 version = "3.2.1"
 description = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -2066,7 +2103,7 @@ use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 name = "requests-oauthlib"
 version = "1.3.1"
 description = "OAuthlib authentication support for Requests."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
@@ -2579,7 +2616,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9.0,<3.10"
-content-hash = "224ba5d50e4c5183c84bea7f4ea2bd8fdfd7b6c11f70024ddaccc3e46245dc91"
+content-hash = "093cb6c66b47265771ac4d9d3e756f54d7f6d7a734f2e4efca464d230bafff21"
 
 [metadata.files]
 aiohttp = [
@@ -2672,6 +2709,7 @@ appnope = [
     {file = "appnope-0.1.3-py2.py3-none-any.whl", hash = "sha256:265a455292d0bd8a72453494fa24df5a11eb18373a60c7c0430889f22548605e"},
     {file = "appnope-0.1.3.tar.gz", hash = "sha256:02bd91c4de869fbb1e1c50aafc4098827a7a54ab2f39d9dcba6c9547ed920e24"},
 ]
+apprise = []
 APScheduler = [
     {file = "APScheduler-3.9.1-py2.py3-none-any.whl", hash = "sha256:ddc25a0ddd899de44d7f451f4375fb971887e65af51e41e5dcf681f59b8b2c9a"},
     {file = "APScheduler-3.9.1.tar.gz", hash = "sha256:65e6574b6395498d371d045f2a8a7e4f7d50c6ad21ef7313d15b1c7cf20df1e3"},
@@ -3425,6 +3463,10 @@ lxml = [
 makefun = [
     {file = "makefun-1.13.1-py2.py3-none-any.whl", hash = "sha256:f10ea6e570d06e84d5488dd109cc09a3127ebbdc0696ddb7bfc234263ab2ac26"},
     {file = "makefun-1.13.1.tar.gz", hash = "sha256:985bb8b670ffbbb95d2a8aa996d318e6e9a3f26fc6f3ef2da93ebdf8f9c616bf"},
+]
+Markdown = [
+    {file = "Markdown-3.4.1-py3-none-any.whl", hash = "sha256:08fb8465cffd03d10b9dd34a5c3fea908e20391a2a90b88d66362cb05beed186"},
+    {file = "Markdown-3.4.1.tar.gz", hash = "sha256:3b809086bb6efad416156e00a0da66fe47618a5d6918dd688f53f40c8e4cfeff"},
 ]
 MarkupSafe = [
     {file = "MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:86b1f75c4e7c2ac2ccdaec2b9022845dbb81880ca318bb7a0a01fbf7813e3812"},

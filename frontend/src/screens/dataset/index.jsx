@@ -37,7 +37,11 @@ import {
   postRunnerValidateDataset,
   putSample,
   getSchedulesForDataset,
-  deleteSchedule, suggestExpectations, enableExpectation,
+  deleteSchedule,
+  suggestExpectations,
+  enableExpectation,
+  deleteAction,
+  getActions,
 } from '../../Api';
 import Section from '../../components/Section';
 import CodeEditor from './components/CodeEditor';
@@ -47,7 +51,8 @@ import DataSample from './components/DataSample';
 import AsyncButton from '../../components/AsyncButton';
 import ExpectationModal, { CREATE_TYPE, UPDATE_TYPE } from './components/ExpectationModal';
 import ScheduleModal from './components/ScheduleModal';
-import { splitDatasetResource, getEngineIcon } from '../../Utils';
+import { splitDatasetResource, getEngineIcon, getDestinationIcon } from '../../Utils';
+import ActionModal from '../../components/ActionModal';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -60,6 +65,11 @@ const SAMPLE = 'sample';
 const QUERY = 'query';
 const SUGGESTIONS = 'suggestions';
 const SCHEDULES = 'schedules';
+const ACTIONS = 'actions';
+
+const ACTION_TYPE_OPTIONS = [
+  { actionType: 'validation', description: 'Triggered when data validation completes.' },
+];
 
 // A custom hook that builds on useLocation to parse
 // the query string for you.
@@ -83,6 +93,9 @@ const Dataset = withRouter(() => {
   const [refreshValidationStats, setRefreshValidationStats] = useState(true);
   const [expectationModal, setExpectationModal] = useState({ visible: false, type: '', dataset: null });
   const [scheduleModal, setScheduleModal] = useState({ visible: false, type: '', editedSchedule: null });
+  const [actionModal, setActionModal] = useState({ visible: false, type: '', editedResource: null });
+  const [refreshActions, setRefreshActions] = useState(true);
+  const [actions, setActions] = useState([]);
 
   const history = useHistory();
   const query = useQuery();
@@ -101,6 +114,20 @@ const Dataset = withRouter(() => {
       });
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (refreshActions) {
+      getActions(datasetId)
+        .then((response) => {
+          if (response.status === 200) {
+            setActions(response.data);
+          } else {
+            message.error('An error occurred while retrieving actions.', 5);
+          }
+          setRefreshActions(false);
+        });
+    }
+  }, [refreshActions, setRefreshActions]);
 
   useEffect(() => {
     if (refreshDatasource && dataset.datasource_id) {
@@ -233,6 +260,18 @@ const Dataset = withRouter(() => {
     });
   };
 
+  const openActionModal = (modalType, record = null) => {
+    let action;
+    if (modalType === UPDATE_TYPE) {
+      [action] = actions.filter((item) => item.key === record.key);
+    }
+    setActionModal({
+      visible: true,
+      type: modalType,
+      editedResource: action,
+    });
+  };
+
   const rejectSuggestion = (record) => new Promise((resolve) => {
     deleteExpectation(record.key).then(() => {
       setSuggestions(suggestions.filter((item) => item.key !== record.key));
@@ -356,6 +395,7 @@ const Dataset = withRouter(() => {
       },
     });
   };
+
   const scheduleActionMenu = (record) => (
     <Menu>
       <Menu.Item
@@ -368,6 +408,47 @@ const Dataset = withRouter(() => {
       <Menu.Item
         key="2"
         onClick={() => showScheduleDeleteModal(record)}
+        icon={<DeleteFilled style={{ color: 'red' }} />}
+      >
+        Delete
+      </Menu.Item>
+    </Menu>
+  );
+
+  const removeAction = (record) => new Promise((resolve, reject) => {
+    deleteAction(record.key).then(() => {
+      setRefreshValidationStats(true);
+      setActions(actions.filter((item) => item.key !== record.key));
+      resolve();
+    }).catch(() => reject());
+  });
+
+  const showActionDeleteModal = (record) => {
+    confirm({
+      title: 'Delete Action',
+      icon: <ExclamationCircleOutlined />,
+      content: "Are you sure you'd like to delete this action?",
+      okText: 'Delete',
+      okType: 'danger',
+      onOk() {
+        return removeAction(record);
+      },
+      onCancel() {},
+    });
+  };
+
+  const destinationMenu = (record) => (
+    <Menu>
+      <Menu.Item
+        key="1"
+        icon={<EditFilled />}
+        onClick={() => openActionModal(UPDATE_TYPE, record)}
+      >
+        Edit
+      </Menu.Item>
+      <Menu.Item
+        key="2"
+        onClick={() => showActionDeleteModal(record)}
         icon={<DeleteFilled style={{ color: 'red' }} />}
       >
         Delete
@@ -498,6 +579,54 @@ const Dataset = withRouter(() => {
     },
   ];
 
+  const actionsColumns = [
+    {
+      title: 'ACTION_TYPE',
+      dataIndex: 'action_type',
+    },
+    {
+      title: 'DESTINATION NAME',
+      dataIndex: ['destination', 'destination_name'],
+    },
+    {
+      title: 'DESTINATION TYPE',
+      dataIndex: ['destination', 'kwargs', 'destination_type'],
+      render: (text) => (
+        <img
+          style={{
+            position: 'relative',
+            width: 20,
+            height: 20,
+            marginRight: 8,
+          }}
+          src={getDestinationIcon(text)}
+          alt={text}
+        />
+      ),
+    },
+    {
+      title: 'LAST MODIFIED',
+      dataIndex: 'modified_date',
+      render: (text) => moment(text).local().fromNow(),
+    },
+    {
+      title: '',
+      render: (text, record) => (
+        <Dropdown
+          trigger={['click']}
+          overlay={destinationMenu(record)}
+          placement="bottomRight"
+          arrow
+        >
+          <Button
+            type="text"
+            icon={<EllipsisOutlined rotate={90} style={{ fontWeight: 'bold', fontSize: '25px' }} />}
+          />
+        </Dropdown>
+      ),
+    },
+  ];
+
   const suggestionsList = suggestions.map((suggestion) => ({
     key: suggestion.key,
     expectation_type: suggestion.expectation_type,
@@ -605,6 +734,22 @@ const Dataset = withRouter(() => {
               onClick={() => openScheduleModal(CREATE_TYPE)}
             >
               Schedule
+            </Button>
+          )
+          : null
+      }
+      {
+        activeTab === ACTIONS
+          ? (
+            <Button
+              className="card-list-button-dark"
+              style={{ fontWeight: 'bold' }}
+              type="primary"
+              icon={<PlusOutlined />}
+              size="medium"
+              onClick={() => openActionModal(CREATE_TYPE)}
+            >
+              Action
             </Button>
           )
           : null
@@ -826,6 +971,39 @@ const Dataset = withRouter(() => {
                   <Table
                     columns={scheduleColumns}
                     dataSource={schedules}
+                    loading={requestInProgress}
+                    pagination={{ position: ['bottomRight'] }}
+                    rowKey={() => uuidv4()}
+                  />
+                </TabPane>
+                <TabPane tab="Actions" key={ACTIONS}>
+                  <Row
+                    align="space-between"
+                    style={{ alignItems: 'center' }}
+                  >
+                    <ActionModal
+                      visible={actionModal.visible}
+                      type={actionModal.type}
+                      resourceKey={datasetId}
+                      resourceType="dataset"
+                      actionTypeOptions={ACTION_TYPE_OPTIONS}
+                      editedResource={actionModal.editedResource}
+                      onCancel={() => {
+                        setActionModal({
+                          visible: false, type: '',
+                        });
+                      }}
+                      onFormSubmit={() => {
+                        setActionModal({
+                          visible: false, type: '',
+                        });
+                        setRefreshActions(true);
+                      }}
+                    />
+                  </Row>
+                  <Table
+                    columns={actionsColumns}
+                    dataSource={actions}
                     loading={requestInProgress}
                     pagination={{ position: ['bottomRight'] }}
                     rowKey={() => uuidv4()}

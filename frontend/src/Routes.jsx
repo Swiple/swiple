@@ -8,6 +8,7 @@ import DatasetOverview from './screens/datasetOverview';
 import Dataset from './screens/dataset';
 import { RequireAuth, AuthProvider } from './Auth';
 import paths from './config/Routes';
+import ActionOverview from './screens/destinationOverview';
 
 function PrivateRoute({ component, path, ...rest }) {
   return (
@@ -56,6 +57,11 @@ function Routes() {
           exact
           path={paths.DATASET}
           component={<Dataset />}
+        />
+        <PrivateRoute
+          exact
+          path={paths.DESTINATIONS}
+          component={<ActionOverview />}
         />
         <Redirect
           from="*"

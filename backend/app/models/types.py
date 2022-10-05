@@ -23,6 +23,8 @@ class EncryptedStr(str):
 
         Otherwise, we encrypt it immediately.
         """
+        if value == c.SECRET_MASK:
+            return None
         try:
             security.decrypt_password(value)
             return super(EncryptedStr, cls).__new__(cls, value)
@@ -50,7 +52,7 @@ class EncryptedStr(str):
         return cls(value)
 
     def __repr__(self) -> str:
-        return f"EncryptedStr('**********')"
+        return f"EncryptedStr('{self}')"
 
     def __str__(self) -> str:
         return c.SECRET_MASK if self.get_decrypted_value() else ""
