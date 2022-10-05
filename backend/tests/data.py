@@ -1,14 +1,21 @@
 from typing import Type
+import uuid
 from opensearchpy import OpenSearch
 
 from app.models.datasource import Datasource, MySQL, PostgreSQL, Engine
 from app.models.dataset import Dataset
-from app.models.expectation import ExpectColumnToExist, ExpectTableColumnsToMatchOrderedList, Expectation
+from app.models.expectation import (
+    ExpectColumnToExist,
+    ExpectTableColumnsToMatchOrderedList,
+    Expectation,
+)
 from app.models.validation import Validation
 from app.repositories.base import M, R
 from app.repositories.dataset import DatasetRepository
 from app.repositories.datasource import DatasourceRepository
 from app.repositories.expectation import ExpectationRepository
+from app.repositories.validation import ValidationRepository
+
 
 DATASOURCES: dict[str, Datasource] = {
     "postgres": PostgreSQL(
@@ -116,21 +123,8 @@ EXPECTATIONS: dict[str, Expectation] = {
         kwargs={"column_list": ["id", "product_name", "product_price"]},
         enabled=False,
         suggested=True,
-    )
+    ),
 }
-
-TEST_DATA: dict[Type[R], dict[str, M]] = {
-    DatasourceRepository: DATASOURCES,
-    DatasetRepository: DATASETS,
-    ExpectationRepository: EXPECTATIONS,
-}
-
-
-def create_test_data(client: OpenSearch):
-    for repository_class in TEST_DATA:
-        repository = repository_class(client)
-        for object in TEST_DATA[repository_class].values():
-            repository.create(object.key, object)
 
 
 def create_validation_object(datasource_id: str, dataset_id: str) -> Validation:
@@ -162,3 +156,31 @@ def create_validation_object(datasource_id: str, dataset_id: str) -> Validation:
         success=False,
         evaluation_parameters={},
     )
+
+
+VALIDATIONS: dict[str, Validation] = {
+    "postgres_table_products": create_validation_object(
+        DATASOURCES["postgres"].key, DATASETS["postgres_table_products"].key
+    ),
+    "postgres_table_orders": create_validation_object(
+        DATASOURCES["postgres"].key, DATASETS["postgres_table_orders"].key
+    ),
+    "mysql_table_products": create_validation_object(
+        DATASOURCES["mysql"].key, DATASETS["mysql_table_products"].key
+    ),
+}
+
+TEST_DATA: dict[Type[R], dict[str, M]] = {
+    DatasourceRepository: DATASOURCES,
+    DatasetRepository: DATASETS,
+    ExpectationRepository: EXPECTATIONS,
+    ValidationRepository: VALIDATIONS,
+}
+
+
+def create_test_data(client: OpenSearch):
+    for repository_class in TEST_DATA:
+        repository = repository_class(client)
+        for object in TEST_DATA[repository_class].values():
+            id = getattr(object, "key", str(uuid.uuid4()))
+            repository.create(id, object)

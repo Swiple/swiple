@@ -47,7 +47,6 @@ async def test_client(
     opensearch_client: OpenSearch,
     user: Optional[User],
 ) -> AsyncGenerator[httpx.AsyncClient, None]:
-    app.dependency_overrides = {}
     async with asgi_lifespan.LifespanManager(app):
         app.dependency_overrides[get_client] = lambda: opensearch_client
         if user is not None:
@@ -56,3 +55,4 @@ async def test_client(
             app=app, base_url="http://api.swiple.io"
         ) as test_client:
             yield test_client
+    app.dependency_overrides = {}
