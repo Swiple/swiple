@@ -59,6 +59,10 @@ class Runner:
 
         for expectation in expectations:
             expectation["kwargs"].update({"result_format": "SUMMARY", "include_config": True, "catch_exceptions": True})
+
+            if expectation["kwargs"].get("mostly"):
+                expectation["kwargs"]["objective"] = expectation["kwargs"].pop("mostly")
+
             expectation["kwargs"] = json.dumps(expectation["kwargs"])
             expectation["enabled"] = False
             expectation["suggested"] = True
