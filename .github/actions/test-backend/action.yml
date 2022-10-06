@@ -1,0 +1,27 @@
+name: "Test backend"
+description: "Run the tests for the Python backend"
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.9"
+    - name: Install dependencies
+      shell: bash
+      working-directory: backend
+      run: |
+        python -m pip install --upgrade pip poetry
+        poetry install
+    - name: Test with pytest
+      shell: bash
+      working-directory: backend
+      env:
+        PRODUCTION: 'False'
+        SECRET_KEY: DphzRvbm3ICHH2t1_Xj5NTUVEpqjz5KOHxuF77udndQ=
+        ADMIN_EMAIL: admin@email.com
+        ADMIN_PASSWORD: admin
+      run: |
+        poetry run pytest
