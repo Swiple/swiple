@@ -26,7 +26,9 @@ class FakeOpenSearch(openmock.FakeOpenSearch):
         "terminate_after",
     )
     def count(self, body=None, index=None, doc_type=None, params=None, headers=None):
-        results = self.search(index, doc_type=doc_type, body=body, params=params, headers=headers)
+        results = self.search(
+            index, doc_type=doc_type, body=body, params=params, headers=headers
+        )
 
         result = {
             "count": results["hits"]["total"]["value"],
@@ -82,6 +84,9 @@ class FakeOpenSearch(openmock.FakeOpenSearch):
             "_id": id,
             "_version": version,
             "result": result,
+            "get": {
+                "_source": body["doc"],
+            },
         }
 
         if found:
