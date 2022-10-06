@@ -17,9 +17,7 @@ from app.repositories.expectation import ExpectationRepository, get_expectation_
 from app.repositories.validation import get_validation_repository, ValidationRepository
 from app.settings import settings
 from app.models.users import UserDB
-from app.core.runner import Runner, create_dataset_suggestions, run_dataset_validation
-from app.core.expectations import supported_unsupported_expectations
-from app import constants as c
+from app.core.runner import create_dataset_suggestions, run_dataset_validation
 from opensearchpy import OpenSearch, RequestError
 import requests
 
