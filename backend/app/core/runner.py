@@ -1,6 +1,7 @@
 import json
 import datetime
 import uuid
+from typing import Literal
 
 from great_expectations.core import ExpectationSuite, ExpectationConfiguration
 from great_expectations.core.batch import RuntimeBatchRequest, BatchRequest
@@ -16,6 +17,10 @@ from pandas import isnull
 from app import constants as c
 from app import utils
 from app.core.expectations import supported_unsupported_expectations
+from pandas import isnull
+
+from app import utils
+from app.core.actions import action_dispatcher
 from app.models.datasource import Engine
 from app.models.validation import Validation
 from app.repositories.dataset import DatasetRepository
@@ -60,6 +65,10 @@ class Runner:
 
         for expectation in expectations:
             expectation["kwargs"].update({"result_format": "SUMMARY", "include_config": True, "catch_exceptions": True})
+
+            if expectation["kwargs"].get("mostly"):
+                expectation["kwargs"]["objective"] = expectation["kwargs"].pop("mostly")
+
             expectation["kwargs"] = json.dumps(expectation["kwargs"])
             expectation["enabled"] = False
             expectation["suggested"] = True
@@ -150,6 +159,13 @@ class Runner:
             utils.list_to_string_mapper(result)
             result["expectation_id"] = result["expectation_config"]["meta"].pop("expectation_id")
 
+        action_dispatcher.dispatch(
+            resource_key=self.identifiers["dataset_id"],
+            action_type="validation",
+            action_status=self._get_status(validation["success"]),
+            validation=validation,
+        )
+
         return Validation(**validation)
 
     def get_data_context_config(self):
@@ -224,6 +240,13 @@ class Runner:
                 data_asset_name=self.batch.dataset_name,
                 batch_spec_passthrough={"create_temp_table": False},
             )
+
+    @staticmethod
+    def _get_status(success: bool) -> Literal["success", "failure"]:
+        action_status: Literal["failure"] = "failure"
+        if success:
+            action_status: Literal["success"] = "success"
+        return action_status
 
 
 def run_dataset_validation(dataset_id: str, client: OpenSearch):

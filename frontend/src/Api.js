@@ -300,6 +300,84 @@ export const getValidationStats = (datasetId) => axios.get(
   .catch((error) => errorHandler(error));
 
 // ========================================================
+// Destinations
+// ========================================================
+
+export const getDestinationsJsonSchema = () => axios.get(`${BASE_URL}/destinations/json-schema`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const getDestinations = () => axios.get(`${BASE_URL}/destinations`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const getDestination = (key) => axios.get(`${BASE_URL}/destinations/${key}`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const postDestination = (data) => axios.post(
+  `${BASE_URL}/destinations`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const putDestination = (data, key) => axios.put(
+  `${BASE_URL}/destinations/${key}`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const deleteDestination = (key) => axios.delete(`${BASE_URL}/destinations/${key}`)
+  .then((data) => data.data)
+  .catch((error) => errorHandler(error));
+
+// ========================================================
+// Actions
+// ========================================================
+
+export const getActionsJsonSchema = () => axios.get(`${BASE_URL}/actions/json-schema`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const getActions = (resourceKey) => {
+  const params = {};
+
+  if (resourceKey) {
+    params.resource_key = resourceKey;
+  }
+  return axios.get(
+    `${BASE_URL}/actions`,
+    { params },
+  )
+    .then((response) => response)
+    .catch((error) => errorHandler(error));
+};
+
+export const getAction = (key) => axios.get(`${BASE_URL}/actions/${key}`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const postAction = (data) => axios.post(
+  `${BASE_URL}/actions`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const putAction = (data, key) => axios.put(
+  `${BASE_URL}/actions/${key}`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const deleteAction = (key) => axios.delete(`${BASE_URL}/actions/${key}`)
+  .then((data) => data.data)
+  .catch((error) => errorHandler(error));
+
+// ========================================================
 // Auth
 // ========================================================
 export const login = (usernamePassword) => axios.post(`${BASE_URL}/auth/login`, new URLSearchParams(usernamePassword), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
@@ -328,5 +406,9 @@ export const oauthCallback = (provider, code, state) => axios.get(
 // Users
 // ========================================================
 export const getMe = () => axios.get(`${BASE_URL}/user/me`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const getUsers = () => axios.get(`${BASE_URL}/user`)
   .then((response) => response)
   .catch((error) => errorHandler(error));

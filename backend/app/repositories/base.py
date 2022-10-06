@@ -40,7 +40,8 @@ class BaseRepository(Generic[M]):
         return self._get_object_from_dict(document["_source"], id=document["_id"])
 
     def create(self, id: str, object: M, *, refresh: str = "wait_for") -> M:
-        response = self.client.index(index=self.index, id=id, body=self._get_dict_from_object(object), refresh=refresh)
+        body = self._get_dict_from_object(object, exclude={"key"})
+        response = self.client.index(index=self.index, id=id, body=body, refresh=refresh)
         return self._get_object_from_dict(self._get_dict_from_object(object), id=response["_id"])
 
     def update(self, id: str, object: M, update_dict: dict[str, Any], *, refresh: str = "wait_for") -> M:
@@ -54,15 +55,19 @@ class BaseRepository(Generic[M]):
             updated_object.modified_date = utils.current_time()
 
         try:
-            self.client.update(
+            document = self.client.update(
                 index=self.index,
                 id=id,
-                body={"doc": self._get_dict_from_object(updated_object)},
+                body={"doc": self._get_dict_from_object(updated_object, exclude={"key"})},
                 refresh=refresh,
-            )
+                _source=True,
+            )["get"]
         except OSNotFoundError as e:
             raise NotFoundError() from e
-        return updated_object
+        return self._get_object_from_dict(document["_source"], id=id)
+
+    def update_by_query(self, body: dict[str, Any], *, wait_for_completion: bool = True):
+        self.client.update_by_query(index=self.index, body=body, wait_for_completion=wait_for_completion)
 
     def delete(self, id: str, *, refresh: str = "wait_for"):
         try:
@@ -76,7 +81,7 @@ class BaseRepository(Generic[M]):
                 "_op_type": "index",
                 "_index": self.index,
                 "_id": object.key,
-                "_source": self._get_dict_from_object(object),
+                "_source": self._get_dict_from_object(object, exclude={"key"}),
             } for object in objects
         ]
         bulk(self.client, actions, refresh=refresh)
@@ -84,8 +89,8 @@ class BaseRepository(Generic[M]):
     def delete_by_query(self, body: dict[str, Any]):
         self.client.delete_by_query(index=self.index, body=body)
 
-    def _get_dict_from_object(self, object: M) -> dict[str, Any]:
-        return object.dict(by_alias=True)
+    def _get_dict_from_object(self, object: M, **kwargs) -> dict[str, Any]:
+        return object.dict(by_alias=True, **kwargs)
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> M:
         if id is not None:

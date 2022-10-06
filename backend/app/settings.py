@@ -73,6 +73,8 @@ class Settings(BaseSettings):
     EXPECTATION_INDEX: str = "expectations"
     VALIDATION_INDEX: str = "validations"
     SUGGESTION_INDEX: str = "suggestions"
+    DESTINATION_INDEX: str = "destinations"
+    ACTION_INDEX: str = "actions"
     USER_INDEX: str = "user"
 
     TOKEN_URL: str = "/api/v1/token"

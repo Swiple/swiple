@@ -1,0 +1,14 @@
+{
+  "@type": "MessageCard",
+  "@context": "https://schema.org/extensions",
+  "summary": "{{ app_title }}",
+  "sections": [
+    {
+        "type": "TextBlock",
+        "activityTitle": "{{ app_title }}"
+    },
+    {
+      "text": "{{app_body}}"
+    }
+  ]
+}

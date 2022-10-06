@@ -8,7 +8,6 @@ from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
 from app.core.sample import GetSampleException, get_dataset_sample
 from app.core.users import current_active_user
 from app.models.dataset import BaseDataset, Dataset, DatasetCreate, DatasetUpdate, Sample
-from app.db.client import get_client
 from app.models.validation import Validation
 from app.repositories.base import NotFoundError
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
