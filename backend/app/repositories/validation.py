@@ -124,8 +124,8 @@ class ValidationRepository(BaseRepository[Validation]):
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Validation:
         return Validation.parse_obj(d)
 
-    def _get_dict_from_object(self, object: Validation) -> dict[str, Any]:
-        return object.dict()
+    def _get_dict_from_object(self, object: Validation, **kwargs) -> dict[str, Any]:
+        return object.dict(**kwargs)
 
 
 get_validation_repository = get_repository(ValidationRepository)
