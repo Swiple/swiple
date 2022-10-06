@@ -152,9 +152,9 @@ function DestinationModal({
   const buildValidationErrors = (errorList) => {
     let errorString = '';
     for (let i = 0; i < errorList.length; i += 1) {
-      const { message } = errorList[i];
-      if (message && !message.includes('unknown keyword')) {
-        errorString += `${message}\n`;
+      const { msg } = errorList[i];
+      if (msg && !msg.includes('unknown keyword')) {
+        errorString += `${msg}\n`;
       }
     }
     return errorString;
