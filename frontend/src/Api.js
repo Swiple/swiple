@@ -38,6 +38,12 @@ function errorHandler(error) {
   }
   // Something happened in setting up the request that triggered an Error
   console.log('Error', error.message);
+
+
+  const something = {a: "a", b: "b", c: "c"};
+  
+
+
   return null;
 }
 
