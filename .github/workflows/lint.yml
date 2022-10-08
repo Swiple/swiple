@@ -25,7 +25,7 @@ jobs:
 
       # ESLint and Prettier must be in `package.json`
       - name: Install Node.js dependencies
-        run: npm ci
+        run: npm install --prefix ./frontend/
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
@@ -34,4 +34,5 @@ jobs:
           prettier: true
           eslint_dir: frontend/
           prettier_dir: frontend/
-          eslint_args: src/*/**/*.{ts,tsx,js,jsx}' --quiet
+          neutral_check_on_warning: true
+          eslint_args: src/*/**/*.{ts,tsx,js,jsx}
