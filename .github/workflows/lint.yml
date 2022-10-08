@@ -37,4 +37,4 @@ jobs:
           eslint: true
           eslint_dir: frontend/
           neutral_check_on_warning: true
-          eslint_args: src/*/**/*.{ts,tsx,js,jsx} --quiet
+          eslint_args: 'src/*/**/*.{ts,tsx,js,jsx}' --config .eslintrc.yml --quiet
