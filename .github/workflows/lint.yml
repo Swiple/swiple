@@ -35,8 +35,6 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           eslint: true
-          prettier: true
           eslint_dir: frontend/
-          prettier_dir: frontend/
           neutral_check_on_warning: true
           eslint_args: src/*/**/*.{ts,tsx,js,jsx}
