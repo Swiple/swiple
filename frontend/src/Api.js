@@ -39,7 +39,6 @@ function errorHandler(error) {
   // Something happened in setting up the request that triggered an Error
   console.log('Error', error.message);
 
-
   return null;
 }
 
