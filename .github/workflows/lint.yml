@@ -33,4 +33,5 @@ jobs:
           eslint: true
           prettier: true
           eslint_dir: frontend/
+          prettier_dir: frontend/
           eslint_args: src/*/**/*.{ts,tsx,js,jsx}' --quiet
