@@ -1,9 +1,11 @@
-name: Linter
+name: Lint
+
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
   run-linters:
