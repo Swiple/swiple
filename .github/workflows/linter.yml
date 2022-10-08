@@ -1,43 +1,78 @@
-name: Linter
+#name: Linter
+#
+#on:
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+#
+################
+## Set the Job #
+################
+#jobs:
+#  build:
+#    # Name the Job
+#    name: Lint Code Base
+#    # Set the agent to run on
+#    runs-on: ubuntu-latest
+#
+#    ##################
+#    # Load all steps #
+#    ##################
+#    steps:
+#      ##########################
+#      # Checkout the code base #
+#      ##########################
+#      - name: Checkout Code
+#        uses: actions/checkout@v3
+#        with:
+#          # Full git history is needed to get a proper
+#          # list of changed files within `super-linter`
+#          fetch-depth: 0
+#
+#      ################################
+#      # Run Linter against code base #
+#      ################################
+#      - name: Lint frontend/**
+#        uses: github/super-linter@v4
+#        env:
+#          VALIDATE_ALL_CODEBASE: true
+##          JAVASCRIPT_ES_CONFIG_FILE: configs/linters/.eslintrc.yml
+#          DEFAULT_BRANCH: master
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          FILTER_REGEX_INCLUDE: /github/workspace/frontend/.*
+name: Lint
 
 on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
-###############
-# Set the Job #
-###############
 jobs:
-  build:
-    # Name the Job
-    name: Lint Code Base
-    # Set the agent to run on
+  run-linters:
+    name: Run linters
     runs-on: ubuntu-latest
 
-    ##################
-    # Load all steps #
-    ##################
     steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
-      - name: Checkout Code
-        uses: actions/checkout@v3
-        with:
-          # Full git history is needed to get a proper
-          # list of changed files within `super-linter`
-          fetch-depth: 0
+      - name: Check out Git repository
+        uses: actions/checkout@v2
 
-      ################################
-      # Run Linter against code base #
-      ################################
-      - name: Lint frontend/**
-        uses: github/super-linter@v4
-        env:
-          VALIDATE_ALL_CODEBASE: true
-#          JAVASCRIPT_ES_CONFIG_FILE: configs/linters/.eslintrc.yml
-          DEFAULT_BRANCH: master
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FILTER_REGEX_INCLUDE: /github/workspace/frontend/.*
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      # ESLint and Prettier must be in `package.json`
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          eslint: true
+          prettier: true
