@@ -40,10 +40,6 @@ function errorHandler(error) {
   console.log('Error', error.message);
 
 
-  const something = {a: "a", b: "b", c: "c"};
-  
-
-
   return null;
 }
 
