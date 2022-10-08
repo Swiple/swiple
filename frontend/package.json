@@ -41,7 +41,7 @@
     "start_docker_dev": "ESLINT_NO_DEV_ERRORS='true' NODE_ENV=development CHOKIDAR_USEPOLLING='true' PORT=3000 react-scripts start",
     "build": "NODE_ENV=production react-scripts build",
     "serve": "serve -s build -l 3000",
-    "lint": "eslint 'src/*/**/*.{ts,tsx,js,jsx}' --quiet --fix",
+    "lint": "eslint 'src/*/**/*.{ts,tsx,js,jsx}' --quiet . --fix",
     "test": "react-scripts test"
   },
   "browserslist": {
