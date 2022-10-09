@@ -2,7 +2,7 @@ FROM python:3.9
 
 WORKDIR /code
 
-COPY poetry.lock pyproject.toml  /code/
+COPY poetry.lock pyproject.toml /code/
 
 RUN pip install --no-cache-dir --upgrade pip poetry
 
