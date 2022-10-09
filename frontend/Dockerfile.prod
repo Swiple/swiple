@@ -5,7 +5,7 @@ FROM node:16-alpine
 WORKDIR /app
 
 # Copies package.json and package-lock.json to Docker environment
-COPY package*.json /app
+COPY package*.json /app/
 
 # Installs all node packages
 RUN npm install
