@@ -75,11 +75,11 @@ python-versions = "*"
 
 [[package]]
 name = "apprise"
-version = "1.0.0"
+version = "1.1.0"
 description = "Push Notifications that work with just about every platform!"
 category = "main"
 optional = false
-python-versions = ">=2.7"
+python-versions = ">=3.6"
 develop = false
 
 [package.dependencies]
@@ -88,13 +88,12 @@ markdown = "*"
 PyYAML = "*"
 requests = "*"
 requests-oauthlib = "*"
-six = "*"
 
 [package.source]
 type = "git"
 url = "https://github.com/caronc/apprise.git"
 reference = "master"
-resolved_reference = "e9f040a2d0e2eb8714a08f1859afee6d4cd90d5f"
+resolved_reference = "41b4ddb942b56f306b8f52078e4ba83f58c66650"
 
 [[package]]
 name = "APScheduler"
@@ -900,7 +899,7 @@ grpc = ["grpcio (>=1.0.0,<2.0.0dev)"]
 
 [[package]]
 name = "great-expectations"
-version = "0.15.24"
+version = "0.15.21"
 description = "Always know what to expect from your data."
 category = "main"
 optional = false
@@ -925,7 +924,7 @@ jinja2 = ">=2.10"
 jsonpatch = ">=1.22"
 jsonschema = ">=2.5.1"
 makefun = ">=1.7.0,<2"
-marshmallow = ">=3.7.1,<4.0.0"
+marshmallow = ">=3.7.1,<3.9.0"
 mistune = ">=0.8.4"
 nbformat = ">=5.0"
 notebook = ">=6.4.10"
@@ -953,7 +952,7 @@ aws_secrets = ["boto3 (==1.17.106)"]
 azure = ["azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)"]
 azure_secrets = ["azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)"]
 bigquery = ["gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-bigquery (>=1.3.0)"]
-dev = ["PyHive (>=0.6.5)", "PyMySQL (>=0.9.3,<0.10)", "azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)", "black (==22.3.0)", "boto3 (==1.17.106)", "feather-format (>=0.4.1)", "flake8 (==5.0.4)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "invoke (>=1.7.1)", "isort (==5.10.1)", "jupyter", "jupyterlab", "matplotlib", "mock-alchemy (>=0.2.5)", "moto (>=1.3.7,<2.0.0)", "mypy (>=0.971)", "nbconvert (>=5)", "openpyxl (>=3.0.7)", "pre-commit (>=2.6.0)", "psycopg2-binary (>=2.7.6)", "pyarrow", "pyathena (>=1.11)", "pyfakefs (>=4.5.1)", "pyodbc (>=4.0.30)", "pypd (==1.1.0)", "pyspark (>=2.3.2)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "pytest-cov (>=2.8.1)", "pytest-icdiff (>=0.6)", "pytest-mock (>=3.8.2)", "pytest-order (>=0.9.5)", "pytest-random-order (>=1.0.4)", "pytest-timeout (>=2.1.0)", "pyupgrade (==2.7.2)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "scikit-learn", "snapshottest (==0.6.0)", "snowflake-connector-python (>=2.5.0)", "snowflake-sqlalchemy (>=1.2.3)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-bigquery (>=1.3.0)", "sqlalchemy-dremio (>=1.2.1)", "sqlalchemy-redshift (>=0.7.7)", "teradatasqlalchemy (==17.0.0.1)", "thrift (>=0.16.0)", "thrift-sasl (>=0.4.3)", "trino (>=0.310.0)", "xlrd (>=1.1.0,<2.0.0)"]
+dev = ["PyHive (>=0.6.5)", "PyMySQL (>=0.9.3,<0.10)", "azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)", "black (==22.3.0)", "boto3 (==1.17.106)", "feather-format (>=0.4.1)", "flake8 (==5.0.4)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "invoke (>=1.7.1)", "isort (==5.10.1)", "mock-alchemy (>=0.2.5)", "moto (>=1.3.7,<2.0.0)", "mypy (>=0.971)", "nbconvert (>=5)", "openpyxl (>=3.0.7)", "pre-commit (>=2.6.0)", "psycopg2-binary (>=2.7.6)", "pyarrow", "pyathena (>=1.11)", "pyfakefs (>=4.5.1)", "pyodbc (>=4.0.30)", "pypd (==1.1.0)", "pyspark (>=2.3.2)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "pytest-cov (>=2.8.1)", "pytest-icdiff (>=0.6)", "pytest-mock (>=3.8.2)", "pytest-order (>=0.9.5)", "pytest-timeout (>=2.1.0)", "pyupgrade (==2.7.2)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "snowflake-connector-python (>=2.5.0)", "snowflake-sqlalchemy (>=1.2.3)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-bigquery (>=1.3.0)", "sqlalchemy-dremio (>=1.2.1)", "sqlalchemy-redshift (>=0.7.7)", "teradatasqlalchemy (==17.0.0.1)", "thrift (>=0.16.0)", "thrift-sasl (>=0.4.3)", "trino (>=0.310.0)", "xlrd (>=1.1.0,<2.0.0)"]
 dremio = ["pyarrow", "pyodbc (>=4.0.30)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-dremio (>=1.2.1)"]
 excel = ["openpyxl (>=3.0.7)", "xlrd (>=1.1.0,<2.0.0)"]
 gcp = ["gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-bigquery (>=1.3.0)"]
@@ -968,8 +967,7 @@ snowflake = ["snowflake-connector-python (>=2.5.0)", "snowflake-sqlalchemy (>=1.
 spark = ["pyspark (>=2.3.2)"]
 sqlalchemy = ["sqlalchemy (>=1.3.18,<2.0.0)"]
 teradata = ["sqlalchemy (>=1.3.18,<2.0.0)", "teradatasqlalchemy (==17.0.0.1)"]
-test = ["black (==22.3.0)", "boto3 (==1.17.106)", "flake8 (==5.0.4)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "invoke (>=1.7.1)", "isort (==5.10.1)", "mock-alchemy (>=0.2.5)", "moto (>=1.3.7,<2.0.0)", "mypy (>=0.971)", "nbconvert (>=5)", "pre-commit (>=2.6.0)", "pyfakefs (>=4.5.1)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "pytest-cov (>=2.8.1)", "pytest-icdiff (>=0.6)", "pytest-mock (>=3.8.2)", "pytest-order (>=0.9.5)", "pytest-random-order (>=1.0.4)", "pytest-timeout (>=2.1.0)", "pyupgrade (==2.7.2)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "sqlalchemy (>=1.3.18,<2.0.0)"]
-tools = ["jupyter", "jupyterlab", "matplotlib", "scikit-learn"]
+test = ["black (==22.3.0)", "boto3 (==1.17.106)", "flake8 (==5.0.4)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "invoke (>=1.7.1)", "isort (==5.10.1)", "mock-alchemy (>=0.2.5)", "moto (>=1.3.7,<2.0.0)", "mypy (>=0.971)", "nbconvert (>=5)", "pre-commit (>=2.6.0)", "pyfakefs (>=4.5.1)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "pytest-cov (>=2.8.1)", "pytest-icdiff (>=0.6)", "pytest-mock (>=3.8.2)", "pytest-order (>=0.9.5)", "pytest-timeout (>=2.1.0)", "pyupgrade (==2.7.2)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 trino = ["sqlalchemy (>=1.3.18,<2.0.0)", "trino (>=0.310.0)"]
 
 [[package]]
@@ -1367,19 +1365,16 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "marshmallow"
-version = "3.18.0"
+version = "3.8.0"
 description = "A lightweight library for converting complex datatypes to and from native Python datatypes."
 category = "main"
 optional = false
-python-versions = ">=3.7"
-
-[package.dependencies]
-packaging = ">=17.0"
+python-versions = ">=3.5"
 
 [package.extras]
-dev = ["flake8 (==5.0.4)", "flake8-bugbear (==22.9.11)", "mypy (==0.971)", "pre-commit (>=2.4,<3.0)", "pytest", "pytz", "simplejson", "tox"]
-docs = ["alabaster (==0.7.12)", "autodocsumm (==0.2.9)", "sphinx (==5.1.1)", "sphinx-issues (==3.0.1)", "sphinx-version-warning (==1.1.2)"]
-lint = ["flake8 (==5.0.4)", "flake8-bugbear (==22.9.11)", "mypy (==0.971)", "pre-commit (>=2.4,<3.0)"]
+dev = ["flake8 (==3.8.3)", "flake8-bugbear (==20.1.4)", "mypy (==0.782)", "pre-commit (>=2.4,<3.0)", "pytest", "pytz", "simplejson", "tox"]
+docs = ["alabaster (==0.7.12)", "autodocsumm (==0.2.0)", "sphinx (==3.2.1)", "sphinx-issues (==1.2.0)", "sphinx-version-warning (==1.1.2)"]
+lint = ["flake8 (==3.8.3)", "flake8-bugbear (==20.1.4)", "mypy (==0.782)", "pre-commit (>=2.4,<3.0)"]
 tests = ["pytest", "pytz", "simplejson"]
 
 [[package]]
@@ -2616,7 +2611,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9.0,<3.10"
-content-hash = "093cb6c66b47265771ac4d9d3e756f54d7f6d7a734f2e4efca464d230bafff21"
+content-hash = "d53d84ea9c63198d468f0da7518f5c41f408d300cccc07310d95755507bbcf9d"
 
 [metadata.files]
 aiohttp = [
@@ -3189,8 +3184,8 @@ googleapis-common-protos = [
     {file = "googleapis_common_protos-1.56.4-py2.py3-none-any.whl", hash = "sha256:8eb2cbc91b69feaf23e32452a7ae60e791e09967d81d4fcc7fc388182d1bd394"},
 ]
 great-expectations = [
-    {file = "great_expectations-0.15.24-py3-none-any.whl", hash = "sha256:b44860ff2d1031dd861b6f2bd26d66bb31dd0293e4e3d7a258a6113c4d4521ce"},
-    {file = "great_expectations-0.15.24.tar.gz", hash = "sha256:1953036060759a1e2da9924c29a4c30f2de2a7f8444656af1a16a5c0757910a7"},
+    {file = "great_expectations-0.15.21-py3-none-any.whl", hash = "sha256:4e8a45bf26783a771a64360751cc99a5c16445367ef391c8da9f22ce10138fcc"},
+    {file = "great_expectations-0.15.21.tar.gz", hash = "sha256:0d0c3e5afe190d4975cf21f2daa5e724ae52d194649b1d7dc160bd0d933fb5c3"},
 ]
 greenlet = [
     {file = "greenlet-1.1.3-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:8c287ae7ac921dfde88b1c125bd9590b7ec3c900c2d3db5197f1286e144e712b"},
@@ -3511,8 +3506,8 @@ MarkupSafe = [
     {file = "MarkupSafe-2.1.1.tar.gz", hash = "sha256:7f91197cc9e48f989d12e4e6fbc46495c446636dfc81b9ccf50bb0ec74b91d4b"},
 ]
 marshmallow = [
-    {file = "marshmallow-3.18.0-py3-none-any.whl", hash = "sha256:35e02a3a06899c9119b785c12a22f4cda361745d66a71ab691fd7610202ae104"},
-    {file = "marshmallow-3.18.0.tar.gz", hash = "sha256:6804c16114f7fce1f5b4dadc31f4674af23317fcc7f075da21e35c1a35d781f7"},
+    {file = "marshmallow-3.8.0-py2.py3-none-any.whl", hash = "sha256:2272273505f1644580fbc66c6b220cc78f893eb31f1ecde2af98ad28011e9811"},
+    {file = "marshmallow-3.8.0.tar.gz", hash = "sha256:47911dd7c641a27160f0df5fd0fe94667160ffe97f70a42c3cc18388d86098cc"},
 ]
 matplotlib-inline = [
     {file = "matplotlib-inline-0.1.6.tar.gz", hash = "sha256:f887e5f10ba98e8d2b150ddcf4702c1e5f8b3a20005eb0f74bfdbd360ee6f304"},
