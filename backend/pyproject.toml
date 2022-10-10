@@ -28,6 +28,17 @@ pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 
 [tool.poetry.dev-dependencies]
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+asgi-lifespan = "*"
+httpx = "*"
+black = "*"
+openmock = "*"
+pytest-cov = "*"
+pytest-mock = "*"
+
 [tool.poetry.group.postgres]
 optional = true
 [tool.poetry.group.postgres.dependencies]
@@ -78,3 +89,14 @@ great-expectations = {extras = ["gcp"], version = "0.15.21"}
 [build-system]
 requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--cov app/ --cov-report=term-missing"
+markers = [
+    "user",
+]
+# Ignore warnings from some third-party dependencies
+filterwarnings = [
+    "ignore::DeprecationWarning:great_expectations.*:",
+    "ignore::DeprecationWarning:marshmallow.*:"
+]
