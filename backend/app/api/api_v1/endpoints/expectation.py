@@ -5,13 +5,11 @@ from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
 from app.models.expectation import ExpectationInput, Expectation
 from app.core.expectations import supported_unsupported_expectations
 from app import utils
-from app.db.client import client
 from app.models.validation import Validation
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
 from app.repositories.validation import ValidationRepository, get_validation_repository
-from app.settings import settings
 from app.utils import json_schema_to_single_doc
 from fastapi.param_functions import Depends
 from app.core.users import current_active_user
@@ -125,6 +123,7 @@ def update_expectation(
     expectation_id: str,
     expectation_update: Expectation = Depends(get_expectation_payload),
     repository: ExpectationRepository = Depends(get_expectation_repository),
+    validation_repository: ValidationRepository = Depends(get_validation_repository),
 ):
     expectation = get_by_key_or_404(expectation_id, repository)
     update_dict = expectation_update.dict(exclude={"key"})
@@ -152,10 +151,7 @@ def update_expectation(
         new_expectation = repository.create(expectation_update.key, expectation_update)
 
         repository.delete(expectation_id)
-        client.delete_by_query(
-            index=settings.VALIDATION_INDEX,
-            body={"query": {"match": {"expectation_id": expectation_id}}}
-        )
+        validation_repository.delete_by_expectation(expectation_id)
         return new_expectation
 
     return repository.update(expectation_id, expectation, update_dict)
@@ -165,11 +161,9 @@ def update_expectation(
 def delete_expectation(
     expectation_id: str,
     repository: ExpectationRepository = Depends(get_expectation_repository),
+    validation_repository: ValidationRepository = Depends(get_validation_repository),
 ):
-    client.delete_by_query(
-        index=settings.VALIDATION_INDEX,
-        body={"query": {"match": {"expectation_id": expectation_id}}}
-    )
+    validation_repository.delete_by_expectation(expectation_id)
     delete_by_key_or_404(expectation_id, repository)
     return JSONResponse(
         status_code=status.HTTP_200_OK,

@@ -4,17 +4,16 @@ from app.db.client import client
 import pathlib
 
 
-def create_indicies(path=f"{pathlib.Path(__file__).parent.resolve()}/../opensearch.yaml"):
+def create_indicies(
+    client, path=f"{pathlib.Path(__file__).parent.resolve()}/../opensearch.yaml"
+):
     indicies = yaml.load(open(path), Loader=yaml.SafeLoader)
     print(indicies)
 
     for value in indicies.values():
         try:
             response = client.indices.create(
-                index=value["index_name"],
-                body={
-                    "mappings": value["mappings"]
-                }
+                index=value["index_name"], body={"mappings": value["mappings"]}
             )
             print(f"Created index {value['index_name']}")
         except opensearchpy.exceptions.RequestError as ex:
@@ -24,4 +23,5 @@ def create_indicies(path=f"{pathlib.Path(__file__).parent.resolve()}/../opensear
                 raise ex
 
 
-create_indicies()
+if __name__ == "__main__":
+    create_indicies(client)

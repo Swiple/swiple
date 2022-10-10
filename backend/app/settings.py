@@ -80,6 +80,7 @@ class Settings(BaseSettings):
     TOKEN_URL: str = "/api/v1/token"
 
     class Config:
+        env_file = ".env"
         env_nested_delimiter = "__"
 
     @root_validator

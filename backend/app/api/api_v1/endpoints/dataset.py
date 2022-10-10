@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
 from app.core.sample import GetSampleException, get_dataset_sample
 from app.core.users import current_active_user
+from app.db.client import get_client
 from app.models.dataset import BaseDataset, Dataset, DatasetCreate, DatasetUpdate, Sample
 from app.models.validation import Validation
 from app.repositories.base import NotFoundError
@@ -16,10 +17,8 @@ from app.repositories.expectation import ExpectationRepository, get_expectation_
 from app.repositories.validation import get_validation_repository, ValidationRepository
 from app.settings import settings
 from app.models.users import UserDB
-from app.core.runner import Runner, run_dataset_validation
-from app.core.expectations import supported_unsupported_expectations
-from app import constants as c
-from opensearchpy import RequestError
+from app.core.runner import create_dataset_suggestions, run_dataset_validation
+from opensearchpy import OpenSearch, RequestError
 import requests
 
 
@@ -150,7 +149,11 @@ def delete_dataset(
         expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
         validation_repository: ValidationRepository = Depends(get_validation_repository)
 ):
+    get_by_key_or_404(key, repository)
+
     validation_repository.delete_by_dataset(dataset_id=key)
+
+    # TODO: use an internal function for this rather than making an HTTP request
     requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"dataset_id": key},
@@ -203,9 +206,9 @@ def update_sample(
 
 
 @router.post("/{key}/validate", response_model=Validation)
-def validate_dataset(key: str):
+def validate_dataset(key: str, client: OpenSearch = Depends(get_client)):
     try:
-        validation: Validation = run_dataset_validation(key)
+        validation: Validation = run_dataset_validation(key, client)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
 
@@ -215,35 +218,13 @@ def validate_dataset(key: str):
 @router.post("/{key}/suggest")
 def create_suggestions(
     key: str,
+    client: OpenSearch = Depends(get_client),
     repository: DatasetRepository = Depends(get_dataset_repository),
-    datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
     expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
     dataset = get_by_key_or_404(key, repository)
-    datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
 
-    identifiers = {
-        "datasource_id": datasource.key,
-        "dataset_id": dataset.key,
-    }
-
-    meta = {
-        **datasource.expectation_meta(),
-        "dataset_name": dataset.dataset_name,
-    }
-
-    excluded_expectations = supported_unsupported_expectations()["unsupported_expectations"]
-    excluded_expectations.append(c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN)
-
-    results = Runner(
-        datasource=datasource,
-        batch=dataset,
-        meta=meta,
-        identifiers=identifiers,
-        datasource_id=dataset.datasource_id,
-        dataset_id=dataset.key,
-        excluded_expectations=excluded_expectations,
-    ).profile()
+    results = create_dataset_suggestions(key, client)
     expectations = [expectation_repository._get_object_from_dict(e) for e in results]
 
     expectation_repository.delete_by_filter(dataset_id=dataset.key, suggested=True, enabled=False)

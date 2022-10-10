@@ -39,6 +39,7 @@ class ValidationRepository(BaseRepository[Validation]):
         self,
         dataset_id: str = None,
         datasource_id: str = None,
+        expectation_id: str = None
     ):
         query = {"query": {"bool": {"must": []}}}
 
@@ -46,6 +47,8 @@ class ValidationRepository(BaseRepository[Validation]):
             query["query"]["bool"]["must"].append({"match": {"meta.dataset_id.keyword": dataset_id}})
         if datasource_id is not None:
             query["query"]["bool"]["must"].append({"match": {"meta.datasource_id.keyword": datasource_id}})
+        if expectation_id is not None:
+            query["query"]["bool"]["must"].append({"match": {"expectation_id": expectation_id}})
 
         return super().delete_by_query(query)
 
@@ -54,6 +57,9 @@ class ValidationRepository(BaseRepository[Validation]):
 
     def delete_by_datasource(self, datasource_id: str):
         return self.delete_by_filter(datasource_id=datasource_id)
+
+    def delete_by_expectation(self, expectation_id: str):
+        return self.delete_by_filter(expectation_id=expectation_id)
 
     def statistics(self, dataset_id):
         query = {
@@ -118,8 +124,8 @@ class ValidationRepository(BaseRepository[Validation]):
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> Validation:
         return Validation.parse_obj(d)
 
-    def _get_dict_from_object(self, object: Validation) -> dict[str, Any]:
-        return object.dict()
+    def _get_dict_from_object(self, object: Validation, **kwargs) -> dict[str, Any]:
+        return object.dict(**kwargs)
 
 
 get_validation_repository = get_repository(ValidationRepository)
