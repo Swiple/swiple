@@ -24,4 +24,4 @@ runs:
         ADMIN_EMAIL: admin@email.com
         ADMIN_PASSWORD: admin
       run: |
-        poetry run pytest
+        poetry run pytest --cov app/ --cov-report=xml

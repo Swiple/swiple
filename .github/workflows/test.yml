@@ -13,3 +13,9 @@ jobs:
         uses: actions/checkout@v3
       - name: Run tests
         uses: ./.github/actions/test-backend
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/coverage.xml
+          fail_ci_if_error: true
+          verbose: true
