@@ -1,12 +1,11 @@
-name: review
-#on:
-#  push:
-#    branches:
-#      - main
-#  pull_request:
-#    branches: [ main ]
-
-on: workflow_dispatch
+name: Is First Interaction?
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 jobs:
 
   first-interaction:
