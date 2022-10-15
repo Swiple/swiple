@@ -12,15 +12,12 @@ from great_expectations.profile.user_configurable_profiler import UserConfigurab
 from opensearchpy import OpenSearch
 from pandas import isnull
 
-# TODO, add some "runner_max_batches" to datasource to control the
-# max number of batches run at any one time.
+
 from app import constants as c
 from app import utils
-from app.core.expectations import supported_unsupported_expectations
-from pandas import isnull
-
-from app import utils
 from app.core.actions import action_dispatcher
+from app.core.expectations import supported_unsupported_expectations
+from app.db.client import client as os_client
 from app.models.datasource import Engine
 from app.models.validation import Validation
 from app.repositories.dataset import DatasetRepository
@@ -249,7 +246,7 @@ class Runner:
         return action_status
 
 
-def run_dataset_validation(dataset_id: str, client: OpenSearch):
+def run_dataset_validation(dataset_id: str, client: OpenSearch = os_client):
     dataset = DatasetRepository(client).get(dataset_id)
     datasource = DatasourceRepository(client).get(dataset.datasource_id)
     expectations = ExpectationRepository(client).query_by_filter(dataset_id=dataset.key, enabled=True)
@@ -288,7 +285,7 @@ def run_dataset_validation(dataset_id: str, client: OpenSearch):
     return validation
 
 
-def create_dataset_suggestions(dataset_id: str, client: OpenSearch):
+def create_dataset_suggestions(dataset_id: str, client: OpenSearch = os_client):
     dataset = DatasetRepository(client).get(dataset_id)
     datasource = DatasourceRepository(client).get(dataset.datasource_id)
     
