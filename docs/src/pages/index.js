@@ -19,12 +19,12 @@ function HomepageHeader() {
         <div>
           <Link
             className="button button--secondary button--lg margin-right--md"
-            to="/docs/installation/quick-start">
+            to="/docs/getting-started/quick-start">
             Get Started in 4 Commands 🚀
           </Link>
           <Link
             className={clsx("button button--secondary button--lg", styles.buttonStar)}
-            to="/docs/installation/quick-start">
+            href="https://github.com/Swiple/swiple">
             Give Swiple a Star ⭐️
           </Link>
         </div>
