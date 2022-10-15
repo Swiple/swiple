@@ -27,7 +27,7 @@ slug: ./email
 #### Step 6. Fill in the details for the destination as shown below and then click `Create`.
 :::tip
 Swiple supports AWS Secret Manager, GCP Secret Manager, and Azure Key Vault. Instead of using a raw secret, replace it with the path/name of the secret.
-For more information, see [How to use AWS Secret Manager, GCP Secret Manager, & Azure Key Vault](/docs/configuration/secrets-manager)
+For more information, see [How to use AWS Secret Manager, GCP Secret Manager, & Azure Key Vault](/docs/how-to-guides/secrets-manager)
 :::
 ![](/img/actions/email/step-5.png)
 
