@@ -46,7 +46,7 @@ With automated data analysis and profiling, scheduling and alerting, teams can r
 * OpsGenie
 * PagerDuty
 
-## Get started in 4 commands
+### Get started in 4 commands
 * #### [Quickstart With Docker Compose](https://swiple.io/docs/getting-started/quick-start)
 * #### [Start Developing Locally](https://swiple.io/docs/getting-started/start-developing)
 
