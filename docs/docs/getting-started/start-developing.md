@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Start Developing
+# Start Developing Locally
 
 
 ### 1. Install Docker Engine and Docker Compose
@@ -112,14 +112,18 @@ Changes made to code will trigger a reload of the API or UI.
 
 
 ### 7. Sign in to Swiple at [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
-Sign in with the following credentials:
-- **Username**: admin@email.com
-- **Password**: admin
+![](/img/login.png)
+
+Nice work! 👏 😎
 
 :::note Note
-`ADMIN_EMAIL` and `ADMIN_PASSWORD` can be set in `docker/.env` 
-:::
+`ADMIN_EMAIL` and `ADMIN_PASSWORD` can be set in `docker/.env`
 
-:::note Note
 To avoid authentication issues during local development, `AUTH_COOKIE_SECURE` is set to `False` in your `docker/.env`.
 :::
+
+<br/>
+
+### Good next step:
+1. [Tutorials > Start monitoring your data](../tutorials/start-monitoring-your-data)
+

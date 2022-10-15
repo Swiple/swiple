@@ -5,7 +5,9 @@ import {
 import {
   Button, Divider, Form, Input, message, Row,
 } from 'antd';
-import { GithubOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  GithubOutlined, LockOutlined, UserOutlined, EyeTwoTone, EyeInvisibleOutlined,
+} from '@ant-design/icons';
 import {
   Logo,
   GoogleIcon,
@@ -173,10 +175,11 @@ const Login = withRouter(() => {
           name="password"
           rules={[{ required: true, message: 'Please input your Password!' }]}
         >
-          <Input
+          <Input.Password
             prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
             placeholder="Password"
+            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
           />
         </Form.Item>
         <Form.Item>

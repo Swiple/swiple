@@ -1,12 +1,7 @@
-![](./docs/static/img/logo-slogan.svg)
-
-
-
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Swiple/swiple/graphs/commit-activity)
-[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
-[![Slack](https://img.shields.io/badge/Slack-Join%20our%20community-brightgreen?style=flat&logo=slack)](https://join.slack.com/t/swiple/shared_invite/zt-1cssnt7k0-51zMQENDhFiDMW2k1jA75g)
-
-
+---
+sidebar_position: 1
+title: Introduction
+---
 # Welcome
 
 Welcome to Swiple! 🚀
@@ -27,8 +22,16 @@ With automated data analysis and profiling, scheduling and alerting, teams can r
 
 ### Supported Databases
 
-![](./docs/static/img/supported-engines-dark.svg#gh-dark-mode-only)
-![](./docs/static/img/supported-engines-light.svg#gh-light-mode-only)
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+<ThemedImage
+  alt="Docusaurus themed image"
+  sources={{
+    light: useBaseUrl('/img/supported-engines-light.svg'),
+    dark: useBaseUrl('/img/supported-engines-dark.svg'),
+  }}
+/>
 
 
 ### Authentication
@@ -47,8 +50,8 @@ With automated data analysis and profiling, scheduling and alerting, teams can r
 * PagerDuty
 
 ## Get started in 4 commands
-* #### [Quickstart With Docker Compose](https://swiple.io/docs/getting-started/quick-start)
-* #### [Start Developing Locally](https://swiple.io/docs/getting-started/start-developing)
+* #### [Quickstart With Docker Compose](getting-started/quick-start)
+* #### [Start Developing Locally](getting-started/start-developing)
 
-## Licensing
-Source code in this repository is covered by the Elastic License 2.0.
+
+

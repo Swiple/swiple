@@ -1,5 +1,6 @@
 ---
-sidebar_position: 1
+sidebar_position: 5
+title: How to generate a SECRET_KEY
 ---
 
 # How to Update SECRET_KEY

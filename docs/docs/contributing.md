@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Contributing
@@ -17,7 +17,7 @@ We want to make your experience as great as possible. Please follow these steps 
 * Small changes such as documentation changes can be made [directly through GitHub](https://github.com/Swiple/swiple/blob/main/docs/docs/contributing.md).
 
 #### 3. For larger changes, set up your development environment
-* Follow the steps here [set up your development environment](./installation/start-developing).
+* Follow the steps here [set up your development environment](getting-started/start-developing).
 
 
 #### 4. How to find an issue to work on?
