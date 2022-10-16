@@ -40,6 +40,6 @@ jobs:
 
       - name: Sync Website with S3
         run: |
-          aws s3 sync ./docs/build/ s3://${{ secrets.SWIPLE_S3_BUCKET }}/
+          aws s3 sync ./docs/build/ s3://${{ secrets.SWIPLE_S3_BUCKET }}/ --delete
           aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_DISTRIBUTION_ID}} --paths "/*"
           aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_DISTRIBUTION_ID_2}} --paths "/*"
