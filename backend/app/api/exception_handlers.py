@@ -1,4 +1,9 @@
-from app.core.exceptions import SecretsModuleNotFoundError, SecretsKeyError, SecretClientError
+from app.core.exceptions import (
+    SecretsModuleNotFoundError,
+    SecretsKeyError,
+    SecretClientError,
+    NoCredentialsError
+)
 from fastapi.responses import JSONResponse
 from fastapi import FastAPI, Request, status
 
@@ -30,7 +35,17 @@ async def secret_client_exception_handler(request: Request, exc: SecretClientErr
     )
 
 
+async def no_credentials_exception_handler(request: Request, exc: NoCredentialsError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "message": f"{exc.__str__()}. Swiple has not been given the permissions needed to access secrets."
+        },
+    )
+
+
 def add(app: FastAPI):
     app.add_exception_handler(SecretsModuleNotFoundError, secrets_import_exception_handler)
     app.add_exception_handler(SecretsKeyError, secrets_key_exception_handler)
     app.add_exception_handler(SecretClientError, secret_client_exception_handler)
+    app.add_exception_handler(NoCredentialsError, no_credentials_exception_handler)

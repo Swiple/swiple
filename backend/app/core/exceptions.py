@@ -16,3 +16,8 @@ class SecretsKeyError(SecretsError):
 
 class SecretClientError(SecretsError):
     pass
+
+
+class NoCredentialsError(SwipleError):
+    """No credentials could be found."""
+    pass
