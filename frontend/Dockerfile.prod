@@ -1,26 +1,31 @@
-# pull official base image
-FROM node:16-alpine
+# Pull official base image
+FROM node:16-alpine as build
 
-# set working directory
+# Set working directory
 WORKDIR /app
 
 # Copies package.json and package-lock.json to Docker environment
 COPY package*.json /app/
 
-# Installs all node packages
-RUN npm install
+# Install node packages
+RUN npm ci
 
 # Copies everything over to Docker environment
-COPY . /app
+COPY . /app/
 
 # Build for production.
 RUN npm run build --production
 
-# Install `serve` to run the application.
-RUN npm install -g serve
+FROM nginx:1.22-alpine as prod
+
+# Copy production build directory
+COPY --from=build /app/build/ /usr/share/nginx/html
+
+# Set default nginx.conf
+COPY --from=build /app/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Port used by the application
 EXPOSE 3000
 
 # Run application
-CMD serve -s build
+CMD ["nginx", "-g", "daemon off;"]

@@ -48,7 +48,8 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
+      description="Swiple is an automated data monitoring platform that helps analytics and data engineering teams seamlessly monitor the quality of their data.
+With automated data analysis and profiling, scheduling and alerting, teams can resolve data quality issues before they impact mission critical resources."
     >
       <HomepageHeader />
       <main>

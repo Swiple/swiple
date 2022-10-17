@@ -1,6 +1,9 @@
 from app.core import exceptions
 from app.settings import settings
-import botocore.exceptions
+try:
+    import botocore.exceptions
+except ImportError:
+    botocore = None
 from cryptography.fernet import Fernet
 from great_expectations.data_context import util
 
@@ -23,4 +26,6 @@ def substitute_value_from_secret_store(value: str):
         raise exceptions.SecretsKeyError(e.__str__())
     except botocore.exceptions.ClientError as e:
         raise exceptions.SecretClientError(e)
+    except botocore.exceptions.NoCredentialsError as e:
+        raise exceptions.NoCredentialsError(e)
     return value
