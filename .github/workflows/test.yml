@@ -1,8 +1,12 @@
 name: Run tests
 
 on:
-  push:
   pull_request:
+    branches: [ "main" ]
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: true
 
 jobs:
   test-backend:
