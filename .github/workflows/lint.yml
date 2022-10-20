@@ -1,12 +1,11 @@
 name: Lint
 
-
 on:
   # Called from "deployment-workflow"
   workflow_call:
-  pull_request:
-    branches:
-      - main
+#  pull_request:
+#    branches:
+#      - main
 
 permissions:
   checks: write
