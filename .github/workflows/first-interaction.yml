@@ -1,8 +1,5 @@
 name: Is First Interaction?
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
