@@ -3,16 +3,14 @@ name: Deployment Workflow
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - frontend/**
-      - backend/**
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - frontend/**
-      - backend/**
 
 jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+  test:
+    uses: ./.github/workflows/test.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   publish-docker-images:
     uses: ./.github/workflows/publish-docker-images.yml
     secrets:
