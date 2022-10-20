@@ -2,9 +2,8 @@ name: Lint
 
 
 on:
-  push:
-    branches:
-      - main
+  # Called from "deployment-workflow"
+  workflow_call:
   pull_request:
     branches:
       - main
@@ -30,6 +29,10 @@ jobs:
       # ESLint and Prettier must be in `package.json`
       - name: Install Node.js dependencies
         run: npm install --prefix ./frontend/
+
+      # To address this issue https://github.com/wearerequired/lint-action/issues/140
+      - name: Revert changes into the package-lock.json file
+        run: git checkout -- frontend/package-lock.json
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
