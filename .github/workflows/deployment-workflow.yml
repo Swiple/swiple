@@ -3,12 +3,18 @@ name: Deployment Workflow
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - frontend/**
+      - backend/**
   pull_request:
     branches: [ "main" ]
+    paths:
+      - frontend/**
+      - backend/**
 
 jobs:
   build-and-publish-docker-images:
-    uses: ./.github/workflows/build-and-publish-docker-images.yml
+    uses: ./.github/workflows/publish-docker-images.yml
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
