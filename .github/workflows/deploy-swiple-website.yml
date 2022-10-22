@@ -32,7 +32,7 @@ jobs:
       - run: npm run build --prefix ./docs/
 
       # Only run if we are on the main branch
-      - if: ${{ env.BRANCH_NAME }} != 'main'
+      - if: ${{ env.BRANCH_NAME }} == 'main'
         name: configureawscredentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -41,7 +41,7 @@ jobs:
           aws-region: ${{env.AWS_DEFAULT_REGION}}
 
       # Only run if we are on the main branch
-      - if: ${{ env.BRANCH_NAME }} != 'main'
+      - if: ${{ env.BRANCH_NAME }} == 'main'
         name: Deploy Swiple Website
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
@@ -51,7 +51,7 @@ jobs:
           parameter-overrides: "BucketName=${{ secrets.SWIPLE_S3_BUCKET }},HostedZoneId=${{ secrets.AWS_HOSTED_ZONE_ID }},DomainName=swiple.io"
 
       # Only run if we are on the main branch
-      - if: ${{ env.BRANCH_NAME }} != 'main'
+      - if: ${{ env.BRANCH_NAME }} == 'main'
         name: Sync Website with S3
         run: |
           aws s3 sync ./docs/build/ s3://${{ secrets.SWIPLE_S3_BUCKET }}/ --delete
