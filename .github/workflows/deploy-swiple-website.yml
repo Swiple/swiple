@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - docs/**
+      - .github/templates/**
 jobs:
   deploy_swiple_website:
     runs-on: ubuntu-latest
