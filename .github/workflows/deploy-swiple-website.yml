@@ -32,7 +32,6 @@ jobs:
       - run: npm run build --prefix ./docs/
 
       # Only proceed if we are on the main branch
-      - run: Current branch is '${{ env.BRANCH_NAME}}'
       - if: ${{ env.BRANCH_NAME }} != 'main'
         name: Exit if branch is not 'main'
         run: exit 0
