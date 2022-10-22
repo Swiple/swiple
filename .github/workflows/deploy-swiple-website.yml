@@ -1,11 +1,12 @@
 # https://www.automat-it.com/post/using-github-actions-with-aws-iam-roles
 name: Deploy Swiple Website
 on:
-  push:
+  pull_request:
     branches:
       - main
     paths:
       - docs/**
+      - .github/templates/**
 jobs:
   deploy_swiple_website:
     runs-on: ubuntu-latest
