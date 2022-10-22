@@ -14,7 +14,7 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   publish-docker-images:
-    needs: [  lint, test ]
+    needs: [ lint, test ]
     uses: ./.github/workflows/publish-docker-images.yml
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
