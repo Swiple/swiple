@@ -2,13 +2,18 @@ name: Deployment Workflow
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   lint:
     uses: ./.github/workflows/lint.yml
+    permissions:
+      checks: write
+      contents: write
   test:
     uses: ./.github/workflows/test.yml
     secrets:
@@ -19,3 +24,12 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  deploy-website:
+    needs: [ lint, test ]
+    uses: ./.github/workflows/deploy-swiple-website.yml
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      SWIPLE_S3_BUCKET: ${{ secrets.SWIPLE_S3_BUCKET }}
+      AWS_HOSTED_ZONE_ID: ${{ secrets.AWS_HOSTED_ZONE_ID }}
+      AWS_DISTRIBUTION_ID: ${{ secrets.AWS_DISTRIBUTION_ID }}
+      AWS_DISTRIBUTION_ID_2: ${{ secrets.AWS_DISTRIBUTION_ID_2 }}
