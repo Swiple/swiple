@@ -3,6 +3,8 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - docs/**
 jobs:
   build_swiple_website:
     runs-on: ubuntu-latest
