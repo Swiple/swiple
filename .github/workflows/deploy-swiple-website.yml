@@ -6,7 +6,9 @@ on:
       - main
     paths:
       - docs/**
-
+  pull_request:
+    branches:
+      - main
 jobs:
   build_swiple_website:
     if: github.event_name == 'pull_request'
