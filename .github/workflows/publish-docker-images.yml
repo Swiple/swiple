@@ -1,19 +1,7 @@
 name: Publish Docker Images
 
 on:
-  # Trigger on pull_request when either frontend or backend
-  # directories have been modified.
-#  pull_request:
-#    branches: [ "main" ]
-#    paths:
-#      - frontend/**
-#      - backend/**
-  # Trigger from "deployment-workflow". Will only run if frontend
-  # or backend directories have been modified.
   workflow_call:
-#    paths:
-#      - frontend/**
-#      - backend/**
     secrets:
       DOCKERHUB_USERNAME:
         required: true

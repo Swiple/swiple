@@ -1,8 +1,7 @@
 name: Run tests
 
 on:
-#  pull_request:
-#    branches: [ "main" ]
+  # Called from "PR Workflow" and "Production Workflow"
   workflow_call:
     secrets:
       CODECOV_TOKEN:
@@ -10,8 +9,8 @@ on:
 
 jobs:
   test-backend:
+    name: Backend
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3

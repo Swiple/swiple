@@ -1,20 +1,12 @@
 # https://www.automat-it.com/post/using-github-actions-with-aws-iam-roles
 name: Deploy Swiple Website
 on:
-  # Called from "deployment-workflow"
-  workflow_call:
-    secrets:
-      AWS_ACCOUNT_ID:
-        required: true
-      SWIPLE_S3_BUCKET:
-        required: true
-      AWS_HOSTED_ZONE_ID:
-        required: true
-      AWS_DISTRIBUTION_ID:
-        required: true
-      AWS_DISTRIBUTION_ID_2:
-        required: true
   push:
+    branches:
+      - main
+    paths:
+      - docs/**
+  pull_request:
     branches:
       - main
 #    paths:
@@ -28,6 +20,7 @@ jobs:
       contents: read
     env:
       AWS_DEFAULT_REGION: us-east-1
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -37,7 +30,10 @@ jobs:
           node-version: '16'
       - run: npm install --prefix ./docs/
       - run: npm run build --prefix ./docs/
-      - name: configureawscredentials
+
+        # Only proceed if we are on the main branch
+      - if: ${{ env.BRANCH_NAME }} == 'main'
+        name: configureawscredentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/swiple-website-github-actions
