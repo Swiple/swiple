@@ -1,13 +1,16 @@
 name: Run tests
 
 on:
-  push:
-  pull_request:
+  # Called from "PR Workflow" and "Production Workflow"
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: true
 
 jobs:
   test-backend:
+    name: Backend
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3

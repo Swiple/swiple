@@ -1,0 +1,29 @@
+name: Production Workflow
+
+on:
+  # Trigger on main branch when either frontend or backend
+  # directories have been modified.
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - frontend/**
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+    permissions:
+      checks: write
+      contents: write
+  test:
+    uses: ./.github/workflows/test.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  publish-docker-images:
+    needs: [ lint, test ]
+    uses: ./.github/workflows/publish-docker-images.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
