@@ -6,9 +6,9 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - backend/**
-      - frontend/**
+#    paths:
+#      - backend/**
+#      - frontend/**
 
 jobs:
   lint:
