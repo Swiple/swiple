@@ -32,9 +32,10 @@ jobs:
       - run: npm run build --prefix ./docs/
 
        # Only proceed if we are on the main branch
-      - if: ${{ env.BRANCH_NAME }} == 'main'
+      - if: ${{ env.BRANCH_NAME }} != 'main'
         name: configureawscredentials
         run: echo ${{ env.BRANCH_NAME }} ${{ github.head_ref }} ${{ github.ref_name }}
+        
 #        # Only proceed if we are on the main branch
 #      - if: ${{ env.BRANCH_NAME }} == 'main'
 #        name: configureawscredentials
