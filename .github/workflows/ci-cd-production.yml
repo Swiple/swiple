@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
     paths:
-      - docs/**
+      - backend/**
+      - frontend/**
 
 jobs:
   lint:
