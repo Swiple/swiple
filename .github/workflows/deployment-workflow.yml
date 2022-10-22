@@ -27,6 +27,9 @@ jobs:
   deploy-website:
     needs: [ lint, test ]
     uses: ./.github/workflows/deploy-swiple-website.yml
+    permissions:
+      id-token: write
+      contents: read
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       SWIPLE_S3_BUCKET: ${{ secrets.SWIPLE_S3_BUCKET }}
