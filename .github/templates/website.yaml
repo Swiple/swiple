@@ -147,6 +147,9 @@ Resources:
             QueryString: "false"
           TargetOriginId: !Sub "S3-${DomainName}"
           ViewerProtocolPolicy: redirect-to-https
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt AddIndexDotHtmlToRequestUrls.FunctionMetadata.FunctionARN
         Enabled: 'true'
         HttpVersion: http2
         Logging:
@@ -204,3 +207,28 @@ Resources:
           AcmCertificateArn: !ImportValue SwipleDomainCertificateArn
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2021
+
+  AddIndexDotHtmlToRequestUrls:
+    Type: AWS::CloudFront::Function
+    Properties:
+      AutoPublish: true
+      FunctionCode: |
+        function handler(event) {
+            var request = event.request;
+            var uri = request.uri;
+
+            // Check whether the URI is missing a file name.
+            if (uri.endsWith('/')) {
+                request.uri += 'index.html';
+            }
+            // Check whether the URI is missing a file extension.
+            else if (!uri.includes('.')) {
+                request.uri += '/index.html';
+            }
+
+            return request;
+        }
+      FunctionConfig:
+        Comment: Adds index.html to request urls
+        Runtime: cloudfront-js-1.0
+      Name: add-dot-html
