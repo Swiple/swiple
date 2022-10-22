@@ -31,18 +31,18 @@ jobs:
       - run: npm install --prefix ./docs/
       - run: npm run build --prefix ./docs/
 
-      # Only proceed if we are on the main branch
+      # Only run if we are on the main branch
       - if: ${{ env.BRANCH_NAME }} != 'main'
-        name: Exit if branch is not 'main'
-        run: exit 0
-
-      - name: configureawscredentials
+        name: configureawscredentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/swiple-website-github-actions
           role-session-name: rolesession
           aws-region: ${{env.AWS_DEFAULT_REGION}}
-      - name: Deploy Swiple Website
+
+      # Only run if we are on the main branch
+      - if: ${{ env.BRANCH_NAME }} != 'main'
+        name: Deploy Swiple Website
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: swiple-website
@@ -50,7 +50,9 @@ jobs:
           no-fail-on-empty-changeset: "1"
           parameter-overrides: "BucketName=${{ secrets.SWIPLE_S3_BUCKET }},HostedZoneId=${{ secrets.AWS_HOSTED_ZONE_ID }},DomainName=swiple.io"
 
-      - name: Sync Website with S3
+      # Only run if we are on the main branch
+      - if: ${{ env.BRANCH_NAME }} != 'main'
+        name: Sync Website with S3
         run: |
           aws s3 sync ./docs/build/ s3://${{ secrets.SWIPLE_S3_BUCKET }}/ --delete
           aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_DISTRIBUTION_ID}} --paths "/*"
