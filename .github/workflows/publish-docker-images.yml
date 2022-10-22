@@ -11,9 +11,9 @@ on:
   # Trigger from "deployment-workflow". Will only run if frontend
   # or backend directories have been modified.
   workflow_call:
-    paths:
-      - frontend/**
-      - backend/**
+#    paths:
+#      - frontend/**
+#      - backend/**
     secrets:
       DOCKERHUB_USERNAME:
         required: true
