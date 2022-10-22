@@ -1,6 +1,8 @@
 name: Production Workflow
 
 on:
+  # Trigger on main branch when either frontend or backend
+  # directories have been modified.
   push:
     branches:
       - main

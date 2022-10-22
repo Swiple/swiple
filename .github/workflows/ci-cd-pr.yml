@@ -1,7 +1,7 @@
 name: PR Workflow
 
 on:
-  # Trigger on pull_requests or main when either frontend or backend
+  # Trigger on pull_requests when either frontend or backend
   # directories have been modified.
   pull_request:
     branches:

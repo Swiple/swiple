@@ -1,4 +1,3 @@
-# https://www.automat-it.com/post/using-github-actions-with-aws-iam-roles
 name: Build Swiple Website
 on:
   pull_request:
