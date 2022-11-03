@@ -12,8 +12,10 @@ x-aws-creds: &aws-creds
 
 services:
   swiple_api:
-    env_file: docker/.env-non-dev
-    environment: *aws-creds
+    env_file: docker/.env
+    environment:
+      <<: *aws-creds
+      PRODUCTION: true
     container_name: swiple_api
     image: swiple/swiple-api:main
     restart: unless-stopped
@@ -24,10 +26,11 @@ services:
     depends_on: *swiple-depends-on
 
   scheduler:
-    env_file: docker/.env-non-dev
+    env_file: docker/.env
     environment:
       <<: *aws-creds
       APP: SCHEDULER
+      PRODUCTION: true
     container_name: scheduler
     image: swiple/swiple-api:main
     restart: unless-stopped
@@ -47,9 +50,11 @@ services:
     depends_on:
       - "swiple_api"
   setup:
-    env_file: docker/.env-non-dev
+    env_file: docker/.env
     container_name: setup
     image: swiple/swiple-api:main
+    environment:
+      PRODUCTION: true
     command: bash -c "
         export PYTHONPATH=$PYTHONPATH:/code
         && python3 /code/app/scripts/setup_opensearch.py
