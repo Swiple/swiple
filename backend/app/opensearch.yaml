@@ -178,3 +178,4 @@ destinations:
         type: object
       create_date:
         format: yyyy-MM-dd HH:mm:ss.SSSSSSZZZZZ
+        type: date
