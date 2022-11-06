@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,61,32
+/Swiple/swiple/tree/main/backend,10,8
+/Swiple/swiple/blob/main/backend/Dockerfile,9,7
+/Swiple/swiple/tree/a6bfa5516fb9c93af99dda01c1aa75f18d77d538/backend/app,8,1
+/Swiple/swiple/tree/main/backend/app,5,3
+/Swiple/swiple/discussions,5,2
+/Swiple/swiple/issues,5,2
+/Swiple/swiple/stargazers,5,2
+/Swiple/swiple/blob/a6bfa5516fb9c93af99dda01c1aa75f18d77d538/backend/app/api/api_v1/auth_router.py,5,1
+/Swiple/swiple/blob/a6bfa5516fb9c93af99dda01c1aa75f18d77d538/backend/app/core/users.py,5,1
