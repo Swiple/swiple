@@ -173,24 +173,23 @@ class Trino(DatasourceBase):
 
 
 # An update to "_update_datasource" update_by_query and Dataset.js breadcrumb for BigQuery to work.
-# class BigQuery(DatasourceBase):
-#     engine: Literal[Engine.BIGQUERY]
-#     gcp_project: str = Field(title="GCP Project")
-#     dataset: str
-#
-#     def connection_string(self):
-#         return f"bigquery://{self.gcp_project}/{self.dataset}"
-#
-#     def expectation_meta(self):
-#         return {
-#             "engine": self.engine,
-#             "gcp_project": self.gcp_project,
-#             "dataset": self.dataset,
-#         }
+class BigQuery(DatasourceBase):
+    engine: Literal[Engine.BIGQUERY]
+    gcp_project: str = Field(title="GCP Project")
+
+    def connection_string(self):
+        return f"bigquery://{self.gcp_project}"
+
+    def expectation_meta(self):
+        return {
+            "engine": self.engine,
+            "gcp_project": self.gcp_project,
+        }
 
 
 Datasource = Union[
     Athena,
+    BigQuery,
     PostgreSQL,
     MySQL,
     Redshift,
