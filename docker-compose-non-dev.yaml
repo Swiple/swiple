@@ -23,6 +23,8 @@ services:
       - "8000:8000"
     volumes:
       - $HOME/.aws:$HOME/.aws
+      - $HOME/.config/gcloud:/root/.config/gcloud
+      - $HOME\AppData\Roaming\gcloud:/root/.config/gcloud
     depends_on: *swiple-depends-on
 
   scheduler:
@@ -39,6 +41,8 @@ services:
       - "8001:8001"
     volumes:
       - $HOME/.aws:$HOME/.aws
+      - $HOME/.config/gcloud:/root/.config/gcloud
+      - $HOME\AppData\Roaming\gcloud:/root/.config/gcloud
     depends_on: *swiple-depends-on
 
   swiple_ui:
