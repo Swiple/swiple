@@ -35,6 +35,11 @@ def list_schemas(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(ex),
         )
+    except Exception as ex:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(ex),
+        )
     return JSONResponse(status_code=status.HTTP_200_OK, content=schema_list)
 
 
