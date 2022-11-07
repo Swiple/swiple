@@ -29,10 +29,6 @@ def get_dataset_sample(dataset: BaseDataset, datasource: Datasource) -> Sample:
 
 
 def get_sample_query_results(query: str, url: str) -> Sample:
-    # remove semi-colon from query
-    query = query.replace(";", "").strip()
-    query = query + " limit 10"
-
     try:
         with create_engine(url).connect() as con:
             query = add_limit_clause(query)
@@ -63,7 +59,6 @@ def get_sample_query_results(query: str, url: str) -> Sample:
                 return {
                     "error": "No columns included in statement."
                 }
-
             return Sample(columns=columns, rows=result_set)
     except ProgrammingError as e:
         raise GetSampleException(e.orig.pgerror) from e

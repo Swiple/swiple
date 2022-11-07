@@ -1,15 +1,13 @@
 from typing import Dict, Any
 
-import app.constants as c
-from app.models.types import EncryptedStr
 from app.settings import settings
 import datetime
-from re import search
 import emails
 from emails.template import JinjaTemplate
 from pathlib import Path
 import json
 import pytz
+from copy import copy
 
 
 def current_time():
@@ -40,12 +38,15 @@ def days_between_dates(start_date: datetime, end_date: datetime):
     return (end_date - start_date).days
 
 
-def add_limit_clause(query):
-    query = query.strip().replace(";", "")
-
-    if not search("limit", query):
-        query = query + " limit 10;"
-
+def add_limit_clause(sql_query):
+    query = copy(sql_query)
+    query = query.replace(";", "").strip()
+    if "limit" in query.lower():
+        limit_value = query.rsplit(" ", 1)[-1]
+        if limit_value.isdigit():
+            query = query.lower().replace(f"limit {limit_value}", "limit 10")
+    else:
+        query = query + " limit 10"
     return query
 
 
