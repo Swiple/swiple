@@ -158,13 +158,19 @@ def delete_datasource(
 
 
 def _test_datasource(datasource: Datasource):
+    engine = create_engine(datasource.connection_string())
     try:
-        engine = create_engine(datasource.connection_string())
-        connection = engine.connect()
+        with engine.connect():
+            pass
     except sqlalchemy.exc.DBAPIError as ex:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(ex.orig),
+        )
+    except requests.exceptions.ConnectionError as ex:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(ex),
         )
     except sqlalchemy.exc.NoSuchModuleError as ex:
         raise HTTPException(
@@ -177,7 +183,6 @@ def _test_datasource(datasource: Datasource):
             detail=str(f"{ex}. This module needs to be installed before it can be used."),
         )
 
-    connection.close()
     engine.dispose()
 
     return JSONResponse(
