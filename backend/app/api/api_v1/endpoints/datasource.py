@@ -9,7 +9,6 @@ from sqlalchemy import create_engine
 
 from app.api.shortcuts import get_by_key_or_404
 from app.core.users import current_active_user
-from app.db.client import client
 from app.models.datasource import DatasourceInput, Datasource
 from app.models.users import UserDB
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
