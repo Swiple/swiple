@@ -9,7 +9,6 @@ from sqlalchemy import create_engine
 
 from app.api.shortcuts import get_by_key_or_404
 from app.core.users import current_active_user
-from app.db.client import client
 from app.models.datasource import DatasourceInput, Datasource
 from app.models.users import UserDB
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
@@ -158,13 +157,19 @@ def delete_datasource(
 
 
 def _test_datasource(datasource: Datasource):
+    engine = create_engine(datasource.connection_string())
     try:
-        engine = create_engine(datasource.connection_string())
-        connection = engine.connect()
+        with engine.connect():
+            pass
     except sqlalchemy.exc.DBAPIError as ex:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(ex.orig),
+        )
+    except requests.exceptions.ConnectionError as ex:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(ex),
         )
     except sqlalchemy.exc.NoSuchModuleError as ex:
         raise HTTPException(
@@ -177,7 +182,6 @@ def _test_datasource(datasource: Datasource):
             detail=str(f"{ex}. This module needs to be installed before it can be used."),
         )
 
-    connection.close()
     engine.dispose()
 
     return JSONResponse(

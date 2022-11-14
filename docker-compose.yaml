@@ -23,6 +23,8 @@ services:
     volumes:
       - $PWD/backend/app/:/code/app/
       - $HOME/.aws:$HOME/.aws
+      - $HOME/.config/gcloud:/root/.config/gcloud
+      - $HOME\AppData\Roaming\gcloud:/root/.config/gcloud
     depends_on: *swiple-depends-on
 
   scheduler:
@@ -39,6 +41,8 @@ services:
     volumes:
       - $PWD/backend/app/:/code/app/
       - $HOME/.aws:$HOME/.aws
+      - $HOME/.config/gcloud:/root/.config/gcloud
+      - $HOME\AppData\Roaming\gcloud:/root/.config/gcloud
     depends_on: *swiple-depends-on
 
   swiple_ui:

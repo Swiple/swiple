@@ -29,7 +29,7 @@ class TestGetJSONSchema:
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert len(json) == 6
+        assert len(json) == 7
 
 
 @pytest.mark.asyncio

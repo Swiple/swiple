@@ -173,24 +173,31 @@ class Trino(DatasourceBase):
 
 
 # An update to "_update_datasource" update_by_query and Dataset.js breadcrumb for BigQuery to work.
-# class BigQuery(DatasourceBase):
-#     engine: Literal[Engine.BIGQUERY]
-#     gcp_project: str = Field(title="GCP Project")
-#     dataset: str
-#
-#     def connection_string(self):
-#         return f"bigquery://{self.gcp_project}/{self.dataset}"
-#
-#     def expectation_meta(self):
-#         return {
-#             "engine": self.engine,
-#             "gcp_project": self.gcp_project,
-#             "dataset": self.dataset,
-#         }
+class BigQuery(DatasourceBase):
+    engine: Literal[Engine.BIGQUERY]
+    database: str = Field(title="GCP Project")
+    credentials_info: Optional[EncryptedStr] = Field(
+        placeholder='{ "credentials_info": {"type": "service_account", "project_id": "...", "private_key_id": "...", "private_key": "...", "client_email": "...", "client_id": "...", "auth_uri": "...", "token_uri": "...", "auth_provider_x509_cert_url": "...", "client_x509_cert_url": "..."}}',
+    )
+
+    def connection_string(self, dataset=None):
+        connection = f"bigquery://{self.database}"
+        if dataset is not None:
+            connection = f"{connection}/{dataset}"
+        if self.credentials_info:
+            connection = f"{connection}?credentials_info={self.credentials_info}"
+        return connection
+
+    def expectation_meta(self):
+        return {
+            "engine": self.engine,
+            "database": self.database,
+        }
 
 
 Datasource = Union[
     Athena,
+    BigQuery,
     PostgreSQL,
     MySQL,
     Redshift,

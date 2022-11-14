@@ -11,6 +11,12 @@ class RuntimeParameters(BaseModel):
 	schema_name: str = Field(alias="schema")
 	query: Optional[str]
 
+	@validator("schema_name")
+	def valid_schema_name_format(cls, v):
+		if " " in v:
+			raise ValueError("should not contain spaces")
+		return v
+
 
 class Sample(BaseModel):
 	columns: list[str]
@@ -24,13 +30,24 @@ class Sample(BaseModel):
 
 
 class BaseDataset(BaseModel):
+	runtime_parameters: Optional[RuntimeParameters]
 	datasource_id: str
 	datasource_name: str
 	database: str
 	connector_type: str = "RuntimeDataConnector"
-	dataset_name: str
 	description: Optional[constr(max_length=500)]  # requires update in src/screens/datasetOverview/components/DatasetModal
-	runtime_parameters: Optional[RuntimeParameters]
+	dataset_name: str
+
+	@validator("dataset_name")
+	def dataset_name_should_match_format(cls, v, values, **kwargs):
+		if ' ' in v:
+			raise ValueError("should not contain spaces")
+
+		if not values.get("runtime_parameters"):
+			split_dataset = v.split('.')
+			if len(split_dataset) != 2:
+				raise ValueError("'dataset_name' should match format 'schema.table' when dataset is a physical table")
+		return v
 
 	def get_resource_names(self) -> tuple[str, str, bool]:
 		if self.runtime_parameters:

@@ -21,7 +21,6 @@ from app.core.runner import create_dataset_suggestions, run_dataset_validation
 from opensearchpy import OpenSearch, RequestError
 import requests
 
-
 router = APIRouter(
     dependencies=[Depends(current_active_user)]
 )
@@ -35,10 +34,10 @@ def get_json_schema():
 
 @router.get("", response_model=List[Dataset])
 def list_datasets(
-        datasource_id: Optional[str] = None,
-        sort_by_key: Optional[str] = "dataset_name",
-        asc: Optional[bool] = True,
-        repository: DatasetRepository = Depends(get_dataset_repository),
+    datasource_id: Optional[str] = None,
+    sort_by_key: Optional[str] = "dataset_name",
+    asc: Optional[bool] = True,
+    repository: DatasetRepository = Depends(get_dataset_repository),
 ):
     # TODO implement scrolling
     direction = "asc" if asc else "desc"
@@ -64,11 +63,11 @@ def get_dataset(key: str, repository: DatasetRepository = Depends(get_dataset_re
 
 @router.post("", response_model=Dataset)
 def create_dataset(
-        dataset_create: DatasetCreate,
-        test_query: bool = True,
-        user: UserDB = Depends(current_active_user),
-        datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
-        repository: DatasetRepository = Depends(get_dataset_repository),
+    dataset_create: DatasetCreate,
+    test_query: bool = True,
+    user: UserDB = Depends(current_active_user),
+    datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
+    repository: DatasetRepository = Depends(get_dataset_repository),
 ):
     datasource = get_by_key_or_404(dataset_create.datasource_id, datasource_repository)
     _check_dataset_does_not_exists(dataset_create, repository)
@@ -94,10 +93,10 @@ def create_dataset(
 
 @router.put("/{key}", response_model=Dataset)
 def update_dataset(
-        dataset_update: DatasetUpdate,
-        key: str,
-        datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
-        repository: DatasetRepository = Depends(get_dataset_repository),
+    dataset_update: DatasetUpdate,
+    key: str,
+    datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
+    repository: DatasetRepository = Depends(get_dataset_repository),
 ):
     dataset = get_by_key_or_404(key, repository)
 
@@ -109,28 +108,14 @@ def update_dataset(
 
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
 
-    update_dict = dataset_update.dict(exclude_unset=True, exclude_none=True, by_alias=True)
+    update_dict = dataset_update.dict(exclude_unset=False, exclude_none=False, by_alias=True)
 
     if dataset.dataset_name != dataset_update.dataset_name:
         _check_dataset_does_not_exists(dataset_update, repository)
-        # means it is a physical table.
-        if not dataset_update.runtime_parameters:
-            try:
-                data_sample = get_dataset_sample(dataset_update, datasource)
-            except GetSampleException as e:
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=e.error,
-                ) from e
-            update_dict["sample"] = data_sample
 
-    if (
-            dataset.runtime_parameters and
-            dataset_update.runtime_parameters and
-            dataset.runtime_parameters.query != dataset_update.runtime_parameters.query
-    ):
+    if should_update_sample(dataset, dataset_update):
         try:
-            data_sample = get_dataset_sample(dataset, datasource)
+            data_sample = get_dataset_sample(dataset_update, datasource)
         except GetSampleException as e:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -143,11 +128,11 @@ def update_dataset(
 
 @router.delete("/{key}")
 def delete_dataset(
-        key: str,
-        request: Request,
-        repository: DatasetRepository = Depends(get_dataset_repository),
-        expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
-        validation_repository: ValidationRepository = Depends(get_validation_repository)
+    key: str,
+    request: Request,
+    repository: DatasetRepository = Depends(get_dataset_repository),
+    expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
+    validation_repository: ValidationRepository = Depends(get_validation_repository)
 ):
     get_by_key_or_404(key, repository)
 
@@ -172,8 +157,8 @@ def delete_dataset(
 
 @router.post("/sample", response_model=Sample)
 def sample(
-        dataset: DatasetCreate,
-        datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
+    dataset: DatasetCreate,
+    datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
     try:
@@ -187,9 +172,9 @@ def sample(
 
 @router.put("/{key}/sample")
 def update_sample(
-        key: str,
-        repository: DatasetRepository = Depends(get_dataset_repository),
-        datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
+    key: str,
+    repository: DatasetRepository = Depends(get_dataset_repository),
+    datasource_repository: DatasourceRepository = Depends(get_datasource_repository),
 ):
     dataset = get_by_key_or_404(key, repository)
     datasource = get_by_key_or_404(dataset.datasource_id, datasource_repository)
@@ -231,6 +216,18 @@ def create_suggestions(
     expectation_repository.bulk_create(expectations)
 
     return expectations
+
+
+def should_update_sample(dataset: Dataset, dataset_update: DatasetUpdate):
+    # if the new and the old datasets are physical tables and the dataset_name has not changed, don't update sample
+    # if the new and the old datasets use a query and the query has not changed, don't update sample
+    return not (
+        (dataset.dataset_name == dataset_update.dataset_name and (
+            dataset.runtime_parameters == dataset_update.runtime_parameters is None)) or
+        (dataset.runtime_parameters and
+         dataset_update.runtime_parameters and
+         dataset.runtime_parameters.query == dataset_update.runtime_parameters.query)
+    )
 
 
 def _check_dataset_does_not_exists(dataset: BaseDataset, repository: DatasetRepository):

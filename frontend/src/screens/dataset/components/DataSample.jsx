@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 function DataSample({ columns, rows }) {
   const datasetSample = () => {
-    if (Object.keys(rows).length > 0) {
+    if (Object.keys(rows).length > 0 || Object.keys(columns).length > 0) {
       const columnsList = columns.map((column) => ({
         title: column,
         dataIndex: column,

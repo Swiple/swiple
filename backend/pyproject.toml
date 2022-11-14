@@ -71,6 +71,11 @@ optional = true
 [tool.poetry.group.trino.dependencies]
 trino = { version = ">=0.310.0" }
 
+[tool.poetry.group.bigquery]
+optional = true
+[tool.poetry.group.bigquery.dependencies]
+sqlalchemy-bigquery = "^1.4.4"
+
 [tool.poetry.group.aws-secrets]
 optional = true
 [tool.poetry.group.aws-secrets.dependencies]

@@ -170,18 +170,23 @@ class Runner:
         if self.datasource.engine == Engine.SNOWFLAKE and self.batch.runtime_parameters:
             schema = self.batch.runtime_parameters.schema_name
             connection_string = self.datasource.connection_string(schema)
+        # BigQuery SQLAlchemy connector requires the dataset_id/schema in
+        # the connection string in order to create TEMP tables.
+        elif self.datasource.engine == Engine.BIGQUERY and self.batch.runtime_parameters:
+            schema = self.batch.runtime_parameters.schema_name
+            connection_string = self.datasource.connection_string(schema)
         else:
             connection_string = self.datasource.connection_string()
 
         context = DataContextConfig(
             datasources={
                 self.datasource.datasource_name: {
+                    "class_name": "Datasource",
+                    "module_name": "great_expectations.datasource",
                     "execution_engine": {
                         "class_name": "SqlAlchemyExecutionEngine",
                         "connection_string": connection_string,
                     },
-                    "class_name": "Datasource",
-                    "module_name": "great_expectations.datasource",
                     "data_connectors": {
                         "default_runtime_data_connector": {
                             "class_name": "RuntimeDataConnector",
