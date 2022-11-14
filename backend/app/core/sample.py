@@ -30,16 +30,15 @@ def get_dataset_sample(dataset: BaseDataset, datasource: Datasource) -> Sample:
 
 def get_sample_query_results(query: str, url: str) -> Sample:
     try:
+        query = add_limit_clause(query)
+
         with create_engine(url).connect() as con:
-            query = add_limit_clause(query)
-
             execution = con.execute(query)
-
             # TODO neaten up
             result_set = []
-            columns = list(execution.keys())
+            columns, rows = get_columns_and_rows(execution)
 
-            for i, row in enumerate(execution.all()):
+            for i, row in enumerate(rows):
                 temp_row = {"key": i}
                 row = list(row)
 
@@ -56,11 +55,13 @@ def get_sample_query_results(query: str, url: str) -> Sample:
                 result_set.append(temp_row)
 
             if len(columns) == 0:
-                return {
-                    "error": "No columns included in statement."
-                }
+                raise GetSampleException("No columns included in statement.")
             return Sample(columns=columns, rows=result_set)
     except ProgrammingError as e:
         raise GetSampleException(e.orig.pgerror) from e
     except OperationalError as e:
         raise GetSampleException(e.orig) from e
+
+
+def get_columns_and_rows(execution):
+    return list(execution.keys()), execution.all()
