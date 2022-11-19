@@ -2,7 +2,7 @@ import datetime
 from typing import Any
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import ProgrammingError, OperationalError
+from sqlalchemy.exc import ProgrammingError, OperationalError, DatabaseError
 
 from app.models.dataset import BaseDataset, Sample
 from app.models.datasource import Datasource
@@ -61,7 +61,24 @@ def get_sample_query_results(query: str, url: str) -> Sample:
         raise GetSampleException(e.orig.pgerror) from e
     except OperationalError as e:
         raise GetSampleException(e.orig) from e
+    except DatabaseError as e:
+        raise GetSampleException(error_msg_from_exception(e)) from e
 
 
 def get_columns_and_rows(execution):
     return list(execution.keys()), execution.all()
+
+
+def error_msg_from_exception(ex: Exception) -> str:
+    """Translate exception into error message
+    Database have different ways to handle exception. This function attempts
+    to make sense of the exception object and construct a human readable
+    sentence.
+    """
+    msg = ""
+    if hasattr(ex, "message"):
+        if isinstance(ex.message, dict):
+            msg = ex.message.get("message")
+        elif ex.message:
+            msg = ex.message
+    return msg or str(ex)
