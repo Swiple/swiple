@@ -166,17 +166,7 @@ class Runner:
         return Validation(**validation)
 
     def get_data_context_config(self):
-        # Snowflake SQLAlchemy connector requires the schema in the connection string in order to create TEMP tables.
-        if self.datasource.engine == Engine.SNOWFLAKE and self.batch.runtime_parameters:
-            schema = self.batch.runtime_parameters.schema_name
-            connection_string = self.datasource.connection_string(schema)
-        # BigQuery SQLAlchemy connector requires the dataset_id/schema in
-        # the connection string in order to create TEMP tables.
-        elif self.datasource.engine == Engine.BIGQUERY and self.batch.runtime_parameters:
-            schema = self.batch.runtime_parameters.schema_name
-            connection_string = self.datasource.connection_string(schema)
-        else:
-            connection_string = self.datasource.connection_string()
+        connection_string = self._get_connection_string()
 
         context = DataContextConfig(
             datasources={
@@ -242,6 +232,23 @@ class Runner:
                 data_asset_name=self.batch.dataset_name,
                 batch_spec_passthrough={"create_temp_table": False},
             )
+
+    def _get_connection_string(self):
+        # Snowflake SQLAlchemy connector requires the schema in the connection string in order to create TEMP tables.
+        if self.datasource.engine == Engine.SNOWFLAKE and self.batch.runtime_parameters:
+            schema = self.batch.runtime_parameters.schema_name
+            connection_string = self.datasource.connection_string(schema)
+        # BigQuery SQLAlchemy connector requires the dataset_id/schema in connection string
+        elif self.datasource.engine == Engine.BIGQUERY and self.batch.runtime_parameters:
+            schema = self.batch.runtime_parameters.schema_name
+            connection_string = self.datasource.connection_string(schema)
+        elif self.datasource.engine == Engine.BIGQUERY and not self.batch.runtime_parameters:
+            schema, _ = self.batch.dataset_name.split(".")
+            connection_string = self.datasource.connection_string(schema)
+        else:
+            connection_string = self.datasource.connection_string()
+
+        return connection_string
 
     @staticmethod
     def _get_status(success: bool) -> Literal["success", "failure"]:
