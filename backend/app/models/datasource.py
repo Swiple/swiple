@@ -188,7 +188,7 @@ class BigQuery(DatasourceBase):
             connection = f"{connection}/{dataset}"
         if self.credentials_info:
             bas64_encoded_str_creds = base64.b64encode(
-                json.dumps(self.credentials_info.get_decrypted_value()).encode()
+                self.credentials_info.get_decrypted_value().encode()
             ).decode()
             connection = f"{connection}?credentials_base64={bas64_encoded_str_creds}"
         return connection
