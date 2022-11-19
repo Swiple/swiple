@@ -1,3 +1,5 @@
+import base64
+import json
 from enum import Enum
 from typing import Annotated, Optional, Literal, Union
 
@@ -177,7 +179,7 @@ class BigQuery(DatasourceBase):
     engine: Literal[Engine.BIGQUERY]
     database: str = Field(title="GCP Project")
     credentials_info: Optional[EncryptedStr] = Field(
-        placeholder='{ "credentials_info": {"type": "service_account", "project_id": "...", "private_key_id": "...", "private_key": "...", "client_email": "...", "client_id": "...", "auth_uri": "...", "token_uri": "...", "auth_provider_x509_cert_url": "...", "client_x509_cert_url": "..."}}',
+        placeholder='{"type": "service_account", "project_id": "...", "private_key_id": "...", "private_key": "...", "client_email": "...", "client_id": "...", "auth_uri": "...", "token_uri": "...", "auth_provider_x509_cert_url": "...", "client_x509_cert_url": "..."}',
     )
 
     def connection_string(self, dataset=None):
@@ -185,7 +187,10 @@ class BigQuery(DatasourceBase):
         if dataset is not None:
             connection = f"{connection}/{dataset}"
         if self.credentials_info:
-            connection = f"{connection}?credentials_info={self.credentials_info}"
+            bas64_encoded_str_creds = base64.b64encode(
+                json.dumps(self.credentials_info.get_decrypted_value()).encode()
+            ).decode()
+            connection = f"{connection}?credentials_base64={bas64_encoded_str_creds}"
         return connection
 
     def expectation_meta(self):
