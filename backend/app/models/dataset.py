@@ -5,6 +5,7 @@ from pydantic import Field, constr, validator
 
 from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
 from app.models.datasource import Engine
+from app.models.sampling import Sampling
 
 
 class RuntimeParameters(BaseModel):
@@ -37,6 +38,7 @@ class BaseDataset(BaseModel):
 	connector_type: str = "RuntimeDataConnector"
 	description: Optional[constr(max_length=500)]  # requires update in src/screens/datasetOverview/components/DatasetModal
 	dataset_name: str
+	sampling: Optional[Sampling]
 
 	@validator("dataset_name")
 	def dataset_name_should_match_format(cls, v, values, **kwargs):
@@ -47,6 +49,12 @@ class BaseDataset(BaseModel):
 			split_dataset = v.split('.')
 			if len(split_dataset) != 2:
 				raise ValueError("'dataset_name' should match format 'schema.table' when dataset is a physical table")
+		return v
+
+	@validator("sampling")
+	def validate_sampling(cls, v, values):
+		if v is not None and values.get("runtime_parameters") is not None:
+			raise ValueError("sampling cannot be applied to query-based datasets. Apply sampling logic in your query.")
 		return v
 
 	def get_resource_names(self) -> tuple[str, str, bool]:
