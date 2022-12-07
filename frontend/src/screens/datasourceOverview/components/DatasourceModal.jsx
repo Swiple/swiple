@@ -10,13 +10,7 @@ import Modal from '../../../components/Modal';
 import { getEngineIcon } from '../../../Utils';
 import { getDataSourcesJsonSchema, postDataSource, putDataSource } from '../../../Api';
 import AsyncButton from '../../../components/AsyncButton';
-
-const Ajv = require('ajv');
-const addFormats = require('ajv-formats');
-
-const ajv = new Ajv();
-ajv.addKeyword('placeholder');
-addFormats(ajv);
+import { validateAgainstJsonSchema } from '../../../JsonSchemaFormValidator';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -111,17 +105,6 @@ function DatasourceModal({
     }
   };
 
-  const buildValidationErrors = (errorList) => {
-    let errorString = '';
-    for (let i = 0; i < errorList.length; i += 1) {
-      const { msg } = errorList[i];
-      if (msg && !msg.includes('unknown keyword')) {
-        errorString += `${msg}\n`;
-      }
-    }
-    return errorString;
-  };
-
   const usePasswordIconRender = (isVisible) => {
     if (type !== CREATE_TYPE) return null;
     return isVisible ? <EyeTwoTone /> : <EyeInvisibleOutlined />;
@@ -182,12 +165,13 @@ function DatasourceModal({
                       : { required: false },
                     {
                       validator: async (rule, value) => {
-                        const validate = ajv.compile(propObj);
-                        const valid = validate(value);
-                        // no need to validate undefined values as we have 'required' rule above
-                        if (value && !valid) {
-                          throw new Error(buildValidationErrors(validate.errors));
-                        }
+                        validateAgainstJsonSchema(propObj, value);
+                        // const validate = ajv.compile(propObj);
+                        // const valid = validate(value);
+                        // // no need to validate undefined values as we have 'required' rule above
+                        // if (value && !valid) {
+                        //   throw new Error(buildValidationErrors(validate.errors));
+                        // }
                       },
                     },
                   ]}
