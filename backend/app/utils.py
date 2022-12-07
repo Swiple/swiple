@@ -99,6 +99,19 @@ def list_to_string_mapper(d, sep="."):
     return d
 
 
+def error_msg_from_exception(ex: Exception) -> str:
+    """Translate exception into error message
+    Database have different ways to handle exception. This function attempts
+    to make sense of the exception object and construct a human readable
+    sentence.
+    """
+    msg = ""
+    if hasattr(ex, "message"):
+        if isinstance(ex.message, dict):
+            msg = ex.message.get("message")
+        elif ex.message:
+            msg = ex.message
+    return msg or str(ex)
 # def send_email(
 #     email_to: str,
 #     subject_template: str = "",
