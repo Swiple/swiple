@@ -111,7 +111,8 @@ function ExpectationModal({
     }
 
     const rule = item.type === 'boolean'
-    || (item.type !== 'boolean' && !requiredKwargs.includes(prop))
+    || (item.type !== 'boolean' && requiredKwargs === undefined)
+    || (item.type !== 'boolean' && requiredKwargs !== undefined && !requiredKwargs.includes(prop))
       ? null
       : [{ required: true, message: `${item.title} is required` }];
 
