@@ -55,16 +55,16 @@ class BaseRepository(Generic[M]):
             updated_object.modified_date = utils.current_time()
 
         try:
-            document = self.client.update(
+            body = self._get_dict_from_object(updated_object, exclude={"key"})
+            self.client.index(
                 index=self.index,
                 id=id,
-                body={"doc": self._get_dict_from_object(updated_object, exclude={"key"})},
+                body=body,
                 refresh=refresh,
-                _source=True,
-            )["get"]
+            )
         except OSNotFoundError as e:
             raise NotFoundError() from e
-        return self._get_object_from_dict(document["_source"], id=id)
+        return self._get_object_from_dict(body, id=id)
 
     def update_by_query(self, body: dict[str, Any], *, wait_for_completion: bool = True):
         self.client.update_by_query(index=self.index, body=body, wait_for_completion=wait_for_completion)
@@ -76,15 +76,16 @@ class BaseRepository(Generic[M]):
             raise NotFoundError() from e
 
     def bulk_create(self, objects: list[M], *, refresh: str = "wait_for"):
-        actions = [
-            {
-                "_op_type": "index",
-                "_index": self.index,
-                "_id": object.key,
-                "_source": self._get_dict_from_object(object, exclude={"key"}),
-            } for object in objects
-        ]
-        bulk(self.client, actions, refresh=refresh)
+        if len(objects) > 0:
+            actions = [
+                {
+                    "_op_type": "index",
+                    "_index": self.index,
+                    "_id": object.key,
+                    "_source": self._get_dict_from_object(object, exclude={"key"}),
+                } for object in objects
+            ]
+            bulk(self.client, actions, refresh=refresh)
 
     def delete_by_query(self, body: dict[str, Any]):
         self.client.delete_by_query(index=self.index, body=body)
