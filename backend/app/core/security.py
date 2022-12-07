@@ -6,6 +6,7 @@ except ImportError:
     botocore = None
 from cryptography.fernet import Fernet
 from great_expectations.data_context import util
+from great_expectations.core.config_substitutor import _ConfigurationSubstitutor
 
 
 def encrypt_password(password: str) -> str:
@@ -19,7 +20,7 @@ def decrypt_password(encrypted_password: str) -> str:
 def substitute_value_from_secret_store(value: str):
     """Retrieves Secrets from AWS Secrets Manager, GCP Secret Manager & Azure Key Vault"""
     try:
-        value: str = util.substitute_value_from_secret_store(value)
+        value: str = _ConfigurationSubstitutor()._substitute_value_from_secret_store(value)
     except ImportError as e:
         raise exceptions.SecretsModuleNotFoundError(e.msg)
     except KeyError as e:
