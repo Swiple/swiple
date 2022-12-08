@@ -12,6 +12,9 @@ build_dev_images:
 	docker build -t swiple-api ./backend/
 	docker build -t swiple-ui ./frontend/
 
+swiple_api_dev_install:
+	cd ./backend && poetry install --with postgres,redshift,mysql,trino,athena,snowflake,aws-secrets,gcp,azure-secrets,dev && cd ..
+
 swiple_ui_install:
 	npm install --preifx ./frontend/
 
