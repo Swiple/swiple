@@ -24,6 +24,13 @@ swiple_ui_dev:
 swiple_api_dev:
 	python3 ./backend/main.py
 
+swiple_api_test:
+	cd ./backend && PRODUCTION='False' \
+	SECRET_KEY=DphzRvbm3ICHH2t1_Xj5NTUVEpqjz5KOHxuF77udndQ= \
+	ADMIN_EMAIL=admin@email.com \
+	ADMIN_PASSWORD=admin \
+	poetry run pytest --cov app/ --cov-report=xml && cd ..
+
 demo:
 	docker compose run demo
 
