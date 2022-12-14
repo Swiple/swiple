@@ -1,5 +1,4 @@
 import base64
-import json
 from enum import Enum
 from typing import Annotated, Optional, Literal, Union
 
@@ -17,6 +16,7 @@ class Engine(str, Enum):
     SNOWFLAKE = "Snowflake"
     BIGQUERY = "BigQuery"
     TRINO = "Trino"
+    SQLite = "SQLite"
 
 
 class DatasourceBase(BaseModel, KeyModel, CreateUpdateDateModel):
@@ -192,6 +192,21 @@ class BigQuery(DatasourceBase):
             ).decode()
             connection = f"{connection}?credentials_base64={bas64_encoded_str_creds}"
         return connection
+
+    def expectation_meta(self):
+        return {
+            "engine": self.engine,
+            "database": self.database,
+        }
+
+
+class SQLite(DatasourceBase):
+    engine: Literal[Engine.SQLite]
+    file_path: str
+    database: str = ""
+
+    def connection_string(self):
+        return f"sqlite:///{self.file_path}"
 
     def expectation_meta(self):
         return {
