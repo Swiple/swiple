@@ -6,7 +6,8 @@ from sqlalchemy.exc import ProgrammingError, OperationalError, DatabaseError
 
 from app.models.dataset import BaseDataset, Sample
 from app.models.datasource import Datasource
-from app.utils import add_limit_clause
+from app.utils import add_limit_clause, error_msg_from_exception
+from app.core.runner import Runner
 
 
 class GetSampleException(Exception):
@@ -16,16 +17,37 @@ class GetSampleException(Exception):
 
 
 def get_dataset_sample(dataset: BaseDataset, datasource: Datasource) -> Sample:
-    if dataset.runtime_parameters:
-        return get_sample_query_results(
-            query=dataset.runtime_parameters.query,
-            url=datasource.connection_string()
-        )
+    try:
+        # can be removed if/when second comment is addressed here
+        # https://github.com/great-expectations/great_expectations/issues/6475#issuecomment-1335682074
+        if dataset.runtime_parameters:
+            return get_sample_query_results(
+                query=dataset.runtime_parameters.query,
+                url=datasource.connection_string()
+            )
 
-    return get_sample_query_results(
-        query=f"select * from {dataset.dataset_name}",
-        url=datasource.connection_string(),
-    )
+        sample = Runner(
+            datasource=datasource,
+            batch=dataset,
+            meta=None,
+        ).sample()
+
+        if len(sample["columns"]) == 0:
+            raise GetSampleException("No columns included in statement.")
+
+        return Sample(**sample)
+    except ProgrammingError as e:
+        raise GetSampleException(e.orig.pgerror) from e
+    except OperationalError as e:
+        raise GetSampleException(e.orig) from e
+    except DatabaseError as e:
+        raise GetSampleException(error_msg_from_exception(e)) from e
+    # can be removed when https://github.com/great-expectations/great_expectations/issues/6463#issuecomment-1334476484
+    # is addressed.
+    except KeyError as e:
+        raise GetSampleException(error_msg_from_exception(e)) from e
+    except Exception as e:
+        raise GetSampleException(error_msg_from_exception(e)) from e
 
 
 def get_sample_query_results(query: str, url: str) -> Sample:
@@ -68,17 +90,3 @@ def get_sample_query_results(query: str, url: str) -> Sample:
 def get_columns_and_rows(execution):
     return list(execution.keys()), execution.all()
 
-
-def error_msg_from_exception(ex: Exception) -> str:
-    """Translate exception into error message
-    Database have different ways to handle exception. This function attempts
-    to make sense of the exception object and construct a human readable
-    sentence.
-    """
-    msg = ""
-    if hasattr(ex, "message"):
-        if isinstance(ex.message, dict):
-            msg = ex.message.get("message")
-        elif ex.message:
-            msg = ex.message
-    return msg or str(ex)

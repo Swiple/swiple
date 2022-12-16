@@ -75,25 +75,19 @@ python-versions = "*"
 
 [[package]]
 name = "apprise"
-version = "1.1.0"
+version = "1.2.0"
 description = "Push Notifications that work with just about every platform!"
 category = "main"
 optional = false
 python-versions = ">=3.6"
-develop = false
 
 [package.dependencies]
+certifi = "*"
 click = ">=5.0"
 markdown = "*"
 PyYAML = "*"
 requests = "*"
 requests-oauthlib = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/caronc/apprise.git"
-reference = "master"
-resolved_reference = "e7255df1da039784d4214f856eb430543c14e78b"
 
 [[package]]
 name = "APScheduler"
@@ -952,7 +946,7 @@ grpc = ["grpcio (>=1.0.0,<2.0.0dev)"]
 
 [[package]]
 name = "great-expectations"
-version = "0.15.21"
+version = "0.15.34"
 description = "Always know what to expect from your data."
 category = "main"
 optional = false
@@ -975,15 +969,16 @@ Ipython = ">=7.16.3"
 ipywidgets = ">=7.5.1"
 jinja2 = ">=2.10"
 jsonpatch = ">=1.22"
-jsonschema = ">=2.5.1"
+jsonschema = ">=2.5.1,<=4.7.2"
 makefun = ">=1.7.0,<2"
-marshmallow = ">=3.7.1,<3.9.0"
+marshmallow = ">=3.7.1,<4.0.0"
 mistune = ">=0.8.4"
 nbformat = ">=5.0"
 notebook = ">=6.4.10"
 numpy = ">=1.18.5"
 packaging = "*"
 pandas = ">=1.1.0"
+pydantic = ">=1.0,<2.0"
 pyparsing = ">=2.4"
 python-dateutil = ">=2.8.1"
 pytz = ">=2021.3"
@@ -992,7 +987,6 @@ requests = ">=2.20"
 scipy = ">=0.19.0"
 sqlalchemy = {version = ">=1.3.18,<2.0.0", optional = true, markers = "extra == \"gcp\""}
 sqlalchemy-bigquery = {version = ">=1.3.0", optional = true, markers = "extra == \"gcp\""}
-termcolor = ">=1.1.0"
 tqdm = ">=4.59.0"
 typing-extensions = ">=3.10.0.0"
 tzlocal = ">=1.2"
@@ -1005,8 +999,8 @@ aws_secrets = ["boto3 (==1.17.106)"]
 azure = ["azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)"]
 azure_secrets = ["azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)"]
 bigquery = ["gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-bigquery (>=1.3.0)"]
-dev = ["PyHive (>=0.6.5)", "PyMySQL (>=0.9.3,<0.10)", "azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)", "black (==22.3.0)", "boto3 (==1.17.106)", "feather-format (>=0.4.1)", "flake8 (==5.0.4)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "invoke (>=1.7.1)", "isort (==5.10.1)", "mock-alchemy (>=0.2.5)", "moto (>=1.3.7,<2.0.0)", "mypy (>=0.971)", "nbconvert (>=5)", "openpyxl (>=3.0.7)", "pre-commit (>=2.6.0)", "psycopg2-binary (>=2.7.6)", "pyarrow", "pyathena (>=1.11)", "pyfakefs (>=4.5.1)", "pyodbc (>=4.0.30)", "pypd (==1.1.0)", "pyspark (>=2.3.2)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "pytest-cov (>=2.8.1)", "pytest-icdiff (>=0.6)", "pytest-mock (>=3.8.2)", "pytest-order (>=0.9.5)", "pytest-timeout (>=2.1.0)", "pyupgrade (==2.7.2)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "snowflake-connector-python (>=2.5.0)", "snowflake-sqlalchemy (>=1.2.3)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-bigquery (>=1.3.0)", "sqlalchemy-dremio (>=1.2.1)", "sqlalchemy-redshift (>=0.7.7)", "teradatasqlalchemy (==17.0.0.1)", "thrift (>=0.16.0)", "thrift-sasl (>=0.4.3)", "trino (>=0.310.0)", "xlrd (>=1.1.0,<2.0.0)"]
-dremio = ["pyarrow", "pyodbc (>=4.0.30)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-dremio (>=1.2.1)"]
+dev = ["PyHive (>=0.6.5)", "PyMySQL (>=0.9.3,<0.10)", "azure-identity (>=1.10.0)", "azure-keyvault-secrets (>=4.0.0)", "azure-storage-blob (>=12.5.0)", "black (==22.3.0)", "boto3 (==1.17.106)", "feather-format (>=0.4.1)", "flake8 (==5.0.4)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "invoke (>=1.7.1)", "isort (==5.10.1)", "mock-alchemy (>=0.2.5)", "moto (>=2.0.0,<3.0.0)", "mypy (==0.991)", "nbconvert (>=5)", "openpyxl (>=3.0.7)", "pre-commit (>=2.6.0)", "psycopg2-binary (>=2.7.6)", "pyarrow", "pyathena (>=1.11)", "pydantic (>=1.0,<2.0)", "pyfakefs (>=4.5.1)", "pyodbc (>=4.0.30)", "pypd (==1.1.0)", "pyspark (>=2.3.2)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "pytest-cov (>=2.8.1)", "pytest-icdiff (>=0.6)", "pytest-mock (>=3.8.2)", "pytest-order (>=0.9.5)", "pytest-random-order (>=1.0.4)", "pytest-timeout (>=2.1.0)", "pyupgrade (==2.7.2)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "snowflake-connector-python (>=2.5.0)", "snowflake-sqlalchemy (>=1.2.3)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-bigquery (>=1.3.0)", "sqlalchemy-dremio (==1.2.1)", "sqlalchemy-redshift (>=0.8.8)", "sqlalchemy-vertica-python (>=0.5.10)", "teradatasqlalchemy (==17.0.0.1)", "thrift (>=0.16.0)", "thrift-sasl (>=0.4.3)", "trino (>=0.310.0,!=0.316.0)", "xlrd (>=1.1.0,<2.0.0)"]
+dremio = ["pyarrow", "pyodbc (>=4.0.30)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-dremio (==1.2.1)"]
 excel = ["openpyxl (>=3.0.7)", "xlrd (>=1.1.0,<2.0.0)"]
 gcp = ["gcsfs (>=0.5.1)", "google-cloud-secret-manager (>=1.0.0)", "google-cloud-storage (>=1.28.0)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-bigquery (>=1.3.0)"]
 hive = ["PyHive (>=0.6.5)", "thrift (>=0.16.0)", "thrift-sasl (>=0.4.3)"]
@@ -1014,14 +1008,15 @@ mssql = ["pyodbc (>=4.0.30)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 mysql = ["PyMySQL (>=0.9.3,<0.10)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 pagerduty = ["pypd (==1.1.0)"]
 postgresql = ["psycopg2-binary (>=2.7.6)", "sqlalchemy (>=1.3.18,<2.0.0)"]
-redshift = ["psycopg2-binary (>=2.7.6)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-redshift (>=0.7.7)"]
+redshift = ["psycopg2-binary (>=2.7.6)", "sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-redshift (>=0.8.8)"]
 s3 = ["boto3 (==1.17.106)"]
 snowflake = ["snowflake-connector-python (>=2.5.0)", "snowflake-sqlalchemy (>=1.2.3)", "sqlalchemy (>=1.3.18,<2.0.0)"]
 spark = ["pyspark (>=2.3.2)"]
 sqlalchemy = ["sqlalchemy (>=1.3.18,<2.0.0)"]
 teradata = ["sqlalchemy (>=1.3.18,<2.0.0)", "teradatasqlalchemy (==17.0.0.1)"]
-test = ["black (==22.3.0)", "boto3 (==1.17.106)", "flake8 (==5.0.4)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "invoke (>=1.7.1)", "isort (==5.10.1)", "mock-alchemy (>=0.2.5)", "moto (>=1.3.7,<2.0.0)", "mypy (>=0.971)", "nbconvert (>=5)", "pre-commit (>=2.6.0)", "pyfakefs (>=4.5.1)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "pytest-cov (>=2.8.1)", "pytest-icdiff (>=0.6)", "pytest-mock (>=3.8.2)", "pytest-order (>=0.9.5)", "pytest-timeout (>=2.1.0)", "pyupgrade (==2.7.2)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "sqlalchemy (>=1.3.18,<2.0.0)"]
-trino = ["sqlalchemy (>=1.3.18,<2.0.0)", "trino (>=0.310.0)"]
+test = ["black (==22.3.0)", "boto3 (==1.17.106)", "flake8 (==5.0.4)", "flask (>=1.0.0)", "freezegun (>=0.3.15)", "invoke (>=1.7.1)", "isort (==5.10.1)", "mock-alchemy (>=0.2.5)", "moto (>=2.0.0,<3.0.0)", "mypy (==0.991)", "nbconvert (>=5)", "pre-commit (>=2.6.0)", "pydantic (>=1.0,<2.0)", "pyfakefs (>=4.5.1)", "pytest (>=5.3.5)", "pytest-benchmark (>=3.4.1)", "pytest-cov (>=2.8.1)", "pytest-icdiff (>=0.6)", "pytest-mock (>=3.8.2)", "pytest-order (>=0.9.5)", "pytest-random-order (>=1.0.4)", "pytest-timeout (>=2.1.0)", "pyupgrade (==2.7.2)", "requirements-parser (>=0.2.0)", "s3fs (>=0.5.1)", "snapshottest (==0.6.0)", "sqlalchemy (>=1.3.18,<2.0.0)"]
+trino = ["sqlalchemy (>=1.3.18,<2.0.0)", "trino (>=0.310.0,!=0.316.0)"]
+vertica = ["sqlalchemy (>=1.3.18,<2.0.0)", "sqlalchemy-vertica-python (>=0.5.10)"]
 
 [[package]]
 name = "greenlet"
@@ -1314,7 +1309,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "jsonschema"
-version = "4.16.0"
+version = "4.7.2"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
@@ -2571,17 +2566,6 @@ python-versions = ">=3.6"
 doc = ["reno", "sphinx", "tornado (>=4.5)"]
 
 [[package]]
-name = "termcolor"
-version = "2.0.1"
-description = "ANSI color formatting for output in terminal"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.extras]
-tests = ["pytest", "pytest-cov"]
-
-[[package]]
 name = "terminado"
 version = "0.16.0"
 description = "Tornado websocket backend for the Xterm.js Javascript terminal emulator library."
@@ -2802,7 +2786,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9.0,<3.10"
-content-hash = "0855b26af390c2ade86073b2e1749c3eaf87055845fbf469e96543c06db26154"
+content-hash = "1169dae8173386a18fe88a745cafcb9324ac440b281a11df7b38479145719b7a"
 
 [metadata.files]
 aiohttp = [
@@ -2910,7 +2894,10 @@ appnope = [
     {file = "appnope-0.1.3-py2.py3-none-any.whl", hash = "sha256:265a455292d0bd8a72453494fa24df5a11eb18373a60c7c0430889f22548605e"},
     {file = "appnope-0.1.3.tar.gz", hash = "sha256:02bd91c4de869fbb1e1c50aafc4098827a7a54ab2f39d9dcba6c9547ed920e24"},
 ]
-apprise = []
+apprise = [
+    {file = "apprise-1.2.0-py2.py3-none-any.whl", hash = "sha256:9f7dd12e8cebeef7268c87b64f04a22c4a99ca3af17113af91985501e1a7d478"},
+    {file = "apprise-1.2.0.tar.gz", hash = "sha256:6e31afa18f47452eaccd56fb7ee83d92452c534d15f392407ed1a0e3c465244b"},
+]
 APScheduler = [
     {file = "APScheduler-3.9.1-py2.py3-none-any.whl", hash = "sha256:ddc25a0ddd899de44d7f451f4375fb971887e65af51e41e5dcf681f59b8b2c9a"},
     {file = "APScheduler-3.9.1.tar.gz", hash = "sha256:65e6574b6395498d371d045f2a8a7e4f7d50c6ad21ef7313d15b1c7cf20df1e3"},
@@ -3478,8 +3465,8 @@ googleapis-common-protos = [
     {file = "googleapis_common_protos-1.56.4-py2.py3-none-any.whl", hash = "sha256:8eb2cbc91b69feaf23e32452a7ae60e791e09967d81d4fcc7fc388182d1bd394"},
 ]
 great-expectations = [
-    {file = "great_expectations-0.15.21-py3-none-any.whl", hash = "sha256:4e8a45bf26783a771a64360751cc99a5c16445367ef391c8da9f22ce10138fcc"},
-    {file = "great_expectations-0.15.21.tar.gz", hash = "sha256:0d0c3e5afe190d4975cf21f2daa5e724ae52d194649b1d7dc160bd0d933fb5c3"},
+    {file = "great_expectations-0.15.34-py3-none-any.whl", hash = "sha256:82fbdb113dd5158f5236469ba352094df10f5faf9498517f2809440ca8689239"},
+    {file = "great_expectations-0.15.34.tar.gz", hash = "sha256:09a4a3cb8d4648a410bc89fa349b16c885dcbcbffd3ff7808357d8bf7399b621"},
 ]
 greenlet = [
     {file = "greenlet-1.1.3-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:8c287ae7ac921dfde88b1c125bd9590b7ec3c900c2d3db5197f1286e144e712b"},
@@ -3661,8 +3648,8 @@ jsonpointer = [
     {file = "jsonpointer-2.3.tar.gz", hash = "sha256:97cba51526c829282218feb99dab1b1e6bdf8efd1c43dc9d57be093c0d69c99a"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.16.0-py3-none-any.whl", hash = "sha256:9e74b8f9738d6a946d70705dc692b74b5429cd0960d58e79ffecfc43b2221eb9"},
-    {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
+    {file = "jsonschema-4.7.2-py3-none-any.whl", hash = "sha256:c7448a421b25e424fccfceea86b4e3a8672b4436e1988ccbde92c80828d4f085"},
+    {file = "jsonschema-4.7.2.tar.gz", hash = "sha256:73764f461d61eb97a057c929368610a134d1d1fffd858acfe88864ee94f1f1d3"},
 ]
 jupyter-client = [
     {file = "jupyter_client-7.3.5-py3-none-any.whl", hash = "sha256:b33222bdc9dd1714228bd286af006533a0abe2bbc093e8f3d29dc0b91bdc2be4"},
@@ -4689,10 +4676,6 @@ starlette = [
 tenacity = [
     {file = "tenacity-8.1.0-py3-none-any.whl", hash = "sha256:35525cd47f82830069f0d6b73f7eb83bc5b73ee2fff0437952cedf98b27653ac"},
     {file = "tenacity-8.1.0.tar.gz", hash = "sha256:e48c437fdf9340f5666b92cd7990e96bc5fc955e1298baf4a907e3972067a445"},
-]
-termcolor = [
-    {file = "termcolor-2.0.1-py3-none-any.whl", hash = "sha256:7e597f9de8e001a3208c4132938597413b9da45382b6f1d150cff8d062b7aaa3"},
-    {file = "termcolor-2.0.1.tar.gz", hash = "sha256:6b2cf769e93364a2676e1de56a7c0cff2cf5bd07f37e9cc80b0dd6320ebfe388"},
 ]
 terminado = [
     {file = "terminado-0.16.0-py3-none-any.whl", hash = "sha256:3e995072a7178a104c41134548ce9b03e4e7f0a538e9c29df4f1fbc81c7cfc75"},

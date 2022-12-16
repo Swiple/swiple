@@ -1,8 +1,7 @@
+import os
 from typing import Type
 import uuid
 from opensearchpy import OpenSearch
-
-from app.models.datasource import Datasource, MySQL, PostgreSQL, Engine
 from app.models.dataset import Dataset
 from app.models.expectation import (
     ExpectColumnToExist,
@@ -15,6 +14,15 @@ from app.repositories.dataset import DatasetRepository
 from app.repositories.datasource import DatasourceRepository
 from app.repositories.expectation import ExpectationRepository
 from app.repositories.validation import ValidationRepository
+from app.utils import file_relative_path
+from app.models.datasource import (
+    Datasource,
+    Engine,
+    PostgreSQL,
+    MySQL,
+    SQLite,
+)
+
 
 DATASOURCES: dict[str, Datasource] = {
     "postgres": PostgreSQL(
@@ -43,9 +51,44 @@ DATASOURCES: dict[str, Datasource] = {
         host="mysql",
         port=3306,
     ),
+    "sqlite": SQLite(
+        key="9034f199-bd74-415f-990e-9d6cc8c56589",
+        create_date="2022-10-04 13:37:00.000000+00:00",
+        modified_date="2022-10-04 13:37:00.000000+00:00",
+        datasource_name="sqlite",
+        created_by="admin@email.com",
+        engine=Engine.SQLite,
+        file_path=file_relative_path(
+            __file__,
+            os.path.join("test_data", "TPC-H-small.db"),
+        ),
+    ),
 }
 
 DATASETS: dict[str, Dataset] = {
+    "sqlite_table_lineitem": Dataset(
+        key="ce530620-e977-4290-b07e-4c3d5b3cae9c",
+        create_date="2022-10-04 13:37:00.000000+00:00",
+        modified_date="2022-10-04 13:37:00.000000+00:00",
+        created_by="admin@email.com",
+        engine=Engine.SQLite,
+        datasource_id=DATASOURCES["sqlite"].key,
+        datasource_name=DATASOURCES["sqlite"].datasource_name,
+        database=DATASOURCES["sqlite"].database,
+        dataset_name="main.LINEITEM",
+    ),
+    "sqlite_view_part": Dataset(
+        key="49f5fe7c-d8d5-4766-91e9-49a27010b638",
+        create_date="2022-10-04 13:37:00.000000+00:00",
+        modified_date="2022-10-04 13:37:00.000000+00:00",
+        created_by="admin@email.com",
+        engine=Engine.SQLite,
+        datasource_id=DATASOURCES["sqlite"].key,
+        datasource_name=DATASOURCES["sqlite"].datasource_name,
+        database=DATASOURCES["sqlite"].database,
+        dataset_name="sqlite_view_part",
+        runtime_parameters={"schema": "main", "query": " select * from main.PART"},
+    ),
     "postgres_table_products": Dataset(
         key="5b65eae9-600e-4933-9bad-78477e0ab98e",
         create_date="2022-10-04 13:37:00.000000+00:00",

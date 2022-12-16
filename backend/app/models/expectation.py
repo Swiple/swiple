@@ -3,9 +3,20 @@ from enum import Enum
 from typing import Annotated, Optional, List, Any, Literal, Union
 
 from pydantic import Field, validator
+from pydantic.types import StrictBool
 
 from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
 from app import constants as c
+
+
+def handle_strict_min_max(strict_min, strict_max):
+    greater_than = "greater than"
+    less_than = "less than"
+    if not strict_min:
+        greater_than = greater_than + " or equal to"
+    if not strict_max:
+        less_than = less_than + " or equal to"
+    return greater_than, less_than
 
 
 class IgnoreRowIf(str, Enum):
@@ -89,7 +100,7 @@ class ExpectTableColumnsToMatchSet(ExpectationBase):
 
     class Kwargs(BaseModel):
         column_set: List[str] = Field(description=c.COLUMN_SET, form_type="multi_column_select")
-        exact_match: bool = Field(description=c.EXACT_MATCH)
+        exact_match: Optional[bool] = Field(default=False, description=c.EXACT_MATCH)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -102,14 +113,15 @@ class ExpectTableColumnsToMatchSet(ExpectationBase):
         return f'Expect columns to match set {self.kwargs.column_set}'
 
 
-# TODO make min max values conditionally optional
 class ExpectTableRowCountToBeBetween(ExpectationBase):
     """
     Expect the number of rows to be between two values.
     """
     class Kwargs(BaseModel):
-        min_value: int = Field(description="The minimum number of rows, inclusive. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable rows has no minimum.")
-        max_value: int = Field(description="The maximum number of rows, inclusive. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable rows has no maximum.")
+        min_value: Optional[int] = Field(description="The minimum number of rows, inclusive. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable rows has no minimum.")
+        max_value: Optional[int] = Field(description="The maximum number of rows, inclusive. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable rows has no maximum.")
+        strict_min: StrictBool = Field(description="If True, row count must be strictly larger than min_value.", default=False)
+        strict_max: StrictBool = Field(description="If True, row count must be strictly smaller than max_value.", default=False)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -119,7 +131,21 @@ class ExpectTableRowCountToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        return f'Expect table row count to be between {self.kwargs.min_value} and {self.kwargs.max_value}.'
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return "Dataset can have any number of rows."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
+
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"Dataset must have {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value} rows."
+            elif self.kwargs.min_value is None and not self.kwargs.strict_max:
+                return f"Dataset must have less than {self.kwargs.max_value} rows."
+            elif self.kwargs.min_value is None and self.kwargs.strict_max:
+                return f"Dataset must have {self.kwargs.max_value} rows or less."
+            elif self.kwargs.max_value is None and self.kwargs.strict_min:
+                return f"Dataset must have greater than {self.kwargs.min_value} rows."
+            elif self.kwargs.max_value is None and not self.kwargs.strict_min:
+                return f"Dataset must have {self.kwargs.min_value} rows or more."
 
 
 class ExpectTableRowCountToEqual(ExpectationBase):
@@ -145,8 +171,10 @@ class ExpectTableColumnCountToBeBetween(ExpectationBase):
     Expect the number of columns to be between two values.
     """
     class Kwargs(BaseModel):
-        min_value: int = Field(description="The minimum number of columns, inclusive. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable columns.")
-        max_value: int = Field(description="The maximum number of columns, inclusive. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable columns.")
+        min_value: Optional[int] = Field(description="The minimum number of columns, inclusive. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable columns.")
+        max_value: Optional[int] = Field(description="The maximum number of columns, inclusive. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable columns.")
+        strict_min: StrictBool = Field(description="If True, column count must be strictly larger than min_value.", default=False)
+        strict_max: StrictBool = Field(description="If True, column count must be strictly smaller than max_value.", default=False)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -156,8 +184,21 @@ class ExpectTableColumnCountToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        return f'Expect table column count to be between {self.kwargs.min_value} and {self.kwargs.max_value}.'
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return "Dataset can have any number of column."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
 
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"Dataset must have {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value} columns."
+            elif self.kwargs.min_value is None and not self.kwargs.strict_max:
+                return f"Dataset must have less than {self.kwargs.max_value} columns."
+            elif self.kwargs.min_value is None and self.kwargs.strict_max:
+                return f"Dataset must have {self.kwargs.max_value} columns or less."
+            elif self.kwargs.max_value is None and self.kwargs.strict_min:
+                return f"Dataset must have greater than {self.kwargs.min_value} columns."
+            elif self.kwargs.max_value is None and not self.kwargs.strict_min:
+                return f"Dataset must have {self.kwargs.min_value} columns or more."
 
 class ExpectTableColumnCountToBeEqual(ExpectationBase):
     """
@@ -315,19 +356,19 @@ class ExpectColumnValuesToNotBeInSet(ExpectationBase):
         return f'Expect each value in column "{self.kwargs.column}" to NOT exist in set {self.kwargs.value_set}'
 
 
-# TODO make min max values conditionally optional, add validators, support cross types
 # cross types cause issues in OpenSearch as type return for min/max_value are strings
 # instead of floats.
 class ExpectColumnValuesToBeBetween(ExpectationBase):
     """
     Expect column entries to be between a minimum value and a maximum value.
+    min_value and max_value are both inclusive unless strict_min or strict_max are set to True.
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: float = Field(description="The minimum value for a column entry. If min_value is None, then max_value is treated as an upper bound, and there is no minimum value checked.")
-        max_value: float = Field(description="The maximum value for a column entry. If max_value is None, then min_value is treated as a lower bound, and there is no maximum value checked.")
-        strict_min: bool = Field(description="If True, values must be strictly larger than min_value.", default=False)
-        strict_max: bool = Field(description="If True, values must be strictly smaller than max_value", default=False)
+        min_value: Optional[float] = Field(description="The minimum value for a column entry. If min_value is None, then max_value is treated as an upper bound, and there is no minimum value checked.")
+        max_value: Optional[float] = Field(description="The maximum value for a column entry. If max_value is None, then min_value is treated as a lower bound, and there is no maximum value checked.")
+        strict_min: StrictBool = Field(description="If True, column value must be strictly larger than min_value.", default=False)
+        strict_max: StrictBool = Field(description="If True, column value must be strictly smaller than max_value.", default=False)
         # allow_cross_type_comparisons: bool = Field(description="If True, allow comparisons between types (e.g. integer and string). Otherwise, attempting such comparisons will raise an exception.", default=False)
         # parse_strings_as_datetimes: Optional[bool] = Field(description="If True, parse min_value, max_value, and all non-null column values to datetimes before making comparisons.")
         # output_strftime_format: Optional[bool] = Field(description="A valid strfime format for datetime output. Only used if parse_strings_as_datetimes=True.")
@@ -341,10 +382,19 @@ class ExpectColumnValuesToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        return f'Expect entries in column "{self.kwargs.column}" to be between {self.kwargs.min_value} and {self.kwargs.max_value}. '
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"The values for column '{self.kwargs.column}' may have any numerical value."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
+
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"The values for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.min_value is None:
+                return f"The values for column '{self.kwargs.column}' must be {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.max_value is None:
+                return f"The values for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value}."
 
 
-# TODO make min max values conditionally optional
 class ExpectColumnValueLengthsToBeBetween(ExpectationBase):
     """
     Expect column entries to be strings with length between a minimum value and a maximum value.
@@ -352,8 +402,10 @@ class ExpectColumnValueLengthsToBeBetween(ExpectationBase):
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: int = Field(description="The minimum value for a column entry length. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable rows has no minimum.", default=False)
-        max_value: int = Field(description="The maximum value for a column entry length. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable rows has no maximum.", default=False)
+        min_value: Optional[int] = Field(description="The minimum value for a column entry length. If min_value is None, then max_value is treated as an upper bound, and the number of acceptable rows has no minimum.", default=False)
+        max_value: Optional[int] = Field(description="The maximum value for a column entry length. If max_value is None, then min_value is treated as a lower bound, and the number of acceptable rows has no maximum.", default=False)
+        strict_min: StrictBool = Field(description="If True, the column value length must be strictly larger than min value.", default=False)
+        strict_max: StrictBool = Field(description="If True, the column value length must be strictly smaller than max value.", default=False)
         objective: Optional[float] = Field(description=c.OBJECTIVE, ge=0, le=1)
         result_format: str = "SUMMARY"
         include_config: bool = True
@@ -364,7 +416,17 @@ class ExpectColumnValueLengthsToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        return f'Expect entries for column "{self.kwargs.column}" to be strings with length between {self.kwargs.min_value} value and {self.kwargs.max_value} value (inclusive).'
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"The values for column '{self.kwargs.column}' values may have any length."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
+
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"The values for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value} characters long."
+            elif self.kwargs.min_value is None:
+                return f"The values for column '{self.kwargs.column}' must be {less_than} {self.kwargs.max_value} characters long."
+            elif self.kwargs.max_value is None:
+                return f"The values for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} characters long."
 
 
 class ExpectColumnValueLengthsToEqual(ExpectationBase):
@@ -478,20 +540,17 @@ class ExpectColumnValuesToNotMatchRegexList(ExpectationBase):
         return f'Expect entries for column "{self.kwargs.column}" to be strings that do NOT match "{self.kwargs.match_on}" of a list of regular expressions "{self.kwargs.regex_list}".'
 
 
-# TODO make min max values conditionally optional
 class ExpectColumnMeanToBeBetween(ExpectationBase):
     """
     Expect the column mean to be between a minimum value and a maximum value (inclusive).
     min_value and max_value are both inclusive unless strict_min or strict_max are set to True.
-
-
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: float = Field(description="The minimum value for the column mean. If min_value is None, then max_value is treated as an upper bound.")
-        max_value: float = Field(description="The maximum value for the column mean. If max_value is None, then min_value is treated as a lower bound.")
-        strict_min: bool = Field(description="If True, the column median must be strictly larger than min value.", default=False)
-        strict_max: bool = Field(description="If True, the column median must be strictly smaller than max value.", default=False)
+        min_value: Optional[float] = Field(description="The minimum value for the column mean. If min_value is None, then max_value is treated as an upper bound.")
+        max_value: Optional[float] = Field(description="The maximum value for the column mean. If max_value is None, then min_value is treated as a lower bound.")
+        strict_min: StrictBool = Field(description="If True, the column median must be strictly larger than min value.", default=False)
+        strict_max: StrictBool = Field(description="If True, the column median must be strictly smaller than max value.", default=False)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -501,28 +560,29 @@ class ExpectColumnMeanToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        greater_than = "greater than"
-        less_than = "less than"
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"The mean for column '{self.kwargs.column}' may have any numerical value."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
 
-        if not self.kwargs.strict_min:
-            greater_than = greater_than + " or equal to"
-        if not self.kwargs.strict_max:
-            less_than = less_than + " or equal to"
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"The mean for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.min_value is None:
+                return f"The mean for column '{self.kwargs.column}' must be {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.max_value is None:
+                return f"The mean for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value}."
 
-        return f'Expect the mean for column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}.'
 
-
-# TODO make min max values conditionally optional
 class ExpectColumnMedianToBeBetween(ExpectationBase):
     """
     Expect the column median to be between a minimum value and a maximum value.
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: float = Field(description="The minimum value for the column median. If min_value is None, then max_value is treated as an upper bound.")
-        max_value: float = Field(description="The maximum value for the column median. If max_value is None, then min_value is treated as a lower bound.")
-        strict_min: bool = Field(description="If True, the column median must be strictly larger than min value.", default=False)
-        strict_max: bool = Field(description="If True, the column median must be strictly smaller than max value.", default=False)
+        min_value: Optional[float] = Field(description="The minimum value for the column median. If min_value is None, then max_value is treated as an upper bound.")
+        max_value: Optional[float] = Field(description="The maximum value for the column median. If max_value is None, then min_value is treated as a lower bound.")
+        strict_min: StrictBool = Field(description="If True, the column median must be strictly larger than min value.", default=False)
+        strict_max: StrictBool = Field(description="If True, the column median must be strictly smaller than max value.", default=False)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -532,26 +592,29 @@ class ExpectColumnMedianToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        greater_than = "greater than"
-        less_than = "less than"
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"The median for column '{self.kwargs.column}' may have any numerical value."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
 
-        if not self.kwargs.strict_min:
-            greater_than = greater_than + " or equal to"
-        if not self.kwargs.strict_max:
-            less_than = less_than + " or equal to"
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"The median for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.min_value is None:
+                return f"The median for column '{self.kwargs.column}' must be {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.max_value is None:
+                return f"The median for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value}."
 
-        return f'Expect the median for column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}.'
 
-
-# TODO make min max values conditionally optional
 class ExpectColumnUniqueValueCountToBeBetween(ExpectationBase):
     """
-    Expect the number of unique values to be between a minimum value and a maximum value. (inclusive)
+    Expect the number of unique values to be between a minimum value and a maximum value.
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: int = Field(description="The minimum number of unique values allowed. If min_value is None, then max_value is treated as an upper bound")
-        max_value: int = Field(description="The maximum number of unique values allowed. If max_value is None, then min_value is treated as a lower bound")
+        min_value: Optional[int] = Field(description="The minimum number of unique values allowed. If min_value is None, then max_value is treated as an upper bound")
+        max_value: Optional[int] = Field(description="The maximum number of unique values allowed. If max_value is None, then min_value is treated as a lower bound")
+        strict_min: StrictBool = Field(description="If True, the minimal column value must be strictly larger than min_value, default=False.", default=False)
+        strict_max: StrictBool = Field(description="If True, the maximal column value must be strictly smaller than max_value, default=False.", default=False)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -561,10 +624,19 @@ class ExpectColumnUniqueValueCountToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        return f'Expect the number of unique values in column "{self.kwargs.column}" to be greater than or equal to {self.kwargs.min_value} and less than or equal to {self.kwargs.max_value}.'
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"Column '{self.kwargs.column}' may have any number of unique values."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
+
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"Column '{self.kwargs.column}' must have {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value} unique values."
+            elif self.kwargs.min_value is None:
+                return f"Column '{self.kwargs.column}' must have {less_than} {self.kwargs.max_value} unique values."
+            elif self.kwargs.max_value is None:
+                return f"Column '{self.kwargs.column}' must have {greater_than} {self.kwargs.min_value} unique values."
 
 
-# TODO make min max values conditionally optional
 class ExpectColumnProportionOfUniqueValuesToBeBetween(ExpectationBase):
     """
     Expect the proportion of unique values to be between a minimum value and a maximum value.
@@ -572,10 +644,10 @@ class ExpectColumnProportionOfUniqueValuesToBeBetween(ExpectationBase):
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: float = Field(ge=0, le=1, description="The minimum proportion of unique values. If min_value is None, then max_value is treated as an upper bound.")
-        max_value: float = Field(ge=0, le=1, description="The maximum proportion of unique values. If max_value is None, then min_value is treated as a lower bound.")
-        strict_min: bool = Field(description="If True, the minimum proportion of unique values must be strictly larger than min value.", default=False)
-        strict_max: bool = Field(description="If True, the maximum proportion of unique values must be strictly smaller than max value.", default=False)
+        min_value: Optional[float] = Field(ge=0, le=1, description="The minimum proportion of unique values. If min_value is None, then max_value is treated as an upper bound.")
+        max_value: Optional[float] = Field(ge=0, le=1, description="The maximum proportion of unique values. If max_value is None, then min_value is treated as a lower bound.")
+        strict_min: StrictBool = Field(description="If True, the minimum proportion of unique values must be strictly larger than min value.", default=False)
+        strict_max: StrictBool = Field(description="If True, the maximum proportion of unique values must be strictly smaller than max value.", default=False)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -585,28 +657,62 @@ class ExpectColumnProportionOfUniqueValuesToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        greater_than = "greater than"
-        less_than = "less than"
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"Column '{self.kwargs.column}' may have any fraction of unique values."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
 
-        if not self.kwargs.strict_min:
-            greater_than = greater_than + " or equal to"
-        if not self.kwargs.strict_max:
-            less_than = less_than + " or equal to"
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"Column '{self.kwargs.column}' fraction of unique values must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.min_value is None:
+                return f"Column '{self.kwargs.column}' fraction of unique values must be {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.max_value is None:
+                return f"Column '{self.kwargs.column}' fraction of unique values must be {greater_than} {self.kwargs.min_value}."
 
-        return f'Expect the proportion of unique values for column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}.'
 
-
-# TODO make min max values conditionally optional
-class ExpectColumnSumToBeBetween(ExpectationBase):
+class ExpectColumnStdevToBeBetween(ExpectationBase):
     """
-    Expect the column to sum to be between an min and max value
+    Expect the column standard deviation to be between a minimum value and a maximum value.
+    Uses sample standard deviation (normalized by N-1).
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: float = Field(description="The minimal sum allowed.")
-        max_value: float = Field(description="The maximal sum allowed.")
-        strict_min: bool = Field(description="If True, the minimal sum must be strictly larger than min value.", default=False)
-        strict_max: bool = Field(description="If True, the maximal sum must be strictly smaller than max value.", default=False)
+        min_value: Optional[float] = Field(description="The minimum value for the column standard deviation.")
+        max_value: Optional[float] = Field(description="The maximum value for the column standard deviation.")
+        strict_min: StrictBool = Field(description="If True, the column standard deviation must be strictly larger than min_value, default=False.", default=False)
+        strict_max: StrictBool = Field(description="If True, the column standard deviation must be strictly smaller than max_value, default=False.", default=False)
+        result_format: str = "SUMMARY"
+        include_config: bool = True
+        catch_exceptions: bool = True
+
+    expectation_type: Literal["expect_column_stdev_to_be_between"]
+    result_type: str = c.COLUMN_AGGREGATE_EXPECTATION
+    kwargs: Kwargs
+
+    def _documentation(self):
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"The standard deviation for column '{self.kwargs.column}' may have any numerical value."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
+
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"The standard deviation for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.min_value is None:
+                return f"The standard deviation for column '{self.kwargs.column}' must be {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.max_value is None:
+                return f"The standard deviation for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value}."
+
+
+class ExpectColumnSumToBeBetween(ExpectationBase):
+    """
+    Expect the column to sum to be between a min and max value
+    """
+    class Kwargs(BaseModel):
+        column: str = Field(description=c.COLUMN, form_type="column_select")
+        min_value: Optional[float] = Field(description="The minimal sum allowed.")
+        max_value: Optional[float] = Field(description="The maximal sum allowed.")
+        strict_min: StrictBool = Field(description="If True, the minimal sum must be strictly larger than min value.", default=False)
+        strict_max: StrictBool = Field(description="If True, the maximal sum must be strictly smaller than max value.", default=False)
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -616,15 +722,17 @@ class ExpectColumnSumToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        greater_than = "greater than"
-        less_than = "less than"
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"The sum of values for column '{self.kwargs.column}' may have any numerical value."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
 
-        if not self.kwargs.strict_min:
-            greater_than = greater_than + " or equal to"
-        if not self.kwargs.strict_max:
-            less_than = greater_than + " or equal to"
-
-        return f'Expect the sum of values for column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}.'
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"The sum of values for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.min_value is None:
+                return f"The sum of values for column '{self.kwargs.column}' must be {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.max_value is None:
+                return f"The sum of values for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value}."
 
 
 class ExpectMultiColumnSumToEqual(ExpectationBase):
@@ -646,19 +754,18 @@ class ExpectMultiColumnSumToEqual(ExpectationBase):
         return f'Expect the sum of row values is the same for each row, summing only values in {self.kwargs.column_list}, and equal to {self.kwargs.sum_total}.'
 
 
-# TODO make min max values conditionally optional
 class ExpectColumnMinToBeBetween(ExpectationBase):
     """
-    Expect the column minimum to be between an min and max value
+    Expect the column minimum to be between a min and max value
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: float = Field(description="The minimal column minimum allowed.")
-        max_value: float = Field(description="The maximal column minimum allowed.")
-        strict_min: bool = Field(description="If True, the minimal column minimum must be strictly larger than min value.", default=False)
-        strict_max: bool = Field(description="If True, the maximal column minimum must be strictly smaller than max value.", default=False)
-        parse_strings_as_datetimes: Optional[bool] = Field(description="If True, parse min_value, max_values, and all non-null column values to datetimes before making comparisons.", default=False)
-        output_strftime_format: Optional[str] = Field(description="A valid strfime format for datetime output. Only used if parse_strings_as_datetimes=True.")  # TODO validation on "Only used if..."
+        min_value: Optional[float] = Field(description="The minimal column minimum allowed.")
+        max_value: Optional[float] = Field(description="The maximal column minimum allowed.")
+        strict_min: StrictBool = Field(description="If True, the minimal column value must be strictly larger than min value.", default=False)
+        strict_max: StrictBool = Field(description="If True, the maximal column value must be strictly smaller than max value.", default=False)
+        # parse_strings_as_datetimes: Optional[bool] = Field(description="If True, parse min_value, max_values, and all non-null column values to datetimes before making comparisons.", default=False)
+        # output_strftime_format: Optional[str] = Field(description="A valid strfime format for datetime output. Only used if parse_strings_as_datetimes=True.")  # TODO validation on "Only used if..."
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -668,36 +775,31 @@ class ExpectColumnMinToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        greater_than = "greater than"
-        less_than = "less than"
-        parse_strings = "where min, max, and all non-null values are parsed as datetimes before comparison"
-        strftime_format = f" with a strftime format of {self.kwargs.output_strftime_format}"
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"The minimum value for column '{self.kwargs.column}' may be any numerical value."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
 
-        if not self.kwargs.strict_min:
-            greater_than = greater_than + " or equal to"
-        if not self.kwargs.strict_max:
-            less_than = less_than + " or equal to"
-        if not self.kwargs.parse_strings_as_datetimes:
-            parse_strings = ""
-        if not self.kwargs.output_strftime_format:
-            strftime_format = ""
-
-        return f'Expect the minimum value in column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value} {parse_strings} {strftime_format}.'
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"The minimum value for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.min_value is None:
+                return f"The minimum value for column '{self.kwargs.column}' must be {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.max_value is None:
+                return f"The minimum value for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value}."
 
 
-# TODO make min max values conditionally optional
 class ExpectColumnMaxToBeBetween(ExpectationBase):
     """
-    Expect the column maximum to be between an min and max value
+    Expect the column maximum to be between a min and max value
     """
     class Kwargs(BaseModel):
         column: str = Field(description=c.COLUMN, form_type="column_select")
-        min_value: float = Field(description="The minimal column minimum allowed.")
-        max_value: float = Field(description="The maximal column minimum allowed.")
-        strict_min: Optional[bool] = Field(description="If True, the minimal column minimum must be strictly larger than min value.", default=False)
-        strict_max: Optional[bool] = Field(description="If True, the maximal column minimum must be strictly smaller than max value.", default=False)
-        parse_strings_as_datetimes: Optional[bool] = Field(description="If True, parse min_value, max_values, and all non-null column values to datetimes before making comparisons.", default=False)
-        output_strftime_format: Optional[str] = Field(description="A valid strfime format for datetime output. Only used if parse_strings_as_datetimes=True.")  # TODO validation on "Only used if..."
+        min_value: Optional[float] = Field(description="The minimal column minimum allowed.")
+        max_value: Optional[float] = Field(description="The maximal column minimum allowed.")
+        strict_min: StrictBool = Field(description="If True, the minimal column value must be strictly larger than min value.", default=False)
+        strict_max: StrictBool = Field(description="If True, the maximal column value must be strictly smaller than max value.", default=False)
+        # parse_strings_as_datetimes: Optional[bool] = Field(description="If True, parse min_value, max_values, and all non-null column values to datetimes before making comparisons.", default=False)
+        # output_strftime_format: Optional[str] = Field(description="A valid strfime format for datetime output. Only used if parse_strings_as_datetimes=True.")  # TODO validation on "Only used if..."
         result_format: str = "SUMMARY"
         include_config: bool = True
         catch_exceptions: bool = True
@@ -707,21 +809,17 @@ class ExpectColumnMaxToBeBetween(ExpectationBase):
     kwargs: Kwargs
 
     def _documentation(self):
-        greater_than = "greater than"
-        less_than = "less than"
-        parse_strings = "where min, max, and all non-null values are parsed as datetimes before comparison"
-        strftime_format = f" with a strftime format of {self.kwargs.output_strftime_format}"
+        if self.kwargs.min_value is None and self.kwargs.max_value is None:
+            return f"The maximum value for column '{self.kwargs.column}' may be any numerical value."
+        else:
+            greater_than, less_than = handle_strict_min_max(self.kwargs.strict_min, self.kwargs.strict_max)
 
-        if not self.kwargs.strict_min:
-            greater_than = greater_than + " or equal to"
-        if not self.kwargs.strict_max:
-            less_than = less_than + " or equal to"
-        if not self.kwargs.parse_strings_as_datetimes:
-            parse_strings = ""
-        if not self.kwargs.output_strftime_format:
-            strftime_format = ""
-
-        return f'Expect the maximum value in column "{self.kwargs.column}" to be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value} {parse_strings} {strftime_format}.'
+            if self.kwargs.min_value is not None and self.kwargs.max_value is not None:
+                return f"The maximum value for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value} and {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.min_value is None:
+                return f"The maximum value for column '{self.kwargs.column}' must be {less_than} {self.kwargs.max_value}."
+            elif self.kwargs.max_value is None:
+                return f"The maximum value for column '{self.kwargs.column}' must be {greater_than} {self.kwargs.min_value}."
 
 
 class ExpectColumnPairValuesToBeEqual(ExpectationBase):
@@ -773,6 +871,7 @@ Expectation = Union[
     ExpectColumnMedianToBeBetween,
     ExpectColumnUniqueValueCountToBeBetween,
     ExpectColumnProportionOfUniqueValuesToBeBetween,
+    ExpectColumnStdevToBeBetween,
     ExpectColumnSumToBeBetween,
     ExpectMultiColumnSumToEqual,
     ExpectColumnMinToBeBetween,

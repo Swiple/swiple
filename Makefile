@@ -12,6 +12,9 @@ build_dev_images:
 	docker build -t swiple-api ./backend/
 	docker build -t swiple-ui ./frontend/
 
+swiple_api_dev_install:
+	cd ./backend && poetry install --with postgres,redshift,mysql,trino,athena,snowflake,aws-secrets,gcp,azure-secrets,dev && cd ..
+
 swiple_ui_install:
 	npm install --preifx ./frontend/
 
@@ -20,6 +23,13 @@ swiple_ui_dev:
 
 swiple_api_dev:
 	python3 ./backend/main.py
+
+swiple_api_test:
+	cd ./backend && PRODUCTION='False' \
+	SECRET_KEY=DphzRvbm3ICHH2t1_Xj5NTUVEpqjz5KOHxuF77udndQ= \
+	ADMIN_EMAIL=admin@email.com \
+	ADMIN_PASSWORD=admin \
+	poetry run pytest --cov app/ --cov-report=xml && cd ..
 
 demo:
 	docker compose run demo

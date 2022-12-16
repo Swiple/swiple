@@ -17,7 +17,7 @@ import {
 } from '../../../Api';
 import AsyncButton from '../../../components/AsyncButton';
 
-import ajv from '../../../JsonSchemaFormValidator';
+import { validateAgainstJsonSchema } from '../../../JsonSchemaFormValidator';
 import { getDestinationIcon } from '../../../Utils';
 
 const { Option } = Select;
@@ -149,17 +149,6 @@ function DestinationModal({
     setSelectedDestination('');
   };
 
-  const buildValidationErrors = (errorList) => {
-    let errorString = '';
-    for (let i = 0; i < errorList.length; i += 1) {
-      const { msg } = errorList[i];
-      if (msg && !msg.includes('unknown keyword')) {
-        errorString += `${msg}\n`;
-      }
-    }
-    return errorString;
-  };
-
   const usePasswordIconRender = (isVisible) => {
     if (type !== CREATE_TYPE) return null;
     return isVisible ? <EyeTwoTone /> : <EyeInvisibleOutlined />;
@@ -217,12 +206,7 @@ function DestinationModal({
                       : {},
                     {
                       validator: async (rule, value) => {
-                        const validate = ajv.compile(propObj);
-                        const valid = validate(value);
-                        // no need to validate undefined values as we have 'required' rule above
-                        if (value !== undefined && !valid) {
-                          throw new Error(buildValidationErrors(validate.errors));
-                        }
+                        validateAgainstJsonSchema(propObj, value);
                       },
                     },
                   ]}

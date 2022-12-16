@@ -8,26 +8,27 @@ from great_expectations.core.batch import RuntimeBatchRequest, BatchRequest
 from great_expectations.data_context import BaseDataContext
 from great_expectations.data_context.types.base import DataContextConfig, AnonymizedUsageStatisticsConfig
 from great_expectations.data_context.types.base import InMemoryStoreBackendDefaults
-from great_expectations.profile.user_configurable_profiler import UserConfigurableProfiler
+from great_expectations.rule_based_profiler.data_assistant_result.onboarding_data_assistant_result import OnboardingDataAssistantResult
 from opensearchpy import OpenSearch
 from pandas import isnull
 
-
-from app import constants as c
 from app import utils
 from app.core.actions import action_dispatcher
-from app.core.expectations import supported_unsupported_expectations
 from app.db.client import client as os_client
+from app.models.dataset import BaseDataset
 from app.models.datasource import Engine
 from app.models.validation import Validation
 from app.repositories.dataset import DatasetRepository
 from app.repositories.datasource import DatasourceRepository
 from app.repositories.expectation import ExpectationRepository
 from app.settings import settings
+from app.logger import get_logger
+
+logger = get_logger(__file__)
 
 
 class Runner:
-    def __init__(self, datasource, batch, meta, dataset_id=None, datasource_id=None, expectations=None,
+    def __init__(self, datasource, batch: BaseDataset, meta, dataset_id=None, datasource_id=None, expectations=None,
                  identifiers=None, excluded_expectations=[]):
         self.identifiers = identifiers
         self.datasource = datasource
@@ -44,21 +45,13 @@ class Runner:
 
         data_context_config = self.get_data_context_config()
         context = BaseDataContext(project_config=data_context_config)
-        suite: ExpectationSuite = context.create_expectation_suite("default", overwrite_existing=True)
-
-        batch_request = self.get_batch_request(is_profile=True)
-
-        validator = context.get_validator(
+        batch_request = self.get_batch_request()
+        data_assistant_result: OnboardingDataAssistantResult = context.assistants.onboarding.run(
             batch_request=batch_request,
-            expectation_suite=suite,
+            cardinality_limit_mode="few",
         )
 
-        profiler = UserConfigurableProfiler(
-            validator,
-            excluded_expectations=self.excluded_expectations,
-            value_set_threshold="few",
-        )
-        expectations = profiler.build_suite().to_json_dict()['expectations']
+        expectations = data_assistant_result.to_json_dict()['expectation_configurations']
 
         for expectation in expectations:
             expectation["kwargs"].update({"result_format": "SUMMARY", "include_config": True, "catch_exceptions": True})
@@ -76,26 +69,15 @@ class Runner:
 
         return expectations
 
-    def sample(self):
+    def sample(self) -> dict:
         data_context_config = self.get_data_context_config()
         context = BaseDataContext(project_config=data_context_config)
-
         batch_request = self.get_batch_request()
-
         suite: ExpectationSuite = context.create_expectation_suite("default", overwrite_existing=True)
-
-        try:
-            validator = context.get_validator(
-                batch_request=batch_request, expectation_suite=suite,
-            )
-            head = validator.head()
-        except KeyError as ex:
-            if self.batch.runtime_parameters:
-                return {"exception": f"Syntax error in query."}
-            else:
-                print(str(ex))
-                return {"exception": f"{self.batch.dataset_name} is not recognized."}
-
+        validator = context.get_validator(
+            batch_request=batch_request, expectation_suite=suite,
+        )
+        head = validator.head(n_rows=10)
         rows = head.to_dict(orient='records')
         columns = head.columns
 
@@ -106,7 +88,10 @@ class Runner:
 
                 if isnull(record[column]):
                     record[column] = None
-        return {'columns': list(columns), 'rows': rows}
+        return {
+            "columns": list(columns),
+            "rows": rows,
+        }
 
     def validate(self) -> Validation:
         data_context_config = self.get_data_context_config()
@@ -166,7 +151,7 @@ class Runner:
         return Validation(**validation)
 
     def get_data_context_config(self):
-        connection_string = self._get_connection_string()
+        connection_string = self.get_connection_string()
 
         context = DataContextConfig(
             datasources={
@@ -177,26 +162,7 @@ class Runner:
                         "class_name": "SqlAlchemyExecutionEngine",
                         "connection_string": connection_string,
                     },
-                    "data_connectors": {
-                        "default_runtime_data_connector": {
-                            "class_name": "RuntimeDataConnector",
-
-                            # Is there a use-case where this is needed?
-                            # If we require users to add all details for runs in the app then
-                            # using SDK, it pulls values into SDK? This would require batch_identifiers
-                            # for datasources like spark/airflow TODO do this when spark/airflow is added
-                            #
-                            # Alternative is to let users push to ES runs without
-                            # values in app. (Don't like the sound of that...)
-                            "batch_identifiers": [
-                                self.batch.dataset_name
-                            ],
-                        },
-                        "default_inferred_data_connector_name": {
-                            "class_name": "InferredAssetSqlDataConnector",
-                            "include_schema_name": True,
-                        },
-                    }
+                    "data_connectors": self._get_data_connectors()
                 }
             },
             store_backend_defaults=InMemoryStoreBackendDefaults(),
@@ -205,17 +171,12 @@ class Runner:
             },
             anonymous_usage_statistics=AnonymizedUsageStatisticsConfig(enabled=False)
         )
+
         return context
 
-    def get_batch_request(self, is_profile=True):
+    def get_batch_request(self):
+        batch_spec_passthrough = {"create_temp_table": False}
         if self.batch.runtime_parameters:
-            batch_spec_passthrough = None
-            if is_profile:
-                # Bug when profiling. Requires physical/temp table to get column types.
-                # set back to False when  https://github.com/great-expectations/great_expectations/issues/4832
-                # is fixed
-                batch_spec_passthrough = {"create_temp_table": True}
-
             runtime_parameters = self.batch.runtime_parameters.dict(by_alias=True)
             return RuntimeBatchRequest(
                 datasource_name=self.datasource.datasource_name,
@@ -223,17 +184,22 @@ class Runner:
                 data_asset_name=self.batch.dataset_name,
                 runtime_parameters=runtime_parameters,
                 batch_identifiers={self.batch.dataset_name: self.batch.dataset_name},
-                batch_spec_passthrough=batch_spec_passthrough,
+                batch_spec_passthrough={"create_temp_table": True},
             )
         else:
+            if self.batch.sampling:
+                batch_spec_passthrough.update(self.batch.sampling.dict(exclude_none=True))
             return BatchRequest(
                 datasource_name=self.datasource.datasource_name,
-                data_connector_name="default_inferred_data_connector_name",
+                data_connector_name="default_configured_asset_data_connector_name",
                 data_asset_name=self.batch.dataset_name,
-                batch_spec_passthrough={"create_temp_table": False},
+                batch_spec_passthrough={
+                    "create_temp_table": False,
+                    **batch_spec_passthrough,
+                },
             )
 
-    def _get_connection_string(self):
+    def get_connection_string(self):
         # Snowflake SQLAlchemy connector requires the schema in the connection string in order to create TEMP tables.
         if self.datasource.engine == Engine.SNOWFLAKE and self.batch.runtime_parameters:
             schema = self.batch.runtime_parameters.schema_name
@@ -249,6 +215,39 @@ class Runner:
             connection_string = self.datasource.connection_string()
 
         return connection_string
+
+    def _get_data_connectors(self):
+        if self.batch.runtime_parameters:
+            return {
+                "default_runtime_data_connector": {
+                    "class_name": "RuntimeDataConnector",
+                    # Is there a use-case where this is needed?
+                    # If we require users to add all details for runs in the app then
+                    # using SDK, it pulls values into SDK? This would require batch_identifiers
+                    # for datasources like spark/airflow TODO do this when spark/airflow is added
+                    #
+                    # Alternative is to let users push to ES runs without
+                    # values in app. (Don't like the sound of that...)
+                    "batch_identifiers": [
+                        self.batch.dataset_name
+                    ],
+                },
+            }
+        else:
+            # Physical table, schema.table
+            schema_name, table_name = self.batch.dataset_name.split(".")
+            return {
+                "default_configured_asset_data_connector_name": {
+                    "class_name": "ConfiguredAssetSqlDataConnector",
+                    "assets": {
+                        table_name: {
+                            "include_schema_name": True,
+                            "schema_name": schema_name,
+                            "table_name": table_name,
+                        }
+                    }
+                },
+            }
 
     @staticmethod
     def _get_status(success: bool) -> Literal["success", "failure"]:
@@ -311,9 +310,6 @@ def create_dataset_suggestions(dataset_id: str, client: OpenSearch = os_client):
         "dataset_name": dataset.dataset_name,
     }
 
-    excluded_expectations = supported_unsupported_expectations()["unsupported_expectations"]
-    excluded_expectations.append(c.EXPECT_COLUMN_VALUES_TO_BE_BETWEEN)
-
     results = Runner(
         datasource=datasource,
         batch=dataset,
@@ -321,7 +317,7 @@ def create_dataset_suggestions(dataset_id: str, client: OpenSearch = os_client):
         identifiers=identifiers,
         datasource_id=dataset.datasource_id,
         dataset_id=dataset.key,
-        excluded_expectations=excluded_expectations,
+        excluded_expectations=[],
     ).profile()
 
     return results

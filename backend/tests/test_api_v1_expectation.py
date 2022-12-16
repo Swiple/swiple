@@ -28,7 +28,7 @@ class TestGetJSONSchema:
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert len(json) == 30
+        assert len(json) == 31
 
 
 @pytest.mark.asyncio
@@ -45,8 +45,8 @@ class TestListSupportedExpectations:
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert len(json["supported_expectations"]) == 30
-        assert len(json["unsupported_expectations"]) == 33
+        assert len(json["supported_expectations"]) == 31
+        assert len(json["unsupported_expectations"]) == 32
 
 
 @pytest.mark.asyncio

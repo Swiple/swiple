@@ -1,8 +1,7 @@
 import base64
-import json
 from enum import Enum
 from typing import Annotated, Optional, Literal, Union
-
+from app.settings import settings
 from pydantic import Field
 
 from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
@@ -17,6 +16,7 @@ class Engine(str, Enum):
     SNOWFLAKE = "Snowflake"
     BIGQUERY = "BigQuery"
     TRINO = "Trino"
+    SQLite = "SQLite"
 
 
 class DatasourceBase(BaseModel, KeyModel, CreateUpdateDateModel):
@@ -38,7 +38,8 @@ class Athena(DatasourceBase):
     engine: Literal[Engine.ATHENA]
     database: str
     region: str = Field(placeholder="us-east-1", description="AWS Region")
-    s3_staging_dir: str = Field(regex="^s3://", placeholder="s3://YOUR_S3_BUCKET/path/to/", description="Navigate to 'Athena' in the AWS Console then select 'Settings' to find the 'Query result location'.")
+    s3_staging_dir: str = Field(regex="^s3://", placeholder="s3://YOUR_S3_BUCKET/path/to/",
+                                description="Navigate to 'Athena' in the AWS Console then select 'Settings' to find the 'Query result location'.")
 
     def connection_string(self):
         if self.database:
@@ -200,15 +201,42 @@ class BigQuery(DatasourceBase):
         }
 
 
-Datasource = Union[
-    Athena,
-    BigQuery,
-    PostgreSQL,
-    MySQL,
-    Redshift,
-    Snowflake,
-    Trino,
-]
+class SQLite(DatasourceBase):
+    engine: Literal[Engine.SQLite]
+    file_path: str
+    database: str = ""
+
+    def connection_string(self):
+        return f"sqlite:///{self.file_path}"
+
+    def expectation_meta(self):
+        return {
+            "engine": self.engine,
+            "database": self.database,
+        }
+
+
+if settings.PRODUCTION:
+    Datasource = Union[
+        Athena,
+        BigQuery,
+        PostgreSQL,
+        MySQL,
+        Redshift,
+        Snowflake,
+        Trino,
+    ]
+else:
+    Datasource = Union[
+        Athena,
+        BigQuery,
+        PostgreSQL,
+        MySQL,
+        Redshift,
+        Snowflake,
+        Trino,
+        SQLite,
+    ]
 
 
 class DatasourceInput(BaseModel):

@@ -92,6 +92,10 @@ export const deleteDataSource = (key) => axios.delete(`${BASE_URL}/datasources/$
 // ========================================================
 // Dataset
 // ========================================================
+export const getDatasetJsonSchema = () => axios.get(`${BASE_URL}/datasets/json-schema`)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
 export const getDatasets = (datasourceId) => {
   const params = {};
 

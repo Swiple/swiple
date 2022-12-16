@@ -20,6 +20,10 @@ from app.models.users import UserDB
 from app.core.runner import create_dataset_suggestions, run_dataset_validation
 from opensearchpy import OpenSearch, RequestError
 import requests
+from app.utils import json_schema_to_single_doc
+from app.logger import get_logger
+
+logger = get_logger(__file__)
 
 router = APIRouter(
     dependencies=[Depends(current_active_user)]
@@ -28,7 +32,7 @@ router = APIRouter(
 
 @router.get("/json-schema")
 def get_json_schema():
-    schema = Dataset.schema()
+    schema = json_schema_to_single_doc(Dataset.schema())
     return JSONResponse(status_code=status.HTTP_200_OK, content=schema)
 
 
@@ -210,7 +214,13 @@ def create_suggestions(
     dataset = get_by_key_or_404(key, repository)
 
     results = create_dataset_suggestions(key, client)
-    expectations = [expectation_repository._get_object_from_dict(e) for e in results]
+    expectations = []
+    for expectation in results:
+        try:
+            expectations.append(expectation_repository._get_object_from_dict(expectation))
+        except ValueError as e:
+            logger.warning(expectation)
+            logger.warning(e)
 
     expectation_repository.delete_by_filter(dataset_id=dataset.key, suggested=True, enabled=False)
     expectation_repository.bulk_create(expectations)
@@ -223,7 +233,8 @@ def should_update_sample(dataset: Dataset, dataset_update: DatasetUpdate):
     # if the new and the old datasets use a query and the query has not changed, don't update sample
     return not (
         (dataset.dataset_name == dataset_update.dataset_name and (
-            dataset.runtime_parameters == dataset_update.runtime_parameters is None)) or
+            dataset.runtime_parameters == dataset_update.runtime_parameters is None) and (
+            dataset.sampling == dataset_update.sampling)) or
         (dataset.runtime_parameters and
          dataset_update.runtime_parameters and
          dataset.runtime_parameters.query == dataset_update.runtime_parameters.query)

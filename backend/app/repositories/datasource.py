@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from app.repositories.base import BaseRepository, get_repository
-from app.models.datasource import Datasource, DatasourceInput
+from app.models.datasource import DatasourceInput, Datasource
 from app.settings import settings
 
 

@@ -1,3 +1,4 @@
+import os
 import httpx
 import pytest
 from fastapi import status
@@ -6,8 +7,15 @@ from pytest_mock import MockerFixture
 import requests
 
 from app import constants as c
+from app.models.datasource import Engine
 from app.repositories.datasource import DatasourceRepository
+from app.utils import file_relative_path
 from tests.data import DATASOURCES
+
+
+@pytest.fixture
+def datasource_repository(opensearch_client: OpenSearch):
+    return DatasourceRepository(opensearch_client)
 
 
 @pytest.fixture
@@ -29,7 +37,10 @@ class TestGetJSONSchema:
         assert response.status_code == status.HTTP_200_OK
 
         json = response.json()
-        assert len(json) == 7
+        assert len(json) == 8
+
+        assert all(any(d['title'] == value for d in json) for value in Engine), \
+            "found value in 'Engine' but not in Datasource = Union[]"
 
 
 @pytest.mark.asyncio
@@ -95,6 +106,20 @@ class TestListDatasources:
                 "host": "mysql",
                 "port": 3306,
             },
+            {
+                'create_date': '2022-10-04 13:37:00.000000+00:00',
+                'created_by': 'admin@email.com',
+                'database': '',
+                'datasource_name': 'sqlite',
+                'description': None,
+                'engine': 'SQLite',
+                'file_path': file_relative_path(
+                    __file__,
+                    os.path.join("test_data", "TPC-H-small.db"),
+                ),
+                'key': '9034f199-bd74-415f-990e-9d6cc8c56589',
+                'modified_date': '2022-10-04 13:37:00.000000+00:00',
+            }
         ]
 
 
