@@ -1,7 +1,7 @@
 import base64
 from enum import Enum
 from typing import Annotated, Optional, Literal, Union
-
+from app.settings import settings
 from pydantic import Field
 
 from app.models.base_model import BaseModel, CreateUpdateDateModel, KeyModel
@@ -38,7 +38,8 @@ class Athena(DatasourceBase):
     engine: Literal[Engine.ATHENA]
     database: str
     region: str = Field(placeholder="us-east-1", description="AWS Region")
-    s3_staging_dir: str = Field(regex="^s3://", placeholder="s3://YOUR_S3_BUCKET/path/to/", description="Navigate to 'Athena' in the AWS Console then select 'Settings' to find the 'Query result location'.")
+    s3_staging_dir: str = Field(regex="^s3://", placeholder="s3://YOUR_S3_BUCKET/path/to/",
+                                description="Navigate to 'Athena' in the AWS Console then select 'Settings' to find the 'Query result location'.")
 
     def connection_string(self):
         if self.database:
@@ -215,15 +216,27 @@ class SQLite(DatasourceBase):
         }
 
 
-Datasource = Union[
-    Athena,
-    BigQuery,
-    PostgreSQL,
-    MySQL,
-    Redshift,
-    Snowflake,
-    Trino,
-]
+if settings.PRODUCTION:
+    Datasource = Union[
+        Athena,
+        BigQuery,
+        PostgreSQL,
+        MySQL,
+        Redshift,
+        Snowflake,
+        Trino,
+    ]
+else:
+    Datasource = Union[
+        Athena,
+        BigQuery,
+        PostgreSQL,
+        MySQL,
+        Redshift,
+        Snowflake,
+        Trino,
+        SQLite,
+    ]
 
 
 class DatasourceInput(BaseModel):

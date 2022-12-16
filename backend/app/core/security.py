@@ -5,7 +5,6 @@ try:
 except ImportError:
     botocore = None
 from cryptography.fernet import Fernet
-from great_expectations.data_context import util
 from great_expectations.core.config_substitutor import _ConfigurationSubstitutor
 
 
