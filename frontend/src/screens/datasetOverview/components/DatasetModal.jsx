@@ -45,7 +45,7 @@ function DatasetModal({
   const [dataSources, setDataSources] = useState([]);
   const [schemas, setSchemas] = useState([]);
   const [tables, setTables] = useState([]);
-  const [columns, setColumns] = useState([]);
+  const [, setColumns] = useState([]);
 
   const [refreshDataSources, setRefreshDataSources] = useState(true);
   const [refreshSchemas, setRefreshSchemas] = useState(false);
