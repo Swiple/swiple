@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,140,65
+/Swiple/swiple/tree/main/backend,28,14
+/Swiple/swiple/blob/main/docker-compose.yaml,22,5
+/Swiple/swiple/tree/main/backend/app,20,9
+/Swiple/swiple/blob/main/backend/app/models/expectation.py,11,3
+/Swiple/swiple/pulls,8,5
+/Swiple/swiple/issues,8,2
+/Swiple/swiple/issues/69,8,1
+/Swiple/swiple/blob/main/backend/Dockerfile,7,6
+/Swiple/swiple/tree/main/docs,7,5
