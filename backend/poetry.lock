@@ -75,7 +75,7 @@ python-versions = "*"
 
 [[package]]
 name = "apprise"
-version = "1.1.0"
+version = "1.2.1"
 description = "Push Notifications that work with just about every platform!"
 category = "main"
 optional = false
@@ -83,6 +83,7 @@ python-versions = ">=3.6"
 develop = false
 
 [package.dependencies]
+certifi = "*"
 click = ">=5.0"
 markdown = "*"
 PyYAML = "*"
@@ -93,7 +94,7 @@ requests-oauthlib = "*"
 type = "git"
 url = "https://github.com/caronc/apprise.git"
 reference = "master"
-resolved_reference = "e7255df1da039784d4214f856eb430543c14e78b"
+resolved_reference = "3d07004f5e026b3bb378444b0518e59d3a144d4d"
 
 [[package]]
 name = "APScheduler"
@@ -2802,7 +2803,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9.0,<3.10"
-content-hash = "0855b26af390c2ade86073b2e1749c3eaf87055845fbf469e96543c06db26154"
+content-hash = "93a5bbb32a1c814500ddb71fa43f9393dacffa92c8d0bed3732e77ad0f9f7a25"
 
 [metadata.files]
 aiohttp = [
