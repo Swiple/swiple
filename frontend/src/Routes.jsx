@@ -6,6 +6,7 @@ import Dashboard from './screens/dashboard';
 import DatasourceOverview from './screens/datasourceOverview';
 import DatasetOverview from './screens/datasetOverview';
 import Dataset from './screens/dataset';
+import UserOverview from './screens/settingsOverview';
 import { RequireAuth, AuthProvider } from './Auth';
 import paths from './config/Routes';
 import ActionOverview from './screens/destinationOverview';
@@ -62,6 +63,11 @@ function Routes() {
           exact
           path={paths.DESTINATIONS}
           component={<ActionOverview />}
+        />
+        <PrivateRoute
+          exact
+          path={paths.SETTINGS}
+          component={<UserOverview />}
         />
         <Redirect
           from="*"
