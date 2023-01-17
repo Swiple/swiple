@@ -1,8 +1,9 @@
-from typing import Optional
+import re
+from typing import Optional, Union
 from fastapi import Depends, Request
-from fastapi_users import BaseUserManager, FastAPIUsers
+from fastapi_users import BaseUserManager, FastAPIUsers, models
 from fastapi_users.authentication import AuthenticationBackend, CookieTransport, JWTStrategy
-from fastapi_users.manager import UserAlreadyExists
+from fastapi_users.manager import InvalidPasswordException
 from fastapi_users_db_opensearch import OpenSearchUserDatabase
 from pydantic import EmailStr
 
@@ -17,6 +18,23 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
     user_db_model = UserDB
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
+
+    async def validate_password(
+        self, password: str, user: Union[models.UC, models.UD]
+    ) -> None:
+        if len(password) < 12:
+            raise InvalidPasswordException("Password should be at least 12 characters long")
+
+        if not re.search("[A-Z]", password):
+            raise InvalidPasswordException("Expect at least 1 uppercase character")
+
+        if not re.search("[0-9]", password):
+            raise InvalidPasswordException("Expect at least 1 number")
+
+        if not re.search("[!@#\$%^&*\(\)]", password):
+            raise InvalidPasswordException("Expect at least 1 special character")
+
+        return None
 
     async def on_after_register(self, user: UserDB, request: Optional[Request] = None):
         print(f"User {user.id} has registered.")
@@ -63,29 +81,21 @@ current_active_user = fastapi_users.current_user(active=True)
 current_active_superuser = fastapi_users.current_user(active=True, superuser=True)
 
 
-async def create_user(email: EmailStr, password: str, is_superuser: bool = False):
-    try:
-        user_db = OpenSearchUserDatabase(UserDB, async_client)
-        user_manager = UserManager(user_db)
-        try:
-            user = await user_manager.create(
-                UserCreate(
-                    email=email, password=password, is_superuser=is_superuser
-                )
-            )
-            print(f"User created {user.email}")
+async def create_user(
+    email: EmailStr,
+    password: str,
+    is_superuser: bool = False,
+    is_verified: bool = True,
+):
+    user_db = OpenSearchUserDatabase(UserDB, async_client)
+    user_manager = UserManager(user_db)
+    user = await user_manager.create(
+        UserCreate(
+            email=email,
+            password=password,
+            is_superuser=is_superuser,
+            is_verified=is_verified,
+        )
+    )
+    return user
 
-        except UserAlreadyExists:
-            print(f"User {email} already exists. Updating user.")
-            user_update = UserUpdate(
-                email=email, password=password, is_superuser=is_superuser
-            )
-            user = await user_manager.get_by_email(user_email=email)
-            await user_manager.update(
-                user_update=user_update,
-                user=user,
-            )
-    except Exception as ex:
-        print(ex)
-    finally:
-        await async_client.close()
