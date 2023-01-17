@@ -412,3 +412,21 @@ export const getMe = () => axios.get(`${BASE_URL}/user/me`)
 export const getUsers = () => axios.get(`${BASE_URL}/user`)
   .then((response) => response)
   .catch((error) => errorHandler(error));
+
+export const postUser = (data) => axios.post(
+  `${BASE_URL}/user`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const patchUser = (data, key) => axios.patch(
+  `${BASE_URL}/user/${key}`,
+  data,
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
+export const deleteUser = (key) => axios.delete(`${BASE_URL}/user/${key}`)
+  .then((data) => data.data)
+  .catch((error) => errorHandler(error));
