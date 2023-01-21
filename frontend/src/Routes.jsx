@@ -7,17 +7,21 @@ import DatasourceOverview from './screens/datasourceOverview';
 import DatasetOverview from './screens/datasetOverview';
 import Dataset from './screens/dataset';
 import UserOverview from './screens/settingsOverview';
-import { RequireAuth, AuthProvider } from './Auth';
+import { RequireAuth } from './Auth';
 import paths from './config/Routes';
 import ActionOverview from './screens/destinationOverview';
 
-function PrivateRoute({ component, path, ...rest }) {
+function PrivateRoute({
+  requiresSuperUser, component, path, ...rest
+}) {
   return (
     <Route
       {...rest}
       path={path}
       render={() => (
-        <RequireAuth>
+        <RequireAuth
+          requiresSuperUser={requiresSuperUser}
+        >
           {component}
         </RequireAuth>
       )}
@@ -25,56 +29,75 @@ function PrivateRoute({ component, path, ...rest }) {
   );
 }
 
+PrivateRoute.defaultProps = {
+  requiresSuperUser: false,
+};
+
 PrivateRoute.propTypes = {
+  requiresSuperUser: PropTypes.bool,
+  component: PropTypes.element.isRequired,
+  path: PropTypes.string.isRequired,
+};
+
+function PublicRoute({ component, path, ...rest }) {
+  return (
+    <Route
+      {...rest}
+      path={path}
+      render={() => component}
+    />
+  );
+}
+
+PublicRoute.propTypes = {
   component: PropTypes.element.isRequired,
   path: PropTypes.string.isRequired,
 };
 
 function Routes() {
   return (
-    <AuthProvider>
-      <Switch>
-        <Route
-          exact
-          path={paths.LOGIN}
-          component={Login}
-        />
-        <PrivateRoute
-          exact
-          path={paths.DASHBOARD}
-          component={<Dashboard />}
-        />
-        <PrivateRoute
-          exact
-          path={paths.DATA_SOURCES}
-          component={<DatasourceOverview />}
-        />
-        <PrivateRoute
-          exact
-          path={paths.DATASETS}
-          component={<DatasetOverview />}
-        />
-        <PrivateRoute
-          exact
-          path={paths.DATASET}
-          component={<Dataset />}
-        />
-        <PrivateRoute
-          exact
-          path={paths.DESTINATIONS}
-          component={<ActionOverview />}
-        />
-        <PrivateRoute
-          exact
-          path={paths.SETTINGS}
-          component={<UserOverview />}
-        />
-        <Redirect
-          from="*"
-          to={paths.DASHBOARD}
-        />
-      </Switch>
-    </AuthProvider>
+    <Switch>
+      <PublicRoute
+        exact
+        path={paths.LOGIN}
+        component={<Login />}
+      />
+      <PrivateRoute
+        exact
+        path={paths.DASHBOARD}
+        component={<Dashboard />}
+      />
+      <PrivateRoute
+        exact
+        path={paths.DATA_SOURCES}
+        component={<DatasourceOverview />}
+      />
+      <PrivateRoute
+        exact
+        path={paths.DATASETS}
+        component={<DatasetOverview />}
+      />
+      <PrivateRoute
+        exact
+        path={paths.DATASET}
+        component={<Dataset />}
+      />
+      <PrivateRoute
+        exact
+        path={paths.DESTINATIONS}
+        component={<ActionOverview />}
+      />
+      <PrivateRoute
+        exact
+        requiresSuperUser
+        path={paths.SETTINGS}
+        component={<UserOverview />}
+      />
+      <Redirect
+        from="*"
+        to={paths.DASHBOARD}
+      />
+    </Switch>
   );
 }
 

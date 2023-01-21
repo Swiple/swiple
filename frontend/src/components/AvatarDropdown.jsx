@@ -1,19 +1,17 @@
 import React from 'react';
 import { Avatar, Dropdown, Menu } from 'antd';
 import { UserOutlined, CaretDownOutlined } from '@ant-design/icons';
-import { useHistory } from 'react-router-dom';
 import { logout } from '../Api';
+import paths from '../config/Routes';
 
 function AvatarDropdown() {
-  const history = useHistory();
-
   const menu = (
     <Menu>
       <Menu.Item
         key="1"
         onClick={() => logout().then((response) => {
           if (response.status === 200) {
-            history.replace('/login');
+            window.location.href = paths.LOGIN;
           }
         })}
       >

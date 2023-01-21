@@ -1,3 +1,5 @@
+import paths from './config/Routes';
+
 const axiosDefault = require('axios').default;
 
 const axios = axiosDefault.create({
@@ -12,13 +14,11 @@ function errorHandler(error) {
     // that falls out of the range of 2xx
     console.log(error.response.data);
     console.log(error.response.status);
-    console.log(error.response.headers);
 
     // Send to login page if not authenticated
     if (error.response.status === 401) {
-      console.log(window.location.pathname);
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      if (window.location.pathname !== paths.LOGIN) {
+        window.location.href = paths.LOGIN;
       } else {
         return error.response;
       }
