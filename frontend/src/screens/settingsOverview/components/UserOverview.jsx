@@ -60,7 +60,7 @@ export default function userOverview() {
     confirm({
       title: 'Delete User',
       icon: <ExclamationCircleOutlined />,
-      content: 'Are you sure you would like to delete this User?',
+      content: 'Are you sure you would like to delete this user?',
       okText: 'Delete',
       okType: 'danger',
       onOk() {
