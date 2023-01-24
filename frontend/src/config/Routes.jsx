@@ -6,6 +6,7 @@ const paths = {
   DATASETS: '/datasets/home',
   DATASET: '/dataset/home',
   DESTINATIONS: '/destinations/home',
+  SETTINGS: '/settings/home',
 };
 
 export default paths;

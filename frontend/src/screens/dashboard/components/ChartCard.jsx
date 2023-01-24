@@ -97,10 +97,14 @@ function ChartCard({
   );
 }
 
+ChartCard.defaultProps = {
+  total: null,
+};
+
 ChartCard.propTypes = {
   contentHeight: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
-  total: PropTypes.number.isRequired,
+  total: PropTypes.number,
   children: PropTypes.element.isRequired,
   loading: PropTypes.bool.isRequired,
 };

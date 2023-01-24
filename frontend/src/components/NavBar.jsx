@@ -4,17 +4,22 @@ import {
   Layout, Menu,
 } from 'antd';
 import {
-  DatabaseOutlined, LineChartOutlined, TableOutlined, NotificationOutlined,
+  DatabaseOutlined, LineChartOutlined, TableOutlined, NotificationOutlined, SettingOutlined,
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import paths from '../config/Routes';
 import {
   Logo,
 } from '../static/images';
+import { useAuth } from '../Auth';
 
 const { Sider } = Layout;
 
 const NavBar = withRouter((props) => {
+  const auth = useAuth();
+
+  if (!auth.user) return null;
+
   const authPaths = [paths.LOGIN, paths.REGISTER];
   if (authPaths.includes(props.location.pathname)) return null;
 
@@ -39,10 +44,20 @@ const NavBar = withRouter((props) => {
       pathName: [paths.DESTINATIONS],
       icon: <NotificationOutlined />,
     },
+    5: {
+      title: 'Settings',
+      pathName: [paths.SETTINGS],
+      icon: <SettingOutlined />,
+      superUserRequired: true,
+    },
   };
 
   let activeMenu = '1';
   const menus = Object.entries(menuItems).map(([key, value]) => {
+    if (value.superUserRequired && !auth.user?.is_superuser) {
+      return null;
+    }
+
     if (value.pathName.includes(props.location.pathname)) {
       activeMenu = key;
     }
