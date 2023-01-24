@@ -1,6 +1,6 @@
 from opensearchpy import AsyncOpenSearch, OpenSearch
 from app.settings import settings
-from app.models.auth import UserDB
+from app.models.users import UserDB
 
 
 # Create the client with SSL/TLS enabled, but hostname verification disabled.
