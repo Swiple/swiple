@@ -140,6 +140,8 @@ function Login() {
     return null;
   };
 
+  const inputIcon = (visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />);
+
   const usernameAndPassword = () => {
     if (!authMethods.includes('username_and_password')) {
       return null;
@@ -171,7 +173,7 @@ function Login() {
             prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
             placeholder="Password"
-            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+            iconRender={inputIcon()}
           />
         </Form.Item>
         <Form.Item>
