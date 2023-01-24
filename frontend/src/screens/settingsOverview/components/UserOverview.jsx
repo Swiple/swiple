@@ -1,5 +1,5 @@
 import {
-  Button, Dropdown, Menu, message, Modal, Row, Table, Typography,
+  Button, Dropdown, Menu, message, Modal, Row, Space, Table, Tag, Typography,
 } from 'antd';
 import {
   DeleteFilled,
@@ -12,9 +12,11 @@ import {
 } from '@ant-design/icons';
 import { v4 as uuidv4 } from 'uuid';
 import React, { useEffect, useState } from 'react';
+import Text from 'antd/es/typography/Text';
 import Section from '../../../components/Section';
 import UserModal, { CREATE_TYPE, UPDATE_TYPE } from './UserModal';
 import { deleteUser, getUsers } from '../../../Api';
+import { useAuth } from '../../../Auth';
 
 const { Title } = Typography;
 const { confirm } = Modal;
@@ -23,6 +25,7 @@ export default function userOverview() {
   const [userModal, setUserModal] = useState({ visible: false, type: '' });
   const [refreshUsers, setRefreshUsers] = useState(true);
   const [users, setUsers] = useState([]);
+  const auth = useAuth();
 
   useEffect(() => {
     if (refreshUsers) {
@@ -95,6 +98,25 @@ export default function userOverview() {
     {
       title: 'Email',
       dataIndex: 'email',
+      render: (text) => (
+        <Row>
+          <Space>
+            <Text>{text}</Text>
+            {
+              text === auth.user.email
+                ? (
+                  <Tag style={{
+                    border: 0, backgroundColor: '#D3F4D3', color: '#1B7F65', fontWeight: 'bold',
+                  }}
+                  >
+                    You
+                  </Tag>
+                )
+                : null
+            }
+          </Space>
+        </Row>
+      ),
     },
     {
       title: 'Superuser',
