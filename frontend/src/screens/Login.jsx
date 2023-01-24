@@ -173,7 +173,7 @@ function Login() {
             prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
             placeholder="Password"
-            iconRender={inputIcon()}
+            iconRender={() => inputIcon()}
           />
         </Form.Item>
         <Form.Item>
