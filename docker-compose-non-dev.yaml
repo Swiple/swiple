@@ -84,7 +84,7 @@ services:
     volumes:
       - ./docker/postgres-data:/var/lib/postgresql/data
   opensearch-node1:
-    image: opensearchproject/opensearch:1.3.1
+    image: opensearchproject/opensearch:2.3.0
     restart: unless-stopped
     container_name: opensearch-node1
     environment:
@@ -116,7 +116,7 @@ services:
       timeout: 30s
       retries: 10
   opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:1.3.0
+    image: opensearchproject/opensearch-dashboards:2.3.0
     container_name: opensearch-dashboards
     restart: unless-stopped
     ports:
