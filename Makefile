@@ -21,8 +21,8 @@ swiple_ui_dev:
 swiple_api_dev:
 	python3 ./backend/main.py
 
-demo:
-	docker compose run demo
+integration_test:
+	docker compose run integration_test
 
 opensearch:
 	docker compose up -d opensearch-node1
