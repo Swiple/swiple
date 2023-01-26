@@ -182,12 +182,13 @@ def get_histogram_points():
                 "query": {
                     "match": {"enabled": True}
                 },
-                "aggregations": {
+                "aggs": {
                     "histogram": {
                         "date_histogram": {
                             "field": "create_date",
                             "min_doc_count": 0,
-                            "interval": "1d",
+                            "calendar_interval": "1d",
+                            "format": "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
                         }
                     }
                 }
@@ -211,12 +212,13 @@ def get_histogram_points():
 def histogram_query(field: str):
     return {
         "size": 0,
-        "aggregations": {
+        "aggs": {
             "histogram": {
                 "date_histogram": {
                     "field": field,
                     "min_doc_count": 0,
-                    "interval": "1d",
+                    "calendar_interval": "1d",
+                    "format": "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
                 }
             }
         }

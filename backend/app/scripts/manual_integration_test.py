@@ -14,6 +14,7 @@ import random
 import pytz
 import requests
 import json
+import os
 
 api_url = f"{settings.SWIPLE_API_URL}{settings.API_VERSION}"
 
@@ -33,8 +34,8 @@ class DemoVideoSetup:
 
     def login(self):
         params = {
-            "username": "admin@email.com",
-            "password": "admin",
+            "username": os.environ["ADMIN_EMAIL"],
+            "password": os.environ["ADMIN_PASSWORD"],
             "grant_type": "",
             "scope": "",
             "client_id": "",
@@ -269,7 +270,7 @@ class DemoVideoSetup:
         #     headers={'Content-Type': 'application/json'},
         # ).json()
 
-        self.generate_historical_validations(datasets=datasets)
+        # self.generate_historical_validations(datasets=datasets)
 
     def _datasource_exists(self, datasource_name):
         response = client.search(
@@ -300,4 +301,5 @@ class DemoVideoSetup:
             print(f"Successfully deleted datasource '{datasource_name}'")
 
 
-DemoVideoSetup().add_resources()
+if __name__ == '__main__':
+    DemoVideoSetup().add_resources()

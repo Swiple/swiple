@@ -11,9 +11,9 @@ numpy = ">=1.23.1"
 scipy = ">=1.9.0"
 great-expectations = "0.15.21"
 fastapi = "0.73.0"
-fastapi-users-db-opensearch = {git = "https://github.com/KentonParton/fastapi-users-db-opensearch.git", rev = "78f7aff0480400bbeac01f12c17e04f1ae21fbed"}
+fastapi-users-db-opensearch = "^0.0.3"
 APScheduler = "3.9.1"
-opensearch-py = {version = "1.0.0", extras = ["async"]}
+opensearch-py = {version = "^2.1.1", extras = ["async"]}
 uvicorn = "^0.18.3"
 SQLAlchemy = "==1.4.27"
 asyncio = "^3.4.3"
@@ -22,7 +22,7 @@ emails = "^0.6"
 fastapi-users = "9.3.2"
 httpx-oauth = "^0.10.1"
 PyYAML = "^6.0"
-apprise = {git = "https://github.com/caronc/apprise.git", rev = "master"}
+apprise = "^1.2.1"
 pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 
 

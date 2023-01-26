@@ -650,21 +650,14 @@ tortoise-orm = ["fastapi-users-db-tortoise (>=1.1.0,<2.0.0)"]
 
 [[package]]
 name = "fastapi-users-db-opensearch"
-version = "0.0.0"
+version = "0.0.3"
 description = "FastAPI Users database adapter for OpenSearch."
 category = "main"
 optional = false
 python-versions = ">=3.7"
-develop = false
 
 [package.dependencies]
-fastapi-users = ">=6.1.2"
-
-[package.source]
-type = "git"
-url = "https://github.com/KentonParton/fastapi-users-db-opensearch.git"
-reference = "78f7aff0480400bbeac01f12c17e04f1ae21fbed"
-resolved_reference = "78f7aff0480400bbeac01f12c17e04f1ae21fbed"
+fastapi-users = ">=9.1.0,<10.0.0"
 
 [[package]]
 name = "fastjsonschema"
@@ -1666,7 +1659,7 @@ python-dateutil = "*"
 
 [[package]]
 name = "opensearch-py"
-version = "1.0.0"
+version = "2.1.1"
 description = "Python low-level client for OpenSearch"
 category = "main"
 optional = false
@@ -1675,12 +1668,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4"
 [package.dependencies]
 aiohttp = {version = ">=3,<4", optional = true, markers = "extra == \"async\""}
 certifi = "*"
+requests = ">=2.4.0,<3.0.0"
 urllib3 = ">=1.21.1,<2"
 
 [package.extras]
 async = ["aiohttp (>=3,<4)"]
-develop = ["black", "coverage", "jinja2", "mock", "pytest", "pytest-cov", "pyyaml", "requests (>=2.0.0,<3.0.0)"]
-requests = ["requests (>=2.4.0,<3.0.0)"]
+develop = ["black", "botocore", "coverage", "jinja2", "mock", "myst-parser", "pytest", "pytest-cov", "pyyaml", "requests (>=2.0.0,<3.0.0)", "sphinx", "sphinx-copybutton", "sphinx-rtd-theme"]
+docs = ["myst-parser", "sphinx", "sphinx-copybutton", "sphinx-rtd-theme"]
+kerberos = ["requests-kerberos"]
 
 [[package]]
 name = "oscrypto"
@@ -2803,7 +2798,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9.0,<3.10"
-content-hash = "93a5bbb32a1c814500ddb71fa43f9393dacffa92c8d0bed3732e77ad0f9f7a25"
+content-hash = "a54d9bc336e6d4635233a06e07a675a7dfeb329a7f012bfcd85a0844f807f7bf"
 
 [metadata.files]
 aiohttp = [
@@ -3287,7 +3282,10 @@ fastapi-users = [
     {file = "fastapi-users-9.3.2.tar.gz", hash = "sha256:57b4bb1abc43d710c375f3e2bac3a13b69a266300f3bb9623a336f758b4c0931"},
     {file = "fastapi_users-9.3.2-py3-none-any.whl", hash = "sha256:00394b1e7d869750c6105c9962d9765f91a151be952e375498fbea38601ccec7"},
 ]
-fastapi-users-db-opensearch = []
+fastapi-users-db-opensearch = [
+    {file = "fastapi-users-db-opensearch-0.0.3.tar.gz", hash = "sha256:210418550865b2e8f01998c1b2a10708f6c5d1e421495d3bd129323eade44d37"},
+    {file = "fastapi_users_db_opensearch-0.0.3-py3-none-any.whl", hash = "sha256:248455a46b56dd663fee64d94dfc4e4bb73092eeb97b2c9dd99be88f542df726"},
+]
 fastjsonschema = [
     {file = "fastjsonschema-2.16.2-py3-none-any.whl", hash = "sha256:21f918e8d9a1a4ba9c22e09574ba72267a6762d47822db9add95f6454e51cc1c"},
     {file = "fastjsonschema-2.16.2.tar.gz", hash = "sha256:01e366f25d9047816fe3d288cbfc3e10541daf0af2044763f3d0ade42476da18"},
@@ -3950,8 +3948,8 @@ openmock = [
     {file = "openmock-2.0.0-py3-none-any.whl", hash = "sha256:dbc242a3bd6107f432e3a31a0115029f9b0953a34cb821961e942a938211afa9"},
 ]
 opensearch-py = [
-    {file = "opensearch-py-1.0.0.tar.gz", hash = "sha256:fa952836cabfa1b2fb05f852edc1a373342494345e89fd52b7124daf4d296bb4"},
-    {file = "opensearch_py-1.0.0-py2.py3-none-any.whl", hash = "sha256:17afebc25dc890b96c4e9ec8692dcfdb6842c028ce8c2d252e8f55c587960177"},
+    {file = "opensearch-py-2.1.1.tar.gz", hash = "sha256:dd54a50c6771bc2582741bfdcf629b8d7eed409ae7fc2722249e53f9a10de0d8"},
+    {file = "opensearch_py-2.1.1-py2.py3-none-any.whl", hash = "sha256:3e7085bf25487979581416f4ab195c2fe62e90f1f07f393091f8233cbea032eb"},
 ]
 oscrypto = [
     {file = "oscrypto-1.3.0-py2.py3-none-any.whl", hash = "sha256:2b2f1d2d42ec152ca90ccb5682f3e051fb55986e1b170ebde472b133713e7085"},
