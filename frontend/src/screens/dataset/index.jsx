@@ -535,6 +535,13 @@ const Dataset = withRouter(() => {
 
   const scheduleColumns = [
     {
+      title: 'NEXT RUN TIME',
+      dataIndex: 'next_run_time',
+      render: (text) => (
+        moment(text).local().format('ddd, D MMM YYYY HH:mm:ss Z')
+      ),
+    },
+    {
       title: 'SCHEDULE TYPE',
       dataIndex: 'trigger',
       render: (record) => (
@@ -552,13 +559,6 @@ const Dataset = withRouter(() => {
     {
       title: 'MAX INSTANCES',
       dataIndex: 'max_instances',
-    },
-    {
-      title: 'NEXT RUN TIME',
-      dataIndex: 'next_run_time',
-      render: (text) => (
-        moment(text).local().format('ddd, D MMM YYYY HH:mm:ss Z')
-      ),
     },
     {
       title: '',
