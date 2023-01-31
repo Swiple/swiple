@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.api.api_v1.endpoints import (
+    health,
     auth,
     dataset,
     datasource,
@@ -14,6 +15,7 @@ from app.api.api_v1.endpoints import (
 )
 
 router = APIRouter()
+router.include_router(health.router, tags=["Health"])
 router.include_router(auth.router, prefix="/auth", tags=["Auth"])
 router.include_router(datasource.router, prefix="/datasources", tags=["Data Sources"])
 router.include_router(dataset.router, prefix="/datasets", tags=["Datasets"])
