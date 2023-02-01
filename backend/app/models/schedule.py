@@ -19,7 +19,7 @@ class IntervalTrigger(BaseModel):
     trigger: Literal["interval"]
     start_date: Optional[datetime] = Field(description=c.START_DATE)
     end_date: Optional[datetime] = Field(description=c.END_DATE)
-    seconds: Optional[int] = Field(description=c.SECONDS)
+    seconds: Optional[int] = Field(0, description=c.SECONDS, const=True)
     minutes: Optional[int] = Field(description=c.MINUTES)
     hours: Optional[int] = Field(description=c.HOURS)
     days: Optional[int] = Field(description=c.DAYS)
@@ -39,7 +39,7 @@ class CronTrigger(BaseModel):
     trigger: Literal["cron"]
     start_date: Optional[datetime] = Field(description=c.START_DATE)
     end_date: Optional[datetime] = Field(description=c.END_DATE)
-    second: Optional[str] = Field(description=c.SECOND)
+    second: Optional[str] = Field("0", description=c.SECONDS, const=True)
     minute: Optional[str] = Field(description=c.MINUTE)
     hour: Optional[str] = Field(description=c.HOUR)
     day: Optional[str] = Field(description=c.DAY)
