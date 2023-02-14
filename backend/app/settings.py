@@ -71,6 +71,7 @@ class Settings(BaseSettings):
     OPENSEARCH_SSL_SHOW_WARN: bool = Field(default=False)
 
     # OpenSearch Index names
+    VERSION_CONTROL_INDEX: str = Field(default="reindexer_version")
     DATASOURCE_INDEX: str = "datasources"
     DATASET_INDEX: str = "datasets"
     EXPECTATION_INDEX: str = "expectations"
