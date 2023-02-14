@@ -64,13 +64,16 @@ def list_users(
 )
 async def create_user(
     user: UserCreate,
+    user_manager: users.UserManager = Depends(users.get_user_manager),
 ):
     try:
-        return await users.create_user(
-            email=user.email,
-            password=user.password,
-            is_superuser=user.is_superuser,
-            is_verified=True
+        return await user_manager.create(
+            UserCreate(
+                email=user.email,
+                password=user.password,
+                is_superuser=user.is_superuser,
+                is_verified=True
+            )
         )
     except InvalidPasswordException as e:
         raise HTTPException(

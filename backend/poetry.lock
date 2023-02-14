@@ -451,6 +451,17 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "commonmark"
+version = "0.9.1"
+description = "Python parser for the CommonMark Markdown spec"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+test = ["flake8 (==3.7.8)", "hypothesis (==3.55.3)"]
+
+[[package]]
 name = "coverage"
 version = "6.5.0"
 description = "Code coverage measurement for Python"
@@ -650,7 +661,7 @@ tortoise-orm = ["fastapi-users-db-tortoise (>=1.1.0,<2.0.0)"]
 
 [[package]]
 name = "fastapi-users-db-opensearch"
-version = "0.0.3"
+version = "0.0.4"
 description = "FastAPI Users database adapter for OpenSearch."
 category = "main"
 optional = false
@@ -1678,6 +1689,18 @@ docs = ["myst-parser", "sphinx", "sphinx-copybutton", "sphinx-rtd-theme"]
 kerberos = ["requests-kerberos"]
 
 [[package]]
+name = "opensearch-reindexer"
+version = "2.0.0"
+description = "`opensearch-reindex` is a Python library that serves to help streamline reindexing data from one OpenSearch index to another."
+category = "main"
+optional = false
+python-versions = ">=3.9,<4.0"
+
+[package.dependencies]
+opensearch-py = ">=2.0.0,<3.0.0"
+typer = {version = ">=0.7.0,<0.8.0", extras = ["all"]}
+
+[[package]]
 name = "oscrypto"
 version = "1.3.0"
 description = "TLS (SSL) sockets, key generation, encryption, decryption, signing, verification and KDFs using the OS crypto libraries. Does not require a compiler, and relies on the OS for patching. Works on Windows, OS X and Linux/BSD."
@@ -2298,6 +2321,21 @@ idna = {version = "*", optional = true, markers = "extra == \"idna2008\""}
 idna2008 = ["idna"]
 
 [[package]]
+name = "rich"
+version = "12.6.0"
+description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
+category = "main"
+optional = false
+python-versions = ">=3.6.3,<4.0.0"
+
+[package.dependencies]
+commonmark = ">=0.9.0,<0.10.0"
+pygments = ">=2.6.0,<3.0.0"
+
+[package.extras]
+jupyter = ["ipywidgets (>=7.5.1,<8.0.0)"]
+
+[[package]]
 name = "rsa"
 version = "4.9"
 description = "Pure-Python RSA implementation"
@@ -2386,6 +2424,14 @@ python-versions = ">=3.7"
 docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-hoverxref (<2)", "sphinx-inline-tabs", "sphinx-notfound-page (==0.8.3)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
 testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8 (<5)", "flake8-2020", "ini2toml[lite] (>=0.9)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mock", "pip (>=19.1)", "pip-run (>=8.8)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-xdist", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
 testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
+
+[[package]]
+name = "shellingham"
+version = "1.5.1"
+description = "Tool to Detect Surrounding Shell"
+category = "main"
+optional = false
+python-versions = ">=3.7"
 
 [[package]]
 name = "six"
@@ -2680,6 +2726,26 @@ sqlalchemy = ["sqlalchemy (>=1.3,<2.0)"]
 tests = ["click", "httpretty (<1.1)", "pytest", "pytest-runner", "requests-kerberos", "sqlalchemy (>=1.3,<2.0)"]
 
 [[package]]
+name = "typer"
+version = "0.7.0"
+description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+click = ">=7.1.1,<9.0.0"
+colorama = {version = ">=0.4.3,<0.5.0", optional = true, markers = "extra == \"all\""}
+rich = {version = ">=10.11.0,<13.0.0", optional = true, markers = "extra == \"all\""}
+shellingham = {version = ">=1.3.0,<2.0.0", optional = true, markers = "extra == \"all\""}
+
+[package.extras]
+all = ["colorama (>=0.4.3,<0.5.0)", "rich (>=10.11.0,<13.0.0)", "shellingham (>=1.3.0,<2.0.0)"]
+dev = ["autoflake (>=1.3.1,<2.0.0)", "flake8 (>=3.8.3,<4.0.0)", "pre-commit (>=2.17.0,<3.0.0)"]
+doc = ["cairosvg (>=2.5.2,<3.0.0)", "mdx-include (>=1.4.1,<2.0.0)", "mkdocs (>=1.1.2,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)", "pillow (>=9.3.0,<10.0.0)"]
+test = ["black (>=22.3.0,<23.0.0)", "coverage (>=6.2,<7.0)", "isort (>=5.0.6,<6.0.0)", "mypy (==0.910)", "pytest (>=4.4.0,<8.0.0)", "pytest-cov (>=2.10.0,<5.0.0)", "pytest-sugar (>=0.9.4,<0.10.0)", "pytest-xdist (>=1.32.0,<4.0.0)", "rich (>=10.11.0,<13.0.0)", "shellingham (>=1.3.0,<2.0.0)"]
+
+[[package]]
 name = "typing-extensions"
 version = "4.4.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -2798,7 +2864,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9.0,<3.10"
-content-hash = "a54d9bc336e6d4635233a06e07a675a7dfeb329a7f012bfcd85a0844f807f7bf"
+content-hash = "75edb16603caa4787bdef16a2a4dd7503d2a37d73a53c46b3c98ce2f250e141a"
 
 [metadata.files]
 aiohttp = [
@@ -3140,6 +3206,10 @@ colorama = [
     {file = "colorama-0.4.5-py2.py3-none-any.whl", hash = "sha256:854bf444933e37f5824ae7bfc1e98d5bce2ebe4160d46b5edf346a89358e99da"},
     {file = "colorama-0.4.5.tar.gz", hash = "sha256:e6c6b4334fc50988a639d9b98aa429a0b57da6e17b9a44f0451f930b6967b7a4"},
 ]
+commonmark = [
+    {file = "commonmark-0.9.1-py2.py3-none-any.whl", hash = "sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9"},
+    {file = "commonmark-0.9.1.tar.gz", hash = "sha256:452f9dc859be7f06631ddcb328b6919c67984aca654e5fefb3914d54691aed60"},
+]
 coverage = [
     {file = "coverage-6.5.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ef8674b0ee8cc11e2d574e3e2998aea5df5ab242e012286824ea3c6970580e53"},
     {file = "coverage-6.5.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:784f53ebc9f3fd0e2a3f6a78b2be1bd1f5575d7863e10c6e12504f240fd06660"},
@@ -3283,8 +3353,8 @@ fastapi-users = [
     {file = "fastapi_users-9.3.2-py3-none-any.whl", hash = "sha256:00394b1e7d869750c6105c9962d9765f91a151be952e375498fbea38601ccec7"},
 ]
 fastapi-users-db-opensearch = [
-    {file = "fastapi-users-db-opensearch-0.0.3.tar.gz", hash = "sha256:210418550865b2e8f01998c1b2a10708f6c5d1e421495d3bd129323eade44d37"},
-    {file = "fastapi_users_db_opensearch-0.0.3-py3-none-any.whl", hash = "sha256:248455a46b56dd663fee64d94dfc4e4bb73092eeb97b2c9dd99be88f542df726"},
+    {file = "fastapi-users-db-opensearch-0.0.4.tar.gz", hash = "sha256:000f44faa94f9799938ad713f56c8531efde47dba0004736e91540f80f34df9f"},
+    {file = "fastapi_users_db_opensearch-0.0.4-py3-none-any.whl", hash = "sha256:4a9f790968dfbe222848e4e9f3c731c79c759de00e8a832243fdd3c4fc921d02"},
 ]
 fastjsonschema = [
     {file = "fastjsonschema-2.16.2-py3-none-any.whl", hash = "sha256:21f918e8d9a1a4ba9c22e09574ba72267a6762d47822db9add95f6454e51cc1c"},
@@ -3951,6 +4021,10 @@ opensearch-py = [
     {file = "opensearch-py-2.1.1.tar.gz", hash = "sha256:dd54a50c6771bc2582741bfdcf629b8d7eed409ae7fc2722249e53f9a10de0d8"},
     {file = "opensearch_py-2.1.1-py2.py3-none-any.whl", hash = "sha256:3e7085bf25487979581416f4ab195c2fe62e90f1f07f393091f8233cbea032eb"},
 ]
+opensearch-reindexer = [
+    {file = "opensearch-reindexer-2.0.0.tar.gz", hash = "sha256:3d9c7ec5dc5245dca6bb2146e30ef2d3f4470880dba19787398210654a395b97"},
+    {file = "opensearch_reindexer-2.0.0-py3-none-any.whl", hash = "sha256:f1655935b66db7d4a21a72ee499922fd606f9df279211c2e55c6baa58c2e2866"},
+]
 oscrypto = [
     {file = "oscrypto-1.3.0-py2.py3-none-any.whl", hash = "sha256:2b2f1d2d42ec152ca90ccb5682f3e051fb55986e1b170ebde472b133713e7085"},
     {file = "oscrypto-1.3.0.tar.gz", hash = "sha256:6f5fef59cb5b3708321db7cca56aed8ad7e662853351e7991fcf60ec606d47a4"},
@@ -4518,6 +4592,10 @@ rfc3986 = [
     {file = "rfc3986-1.5.0-py2.py3-none-any.whl", hash = "sha256:a86d6e1f5b1dc238b218b012df0aa79409667bb209e58da56d0b94704e712a97"},
     {file = "rfc3986-1.5.0.tar.gz", hash = "sha256:270aaf10d87d0d4e095063c65bf3ddbc6ee3d0b226328ce21e036f946e421835"},
 ]
+rich = [
+    {file = "rich-12.6.0-py3-none-any.whl", hash = "sha256:a4eb26484f2c82589bd9a17c73d32a010b1e29d89f1604cd9bf3a2097b81bb5e"},
+    {file = "rich-12.6.0.tar.gz", hash = "sha256:ba3a3775974105c221d31141f2c116f4fd65c5ceb0698657a11e9f295ec93fd0"},
+]
 rsa = [
     {file = "rsa-4.9-py3-none-any.whl", hash = "sha256:90260d9058e514786967344d0ef75fa8727eed8a7d2e43ce9f4bcf1b536174f7"},
     {file = "rsa-4.9.tar.gz", hash = "sha256:e38464a49c6c85d7f1351b0126661487a7e0a14a50f1675ec50eb34d4f20ef21"},
@@ -4592,6 +4670,10 @@ Send2Trash = [
 setuptools = [
     {file = "setuptools-65.4.1-py3-none-any.whl", hash = "sha256:1b6bdc6161661409c5f21508763dc63ab20a9ac2f8ba20029aaaa7fdb9118012"},
     {file = "setuptools-65.4.1.tar.gz", hash = "sha256:3050e338e5871e70c72983072fe34f6032ae1cdeeeb67338199c2f74e083a80e"},
+]
+shellingham = [
+    {file = "shellingham-1.5.1-py2.py3-none-any.whl", hash = "sha256:ce5f6d0062c719deabf696bccfab5273e09a6ea1b0ed32867aff03392adbdc51"},
+    {file = "shellingham-1.5.1.tar.gz", hash = "sha256:41bc81fa8d74afb04338e0398f9732ee2217407ade778ae1e2709bde89d85c45"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
@@ -4733,6 +4815,10 @@ traitlets = [
 trino = [
     {file = "trino-0.317.0-py3-none-any.whl", hash = "sha256:b3ea20322ba3db8bd6b9d0ce207fb7509337e7c977f5e2bb43f2769ddfc71185"},
     {file = "trino-0.317.0.tar.gz", hash = "sha256:3f9a6c5566ac46510468154788445c7b83d0a6af2f418db308a48cf23b6e852d"},
+]
+typer = [
+    {file = "typer-0.7.0-py3-none-any.whl", hash = "sha256:b5e704f4e48ec263de1c0b3a2387cd405a13767d2f907f44c1a08cbad96f606d"},
+    {file = "typer-0.7.0.tar.gz", hash = "sha256:ff797846578a9f2a201b53442aedeb543319466870fbe1c701eab66dd7681165"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
