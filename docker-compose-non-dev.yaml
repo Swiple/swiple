@@ -61,7 +61,9 @@ services:
       PRODUCTION: true
     command: bash -c "
         export PYTHONPATH=$PYTHONPATH:/code
-        && python3 /code/app/scripts/setup_opensearch.py
+        && cd app
+        && reindexer init-index
+        && reindexer run
         && python3 /code/app/scripts/create_admin_user.py
         && python3 /code/app/sample_data/load_data.py
       "
