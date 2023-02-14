@@ -5,9 +5,8 @@ from fastapi_users import BaseUserManager, FastAPIUsers, models
 from fastapi_users.authentication import AuthenticationBackend, CookieTransport, JWTStrategy
 from fastapi_users.manager import InvalidPasswordException
 from fastapi_users_db_opensearch import OpenSearchUserDatabase
-from pydantic import EmailStr
 
-from app.db.client import get_user_db, async_client
+from app.db.client import async_client
 from app.models.users import User, UserCreate, UserDB, UserUpdate
 from app.settings import settings
 
@@ -47,8 +46,18 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
         return token
 
 
+def get_user_db():
+    from fastapi_users_db_opensearch import OpenSearchUserDatabase
+
+    return OpenSearchUserDatabase(
+        UserDB,
+        async_client,
+        settings.USER_INDEX,
+    )
+
+
 def get_user_manager(user_db: OpenSearchUserDatabase = Depends(get_user_db)):
-    yield UserManager(user_db)
+    return UserManager(user_db)
 
 
 def get_jwt_strategy() -> JWTStrategy:
@@ -79,23 +88,3 @@ fastapi_users = FastAPIUsers(
 
 current_active_user = fastapi_users.current_user(active=True)
 current_active_superuser = fastapi_users.current_user(active=True, superuser=True)
-
-
-async def create_user(
-    email: EmailStr,
-    password: str,
-    is_superuser: bool = False,
-    is_verified: bool = True,
-):
-    user_db = OpenSearchUserDatabase(UserDB, async_client)
-    user_manager = UserManager(user_db)
-    user = await user_manager.create(
-        UserCreate(
-            email=email,
-            password=password,
-            is_superuser=is_superuser,
-            is_verified=is_verified,
-        )
-    )
-    return user
-

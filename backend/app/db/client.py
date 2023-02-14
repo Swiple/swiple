@@ -26,9 +26,3 @@ async_client = AsyncOpenSearch(
 
 async def get_client() -> OpenSearch:
     return client
-
-
-def get_user_db():
-    from fastapi_users_db_opensearch import OpenSearchUserDatabase
-
-    yield OpenSearchUserDatabase(UserDB, async_client)
