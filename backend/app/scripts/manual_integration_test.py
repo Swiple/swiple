@@ -100,7 +100,7 @@ class IntegrationTest:
                 datasource_id=datasource_id,
                 datasource_name=datasource_name,
                 database=os.environ["DATABASE"],
-                dataset_name=os.environ["DATASET_NAME_1"],
+                dataset_name=os.environ["DATASET_NAME"],
             ),
         ]
 
