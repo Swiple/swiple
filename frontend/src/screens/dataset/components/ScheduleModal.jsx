@@ -34,11 +34,28 @@ function ScheduleModal({
 
   const [form] = Form.useForm();
 
+  const getFirstNonZero = (triggerObj) => {
+    const { minutes, hours, days } = triggerObj;
+    const unit = Object.keys({ minutes, hours, days }).find((key) => triggerObj[key] > 0);
+    const value = triggerObj[unit];
+    return { unit, value };
+  };
+
   useEffect(() => {
+    let merged = structuredClone(editedSchedule.trigger);
     if (type === UPDATE_TYPE && editedSchedule !== null) {
+      if (editedSchedule.trigger.trigger === 'interval') {
+        merged = {
+          ...editedSchedule.trigger,
+          ...getFirstNonZero(editedSchedule.trigger),
+        };
+        delete merged.minutes;
+        delete merged.hours;
+        delete merged.days;
+      }
       const schedule = {
         trigger: {
-          ...editedSchedule.trigger,
+          ...merged,
           start_date: editedSchedule.trigger.start_date
             ? moment(editedSchedule.trigger.start_date) : null,
           end_date: editedSchedule.trigger.end_date
@@ -63,6 +80,21 @@ function ScheduleModal({
       setSelectedTrigger(trigger);
     }
   }, [type, UPDATE_TYPE, editedSchedule]);
+
+  const transformSchedulePayload = (payload) => {
+    if (selectedTrigger === 'interval') {
+      const { unit, value } = payload.trigger;
+      return {
+        trigger: {
+          trigger: 'interval',
+          [unit]: value,
+        },
+        misfire_grace_time: payload.misfire_grace_time,
+        max_instances: payload.max_instances,
+      };
+    }
+    return payload;
+  };
 
   const createOrUpdateScheduleRequest = async (payload) => {
     const data = payload;
@@ -90,7 +122,8 @@ function ScheduleModal({
         const { complete } = await isFormComplete();
 
         if (complete) {
-          const data = form.getFieldsValue(true);
+          let data = form.getFieldsValue(true);
+          data = transformSchedulePayload(data);
           data.trigger.trigger = selectedTrigger;
           postGenerateNextRunTimes(data)
             .then((response) => {
@@ -117,7 +150,8 @@ function ScheduleModal({
   const onFormSubmitInternal = async () => {
     const { complete, values } = await isFormComplete();
     if (complete) {
-      const { status, data } = await createOrUpdateScheduleRequest(values);
+      const transformedValues = transformSchedulePayload(values);
+      const { status, data } = await createOrUpdateScheduleRequest(transformedValues);
 
       if (status === 200) {
         setResponseStatus({ success: true });
@@ -208,16 +242,6 @@ function ScheduleModal({
           <Row>
             <Space>
               <Form.Item
-                name={['trigger', 'second']}
-                label="Second"
-                tooltip="second (0-59)"
-                rules={[{ required: true, message: '' }]}
-                hidden
-                initialValue="0"
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
                 name={['trigger', 'minute']}
                 label="Minute"
                 tooltip="minute (0-59)"
@@ -296,41 +320,36 @@ function ScheduleModal({
         <Row>
           <Space>
             <Form.Item
-              name={['trigger', 'seconds']}
-              label="Seconds"
-              tooltip="Number of seconds to wait"
-              hidden
-              initialValue="0"
+              label="Interval expression"
+              tooltip="Enter a value and the unit of time to run the schedule."
             >
-              <InputNumber />
-            </Form.Item>
-            <Form.Item
-              name={['trigger', 'minutes']}
-              label="Minutes"
-              tooltip="Number of minutes to wait"
-            >
-              <InputNumber />
-            </Form.Item>
-            <Form.Item
-              name={['trigger', 'hours']}
-              label="Hours"
-              tooltip="Number of hours to wait"
-            >
-              <InputNumber />
-            </Form.Item>
-            <Form.Item
-              name={['trigger', 'days']}
-              label="Days"
-              tooltip="Number of days to wait"
-            >
-              <InputNumber />
-            </Form.Item>
-            <Form.Item
-              name={['trigger', 'weeks']}
-              label="Weeks"
-              tooltip="Number of weeks to wait"
-            >
-              <InputNumber />
+              <Input.Group size="large">
+                <Row>
+                  <Form.Item
+                    name={['trigger', 'value']}
+                    style={{ marginRight: 10 }}
+                    rules={[{ required: true, message: '' }]}
+                  >
+                    <InputNumber
+                      placeholder={45}
+                      style={{ width: 100 }}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name={['trigger', 'unit']}
+                    initialValue="minutes"
+                  >
+                    <Radio.Group
+                      optionType="button"
+                      buttonStyle="solid"
+                    >
+                      <Radio.Button value="minutes">minutes</Radio.Button>
+                      <Radio.Button value="hours">hours</Radio.Button>
+                      <Radio.Button value="days">days</Radio.Button>
+                    </Radio.Group>
+                  </Form.Item>
+                </Row>
+              </Input.Group>
             </Form.Item>
           </Space>
         </Row>

@@ -65,7 +65,6 @@ START_DATE = "Earliest possible date/time to trigger on (inclusive)"
 END_DATE = "Latest possible date/time to trigger on (inclusive)"
 
 # CronTrigger
-SECOND = "second (0-59)"
 MINUTE = "minute (0-59)"
 HOUR = "hour (0-23)"
 DAY_OF_WEEK = "Number or name of weekday (0-5 or mon,tue,wed,thu,fri,sat,sun)"
@@ -75,7 +74,6 @@ MONTH = "month (1-12)"
 YEAR = "4-digit year"
 
 # IntervalTrigger
-SECONDS = "Number of seconds to wait"
 MINUTES = "Number of minutes to wait"
 HOURS = "Number of hours to wait"
 DAYS = "Number of days to wait"

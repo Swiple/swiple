@@ -1,5 +1,6 @@
 from typing import List, Dict
 
+from app.tasks.validate import scheduler_trigger_validation
 from app.core.runner import run_dataset_validation
 from app.core.schedulers.scheduler_interface import SchedulerInterface
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -55,6 +56,7 @@ class ApScheduler(SchedulerInterface):
     def add_schedule(self, schedule: Schedule, datasource_id: str, dataset_id: str):
         return self.ap_scheduler.add_job(
             id=f"{datasource_id}__{dataset_id}__{uuid.uuid4()}",
+            # func=scheduler_trigger_validation,
             func=run_dataset_validation,
             kwargs={"dataset_id": dataset_id},
             misfire_grace_time=schedule.misfire_grace_time,
@@ -114,11 +116,9 @@ class ApScheduler(SchedulerInterface):
                 "trigger": c.INTERVAL,
                 "start_date": job.trigger.start_date,
                 "end_date": job.trigger.end_date,
-                "seconds": seconds,
                 "minutes": minutes,
                 "hours": hours,
                 "days": days,
-                "weeks": weeks,
             }
         if isinstance(job.trigger, DateTrigger):
             trigger_fields["trigger"] = c.DATE
@@ -128,6 +128,8 @@ class ApScheduler(SchedulerInterface):
             trigger_fields["start_date"] = job.trigger.start_date
             trigger_fields["end_date"] = job.trigger.end_date
             for field in job.trigger.fields:
+                if field.name == "second":
+                    continue
                 trigger_fields[field.name] = str(field)
 
         job_state["trigger"] = trigger_fields
