@@ -138,6 +138,14 @@ code {
   width: 400px;
 }
 
+.center-spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
 .login-form {
   margin-top: 20px;
   width: 100%;
