@@ -10,7 +10,7 @@ on:
 jobs:
   test-backend:
     name: Backend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-2.301.1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
