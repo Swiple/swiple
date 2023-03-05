@@ -35,7 +35,7 @@ WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
 
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry install --with postgres,redshift,mysql,trino,athena,snowflake,bigquery --without dev
+RUN poetry install --with postgres,redshift,mysql,trino,snowflake,bigquery --without dev
 
 ###############################################
 # Production Image
