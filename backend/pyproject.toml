@@ -25,7 +25,7 @@ PyYAML = "^6.0"
 apprise = "^1.2.1"
 pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 opensearch-reindexer = "2.0.0"
-shellingham = "1.4.0"
+
 
 [tool.poetry.dev-dependencies]
 
@@ -62,10 +62,10 @@ optional = true
 [tool.poetry.group.mysql.dependencies]
 PyMySQL = { version = ">=0.9.3,<0.10" }
 
-#[tool.poetry.group.athena]
-#optional = true
-#[tool.poetry.group.athena.dependencies]
-#pyathena = { version = "2.9.6" }
+[tool.poetry.group.athena]
+optional = true
+[tool.poetry.group.athena.dependencies]
+pyathena = { version = ">=1.11" }
 
 [tool.poetry.group.trino]
 optional = true
