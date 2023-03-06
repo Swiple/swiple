@@ -7,7 +7,7 @@ const AuthContext = React.createContext(null);
 
 // eslint-disable-next-line react/prop-types
 export function AuthProvider({ children }) {
-  const [user, setUser] = React.useState(null);
+  const [user, setUser] = React.useState(undefined);
   const location = useLocation();
   const history = useHistory();
 
@@ -39,6 +39,7 @@ export function AuthProvider({ children }) {
   React.useEffect(() => {
     getUser((response) => {
       if (response.status === 401) {
+        setUser(null);
         if (location.pathname !== paths.LOGIN) {
           // Redirect unauthorized user to LOGIN screen if they aren't already on it,
           // include current screen in state so we can forward user back to it once they login
