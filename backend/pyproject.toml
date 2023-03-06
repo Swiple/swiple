@@ -10,7 +10,7 @@ python = ">=3.9.0,<3.10"
 numpy = ">=1.23.1"
 scipy = ">=1.9.0"
 great-expectations = "0.15.21"
-boto3 = ">=1.26.70"
+boto3 = "^1.26.70"
 fastapi = "0.73.0"
 fastapi-users-db-opensearch = "^0.0.4"
 APScheduler = "3.10.0"
@@ -66,7 +66,7 @@ PyMySQL = { version = ">=0.9.3,<0.10" }
 [tool.poetry.group.athena]
 optional = true
 [tool.poetry.group.athena.dependencies]
-pyathena = { version = "2.23.0" }
+pyathena = { version = "^2.20.0" }
 
 [tool.poetry.group.trino]
 optional = true
