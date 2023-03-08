@@ -6,8 +6,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Build trust in every dataset',
-  tagline: 'Swiple enables you to easily observe, understand, validate and improve the quality of your data',
+  title: 'Build Trust in Every Dataset',
+  tagline: 'With Swiple, quickly identify and resolve data issues with continuous observability. Avoid the impact of bad data on your business with the only platform that proactively detects issues.',
   url: 'https://swiple.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -15,7 +15,6 @@ const config = {
   favicon: 'img/favicon.ico',
   organizationName: 'Swiple', // Usually your GitHub org/user name.
   projectName: 'swiple', // Usually your repo name.
-
   presets: [
     [
       'classic',
@@ -95,22 +94,22 @@ const config = {
                 label: 'Slack',
                 href: 'https://join.slack.com/t/swiple/shared_invite/zt-1cssnt7k0-51zMQENDhFiDMW2k1jA75g',
               },
-              // {
-              //   label: 'Twitter',
-              //   href: 'https://twitter.com/docusaurus',
-              // },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              // {
-              //   label: 'Blog',
-              //   to: '/blog',
-              // },
               {
                 label: 'GitHub',
                 href: 'https://github.com/Swiple/swiple.git',
+              },
+            ],
+          },
+          {
+            title: 'Legal',
+            items: [
+              {
+                label: 'Privacy Policy',
+                href: 'https://app.termly.io/document/privacy-policy/ef5398d2-c693-4003-8b58-f04126956851',
+              },
+              {
+                label: 'Terms and Conditions',
+                href: 'https://app.termly.io/document/terms-of-use-for-saas/1f642552-e0b1-4a98-9498-1c96daaeb4b1',
               },
             ],
           },

@@ -7,6 +7,7 @@ import styles from './index.module.css';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import SupportedDatabases from '@site/src/components/SupportedDatabases';
 import ExpectationsList from '../components/Expectations';
+import { CloudTwoTone } from "@ant-design/icons";
 
 
 function HomepageHeader() {
@@ -19,14 +20,26 @@ function HomepageHeader() {
         <div>
           <Link
             className="button button--secondary button--lg margin-right--md"
-            to="/docs/getting-started/quick-start">
-            Get Started in 4 Commands 🚀
+            to="https://calendly.com/swiple/swiple-cloud-demo"
+          >
+            <div style={{display: "flex"}}>
+              Book a Swiple Cloud Demo
+              <CloudTwoTone
+                style={{ fontSize: "28px", marginLeft: 10}}
+                twoToneColor="#1FD1A9"
+              />
+            </div>
           </Link>
           <Link
-            className={clsx("button button--secondary button--lg", styles.buttonStar)}
-            href="https://github.com/Swiple/swiple">
-            Give Swiple a Star ⭐️
+            className={clsx("button button--outline button--secondary button--lg margin-right--md", styles.buttonStar)}
+            to="/docs/getting-started/quick-start">
+            Run locally in 4 steps 💻
           </Link>
+          {/*<Link*/}
+          {/*  className={clsx("button button--secondary button--lg", styles.buttonStar)}*/}
+          {/*  href="https://github.com/Swiple/swiple">*/}
+          {/*  Give Swiple a Star ⭐️*/}
+          {/*</Link>*/}
         </div>
         <div className={clsx("margin-bottom--xl")} />
         <video
