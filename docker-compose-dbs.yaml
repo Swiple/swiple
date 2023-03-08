@@ -1,0 +1,31 @@
+version: '3.3'
+services:
+  coordinator:
+    image: lewuathe/trino-coordinator:354
+    ports:
+      - "8080:8080"
+    container_name: "coordinator"
+    command: http://coordinator:8080 coordinator
+  worker0:
+    image: lewuathe/trino-worker:354
+    container_name: "worker0"
+    ports:
+      - "8081:8081"
+    command: http://coordinator:8080 worker0
+  db:
+    image: mysql:latest
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'admin'
+      MYSQL_ROOT_PASSWORD: 'admin'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - my-db:/var/lib/mysql
+volumes:
+  my-db:

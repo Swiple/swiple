@@ -10,10 +10,11 @@ python = ">=3.9.0,<3.10"
 numpy = ">=1.23.1"
 scipy = ">=1.9.0"
 great-expectations = "0.15.21"
+boto3 = "^1.26.70"
 fastapi = "0.73.0"
-fastapi-users-db-opensearch = {git = "https://github.com/KentonParton/fastapi-users-db-opensearch.git", rev = "78f7aff0480400bbeac01f12c17e04f1ae21fbed"}
-APScheduler = "3.9.1"
-opensearch-py = {version = "1.0.0", extras = ["async"]}
+fastapi-users-db-opensearch = "^0.0.4"
+APScheduler = "3.10.0"
+opensearch-py = {version = "^2.1.1", extras = ["async"]}
 uvicorn = "^0.18.3"
 SQLAlchemy = "==1.4.27"
 asyncio = "^3.4.3"
@@ -22,8 +23,9 @@ emails = "^0.6"
 fastapi-users = "9.3.2"
 httpx-oauth = "^0.10.1"
 PyYAML = "^6.0"
-apprise = {git = "https://github.com/caronc/apprise.git", rev = "master"}
+apprise = "^1.2.1"
 pydantic = {extras = ["dotenv"], version = "^1.10.2"}
+opensearch-reindexer = "2.0.0"
 
 
 [tool.poetry.dev-dependencies]
@@ -64,17 +66,17 @@ PyMySQL = { version = ">=0.9.3,<0.10" }
 [tool.poetry.group.athena]
 optional = true
 [tool.poetry.group.athena.dependencies]
-pyathena = { version = ">=1.11" }
+pyathena = { version = "^2.20.0" }
 
 [tool.poetry.group.trino]
 optional = true
 [tool.poetry.group.trino.dependencies]
 trino = { version = ">=0.310.0" }
 
-[tool.poetry.group.aws-secrets]
+[tool.poetry.group.bigquery]
 optional = true
-[tool.poetry.group.aws-secrets.dependencies]
-great-expectations = {extras = ["aws_secrets"], version = "0.15.21"}
+[tool.poetry.group.bigquery.dependencies]
+sqlalchemy-bigquery = "^1.4.4"
 
 [tool.poetry.group.azure-secrets]
 optional = true

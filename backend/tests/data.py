@@ -16,7 +16,6 @@ from app.repositories.datasource import DatasourceRepository
 from app.repositories.expectation import ExpectationRepository
 from app.repositories.validation import ValidationRepository
 
-
 DATASOURCES: dict[str, Datasource] = {
     "postgres": PostgreSQL(
         key="50a58a0b-89e8-4d6f-8b65-6ea328b2cad2",
@@ -56,10 +55,9 @@ DATASETS: dict[str, Dataset] = {
         datasource_id=DATASOURCES["postgres"].key,
         datasource_name=DATASOURCES["postgres"].datasource_name,
         database=DATASOURCES["postgres"].database,
-        dataset_name="postgres_table_products",
-        runtime_parameters={"schema": "products"},
+        dataset_name="schema.postgres_table_products",
     ),
-    "postgres_table_orders": Dataset(
+    "postgres_view_orders": Dataset(
         key="4b252091-6d0d-4beb-9552-3764cfe8cbae",
         create_date="2022-10-04 13:37:00.000000+00:00",
         modified_date="2022-10-04 13:37:00.000000+00:00",
@@ -68,8 +66,8 @@ DATASETS: dict[str, Dataset] = {
         datasource_id=DATASOURCES["postgres"].key,
         datasource_name=DATASOURCES["postgres"].datasource_name,
         database=DATASOURCES["postgres"].database,
-        dataset_name="postgres_table_orders",
-        runtime_parameters={"schema": "orders"},
+        dataset_name="postgres_view_orders",
+        runtime_parameters={"schema": "schema", "query": " select * from schema.orders limit 100 ; "},
     ),
     "mysql_table_products": Dataset(
         key="5b6adc59-d92d-4b75-9d7e-7e1e6f4392a7",
@@ -80,8 +78,7 @@ DATASETS: dict[str, Dataset] = {
         datasource_id=DATASOURCES["mysql"].key,
         datasource_name=DATASOURCES["mysql"].datasource_name,
         database=DATASOURCES["mysql"].database,
-        dataset_name="mysql_table_products",
-        runtime_parameters={"schema": "products"},
+        dataset_name="schema.mysql_table_products",
     ),
 }
 
@@ -95,11 +92,11 @@ EXPECTATIONS: dict[str, Expectation] = {
         expectation_type="expect_column_to_exist",
         kwargs={"column": "product_name"},
     ),
-    "postgres_table_orders_expect_column_to_exist": ExpectColumnToExist(
+    "postgres_view_orders_expect_column_to_exist": ExpectColumnToExist(
         key="2292afa9-01bf-4f5a-9398-e5ed5a9f7995",
         create_date="2022-10-04 13:37:00.000000+00:00",
         modified_date="2022-10-04 13:37:00.000000+00:00",
-        dataset_id=DATASETS["postgres_table_orders"].key,
+        dataset_id=DATASETS["postgres_view_orders"].key,
         datasource_id=DATASOURCES["postgres"].key,
         expectation_type="expect_column_to_exist",
         kwargs={"column": "order_name"},
@@ -162,8 +159,8 @@ VALIDATIONS: dict[str, Validation] = {
     "postgres_table_products": create_validation_object(
         DATASOURCES["postgres"].key, DATASETS["postgres_table_products"].key
     ),
-    "postgres_table_orders": create_validation_object(
-        DATASOURCES["postgres"].key, DATASETS["postgres_table_orders"].key
+    "postgres_view_orders": create_validation_object(
+        DATASOURCES["postgres"].key, DATASETS["postgres_view_orders"].key
     ),
     "mysql_table_products": create_validation_object(
         DATASOURCES["mysql"].key, DATASETS["mysql_table_products"].key

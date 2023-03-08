@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Button, Form, Input, message, Radio, Row, Select, Space, Typography,
+  Button, Form, Input, Tag, message, Radio, Row, Select, Space, Typography,
 } from 'antd';
 import Editor from '@uiw/react-textarea-code-editor';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
@@ -97,6 +97,10 @@ function DatasetModal({
         .then((response) => {
           if (response.status === 200) {
             setSchemas(response.data);
+            setResponseStatus(null);
+          } else if (response.status === 422) {
+            setSchemas([]);
+            setResponseStatus({ success: false, msg: response.data.detail });
           } else {
             message.error('An error occurred while introspecting schemas.', 5);
           }
@@ -163,9 +167,7 @@ function DatasetModal({
   useEffect(() => {
     if (dataSampleInProgress) {
       const payload = form.getFieldsValue(true);
-
       const transformedDatasetPayload = transformDatasetPayload(payload);
-
       getQuerySample(transformedDatasetPayload)
         .then((response) => {
           if (response.status === 200) {
@@ -202,6 +204,27 @@ function DatasetModal({
               />
             </div>
             {item.datasource_name}
+          </Space>
+        </Row>
+      </Option>
+    );
+  });
+
+  const tableOptions = () => tables.map((item) => {
+    const [tableName, tableType] = item;
+    const color = tableType === 'table' ? 'default' : 'blue';
+    return (
+      <Option
+        key={tableName}
+        value={tableName}
+        label={tableName}
+      >
+        <Row align="start" style={{ alignItems: 'center', color: 'black' }}>
+          <Space>
+            <div className="select-option">
+              <Tag color={color}>{tableType[0].toUpperCase() + tableType.slice(1)}</Tag>
+            </div>
+            {tableName}
           </Space>
         </Row>
       </Option>
@@ -477,11 +500,7 @@ function DatasetModal({
                       option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     )}
                   >
-                    {tables.map((item) => (
-                      <Select.Option key={item} value={item}>
-                        {item}
-                      </Select.Option>
-                    ))}
+                    {tableOptions()}
                   </Select>
                 </Form.Item>
                 <Form.Item

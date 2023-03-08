@@ -12,8 +12,10 @@ x-aws-creds: &aws-creds
 
 services:
   swiple_api:
-    env_file: docker/.env-non-dev
-    environment: *aws-creds
+    env_file: docker/.env
+    environment:
+      <<: *aws-creds
+      PRODUCTION: true
     container_name: swiple_api
     image: swiple/swiple-api:main
     restart: unless-stopped
@@ -21,13 +23,16 @@ services:
       - "8000:8000"
     volumes:
       - $HOME/.aws:$HOME/.aws
+      - $HOME/.config/gcloud:/root/.config/gcloud
+      - $HOME\AppData\Roaming\gcloud:/root/.config/gcloud
     depends_on: *swiple-depends-on
 
   scheduler:
-    env_file: docker/.env-non-dev
+    env_file: docker/.env
     environment:
       <<: *aws-creds
       APP: SCHEDULER
+      PRODUCTION: true
     container_name: scheduler
     image: swiple/swiple-api:main
     restart: unless-stopped
@@ -36,6 +41,8 @@ services:
       - "8001:8001"
     volumes:
       - $HOME/.aws:$HOME/.aws
+      - $HOME/.config/gcloud:/root/.config/gcloud
+      - $HOME\AppData\Roaming\gcloud:/root/.config/gcloud
     depends_on: *swiple-depends-on
 
   swiple_ui:
@@ -47,12 +54,16 @@ services:
     depends_on:
       - "swiple_api"
   setup:
-    env_file: docker/.env-non-dev
+    env_file: docker/.env
     container_name: setup
     image: swiple/swiple-api:main
+    environment:
+      PRODUCTION: true
     command: bash -c "
         export PYTHONPATH=$PYTHONPATH:/code
-        && python3 /code/app/scripts/setup_opensearch.py
+        && cd app
+        && reindexer init-index
+        && reindexer run
         && python3 /code/app/scripts/create_admin_user.py
         && python3 /code/app/sample_data/load_data.py
       "
@@ -75,7 +86,7 @@ services:
     volumes:
       - ./docker/postgres-data:/var/lib/postgresql/data
   opensearch-node1:
-    image: opensearchproject/opensearch:1.3.1
+    image: opensearchproject/opensearch:2.3.0
     restart: unless-stopped
     container_name: opensearch-node1
     environment:
@@ -107,7 +118,7 @@ services:
       timeout: 30s
       retries: 10
   opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:1.3.0
+    image: opensearchproject/opensearch-dashboards:2.3.0
     container_name: opensearch-dashboards
     restart: unless-stopped
     ports:

@@ -5,7 +5,7 @@ from opensearchpy.helpers import bulk
 from copy import deepcopy
 
 from app.models.dataset import DatasetCreate
-from app.models.datasource import DatasourceInput, Engine, PostgreSQL
+from app.models.datasource import DatasourceInput, Engine, PostgreSQL, Athena
 from app.settings import settings
 from app.db.client import client
 from app.models.expectation import ExpectationInput
@@ -14,6 +14,7 @@ import random
 import pytz
 import requests
 import json
+import os
 
 api_url = f"{settings.SWIPLE_API_URL}{settings.API_VERSION}"
 
@@ -26,15 +27,15 @@ expectation_types = [
 ]
 
 
-class DemoVideoSetup:
+class IntegrationTest:
     def __init__(self):
         self.cookies = None
         self.login()
 
     def login(self):
         params = {
-            "username": "admin@email.com",
-            "password": "admin",
+            "username": os.environ["ADMIN_EMAIL"],
+            "password": os.environ["ADMIN_PASSWORD"],
             "grant_type": "",
             "scope": "",
             "client_id": "",
@@ -52,20 +53,31 @@ class DemoVideoSetup:
         self.cookies = response.cookies.get_dict()
 
     def add_datasource(self):
-        datasource_name = "postgres"
+        datasource_name = os.environ["DATASOURCE_NAME"]
         self._datasource_exists(datasource_name=datasource_name)
-        datasource: DatasourceInput = DatasourceInput(
-            __root__=PostgreSQL(
-                engine=Engine.POSTGRESQL,
-                datasource_name=datasource_name,
-                description="demo",
-                username="postgres",
-                password="postgres",
-                database="postgres",
-                host="postgres",
-                port=5432,
+
+        if os.environ["ENGINE"] == Engine.ATHENA.value:
+            datasource: DatasourceInput = DatasourceInput(
+                __root__=Athena(
+                    engine=Engine.ATHENA,
+                    datasource_name=datasource_name,
+                    database=os.environ["DATABASE"],
+                    region=os.environ["REGION"],
+                    s3_staging_dir=os.environ["S3_STAGING_DIR"],
+                )
             )
-        )
+        else:
+            datasource: DatasourceInput = DatasourceInput(
+                __root__=PostgreSQL(
+                    engine=Engine.POSTGRESQL,
+                    datasource_name=datasource_name,
+                    username=os.environ["USERNAME"],
+                    password=os.environ["PASSWORD"],
+                    database=os.environ["DATABASE"],
+                    host=os.environ["HOST"],
+                    port=int(os.environ["PORT"]),
+                )
+            )
         response = requests.post(
             f"{api_url}/datasources",
             cookies=self.cookies,
@@ -87,20 +99,8 @@ class DemoVideoSetup:
             DatasetCreate(
                 datasource_id=datasource_id,
                 datasource_name=datasource_name,
-                database="postgres",
-                dataset_name="sample_data.orders",
-            ),
-            DatasetCreate(
-                datasource_id=datasource_id,
-                datasource_name=datasource_name,
-                database="postgres",
-                dataset_name="sample_data.customer",
-            ),
-            DatasetCreate(
-                datasource_id=datasource_id,
-                datasource_name=datasource_name,
-                database="postgres",
-                dataset_name="sample_data.part",
+                database=os.environ["DATABASE"],
+                dataset_name=os.environ["DATASET_NAME"],
             ),
         ]
 
@@ -260,16 +260,7 @@ class DemoVideoSetup:
 
         suggestions = self.suggest(datasets=datasets)
         self.enable_suggestions(suggestions=suggestions)
-
         self.validate(datasets=datasets)
-
-        # datasets = requests.get(
-        #     f"{api_url}/datasets",
-        #     cookies=self.cookies,
-        #     headers={'Content-Type': 'application/json'},
-        # ).json()
-
-        self.generate_historical_validations(datasets=datasets)
 
     def _datasource_exists(self, datasource_name):
         response = client.search(
@@ -283,21 +274,11 @@ class DemoVideoSetup:
                 f"{api_url}/datasources/{response['hits']['hits'][0]['_id']}",
                 cookies=self.cookies,
                 headers={'Content-Type': 'application/json'},
-                json={
-                    "engine": "PostgreSQL",
-                    "datasource_name": "local",
-                    "username": "postgres",
-                    "password": "postgres",
-                    "database": "postgres",
-                    "host": "postgres",
-                    "port": 5432,
-                    "description": "",
-                },
-                params={"test": True}
             )
 
             assert response.status_code == 200, json.loads(response.text)["detail"]
             print(f"Successfully deleted datasource '{datasource_name}'")
 
 
-DemoVideoSetup().add_resources()
+if __name__ == '__main__':
+    IntegrationTest().add_resources()

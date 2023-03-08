@@ -63,11 +63,15 @@ class Settings(BaseSettings):
     SCHEDULER_REDIS_KWARGS: dict = Field(default={"host": "redis"})
 
     OPENSEARCH_HOST: str = Field(default="opensearch-node1")
-    OPENSEARCH_PORT: str = Field(default="9200")
+    OPENSEARCH_PORT: int = Field(default="9200")
     OPENSEARCH_USERNAME: str = Field(default="admin")
     OPENSEARCH_PASSWORD: str = Field(default="admin")
+    OPENSEARCH_VERIFY_CERTS: bool = Field(default=False)
+    OPENSEARCH_USE_SSL: bool = Field(default=True)
+    OPENSEARCH_SSL_SHOW_WARN: bool = Field(default=False)
 
     # OpenSearch Index names
+    VERSION_CONTROL_INDEX: str = Field(default="reindexer_version")
     DATASOURCE_INDEX: str = "datasources"
     DATASET_INDEX: str = "datasets"
     EXPECTATION_INDEX: str = "expectations"

@@ -1,6 +1,5 @@
 .PHONY: build_dev_images up
 
-
 up: build_dev_images
 	docker compose up
 
@@ -22,8 +21,8 @@ swiple_ui_dev:
 swiple_api_dev:
 	python3 ./backend/main.py
 
-demo:
-	docker compose run demo
+integration_test:
+	docker compose run integration_test
 
 opensearch:
 	docker compose up -d opensearch-node1
@@ -36,3 +35,21 @@ opensearch_dashboards:
 
 setup:
 	docker compose up -d setup
+
+push_swiple_api_to_aws_ecr:
+	# Prerequisites: Repository has been created in AWS ECR
+	# Example: make push_swiple_api_to_aws_ecr AWS_ACCOUNT_ID=012345678910 REPOSITORY=swiple-api TAG=latest REGION=us-east-1
+	docker build -t $(REPOSITORY):$(TAG) ./backend/
+	$(eval IMAGE_ID=$(shell sh -c 'docker images --filter=reference=$(REPOSITORY):$(TAG) --format "{{.ID}}"'))
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
+	docker tag $(IMAGE_ID) $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com/$(REPOSITORY)
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com/$(REPOSITORY):$(TAG)
+
+push_swiple_ui_to_aws_ecr:
+	# Prerequisites: Repository has been created in AWS ECR
+	# Example: make push_swiple_ui_to_aws_ecr AWS_ACCOUNT_ID=012345678910 REPOSITORY=swiple-ui TAG=latest REGION=us-east-1
+	docker build -t $(REPOSITORY):$(TAG) -f ./frontend/Dockerfile.prod ./frontend
+	$(eval IMAGE_ID=$(shell sh -c 'docker images --filter=reference=$(REPOSITORY):$(TAG) --format "{{.ID}}"'))
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
+	docker tag $(IMAGE_ID) $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com/$(REPOSITORY)
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com/$(REPOSITORY):$(TAG)

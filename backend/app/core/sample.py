@@ -2,7 +2,7 @@ import datetime
 from typing import Any
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import ProgrammingError, OperationalError
+from sqlalchemy.exc import ProgrammingError, OperationalError, DatabaseError
 
 from app.models.dataset import BaseDataset, Sample
 from app.models.datasource import Datasource
@@ -29,21 +29,16 @@ def get_dataset_sample(dataset: BaseDataset, datasource: Datasource) -> Sample:
 
 
 def get_sample_query_results(query: str, url: str) -> Sample:
-    # remove semi-colon from query
-    query = query.replace(";", "").strip()
-    query = query + " limit 10"
-
     try:
+        query = add_limit_clause(query)
+
         with create_engine(url).connect() as con:
-            query = add_limit_clause(query)
-
             execution = con.execute(query)
-
             # TODO neaten up
             result_set = []
-            columns = list(execution.keys())
+            columns, rows = get_columns_and_rows(execution)
 
-            for i, row in enumerate(execution.all()):
+            for i, row in enumerate(rows):
                 temp_row = {"key": i}
                 row = list(row)
 
@@ -60,12 +55,30 @@ def get_sample_query_results(query: str, url: str) -> Sample:
                 result_set.append(temp_row)
 
             if len(columns) == 0:
-                return {
-                    "error": "No columns included in statement."
-                }
-
+                raise GetSampleException("No columns included in statement.")
             return Sample(columns=columns, rows=result_set)
     except ProgrammingError as e:
         raise GetSampleException(e.orig.pgerror) from e
     except OperationalError as e:
-        raise GetSampleException(e.orig) from e
+        raise GetSampleException(error_msg_from_exception(e)) from e
+    except DatabaseError as e:
+        raise GetSampleException(error_msg_from_exception(e)) from e
+
+
+def get_columns_and_rows(execution):
+    return list(execution.keys()), execution.all()
+
+
+def error_msg_from_exception(ex: Exception) -> str:
+    """Translate exception into error message
+    Database have different ways to handle exception. This function attempts
+    to make sense of the exception object and construct a human readable
+    sentence.
+    """
+    msg = ""
+    if hasattr(ex, "message"):
+        if isinstance(ex.message, dict):
+            msg = ex.message.get("message")
+        elif ex.message:
+            msg = ex.message
+    return msg or str(ex)

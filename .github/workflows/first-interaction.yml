@@ -4,9 +4,8 @@ on:
     branches:
       - main
 jobs:
-
   first-interaction:
-    name: runner / first-interaction
+    name: First-interaction
     runs-on: ubuntu-latest
     permissions:
       issues: write

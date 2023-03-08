@@ -385,7 +385,10 @@ ActionModal.propTypes = {
   type: PropTypes.oneOf(['', CREATE_TYPE, UPDATE_TYPE]).isRequired,
   resourceKey: PropTypes.string.isRequired,
   resourceType: PropTypes.string.isRequired,
-  actionTypeOptions: PropTypes.arrayOf(PropTypes.object).isRequired,
+  actionTypeOptions: PropTypes.arrayOf(PropTypes.shape({
+    actionType: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+  })).isRequired,
   editedResource: PropTypes.objectOf(Object),
   onCancel: PropTypes.func.isRequired,
   onFormSubmit: PropTypes.func.isRequired,

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  useHistory, useLocation, withRouter,
+  useHistory,
+  useLocation,
 } from 'react-router-dom';
 import {
   Button, Divider, Form, Input, message, Row,
@@ -15,17 +16,18 @@ import {
   OktaIcon,
 } from '../static/images';
 import {
-  authenticate, getAuthMethods, getMe, oauthCallback, login,
+  authenticate, getAuthMethods, oauthCallback, login,
 } from '../Api';
 import { useAuth } from '../Auth';
 import { capitalizeFirstLetter } from '../Utils';
+import paths from '../config/Routes';
 
 function useQuery() {
   const { search } = useLocation();
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-const Login = withRouter(() => {
+function Login() {
   const [authMethods, setAuthMethods] = useState([]);
   const [refreshAuthMethods, setRefreshAuthMethods] = useState(true);
   const [refreshOAuthCallback, setRefreshOAuthCallback] = useState(false);
@@ -34,9 +36,8 @@ const Login = withRouter(() => {
   const [loginCredentials, setLoginCredentials] = useState(false);
   const [loginDetail, setLoginDetail] = useState(null);
   const [form] = Form.useForm();
-  const history = useHistory();
   const query = useQuery();
-  const location = useLocation();
+  const history = useHistory();
 
   const code = query.get('code');
   const provider = query.get('provider');
@@ -44,12 +45,11 @@ const Login = withRouter(() => {
   const state = query.get('state');
   const auth = useAuth();
 
-  const from = location.state?.from?.pathname || '/';
-
   useEffect(() => {
     if (refreshAuthMethods) {
       setRefreshAuthMethods(false);
 
+      // Gets list of configured auth methods. E.g. Username + Password, GitHub, Okta...
       getAuthMethods()
         .then((response) => {
           if (response.status === 200) {
@@ -67,6 +67,7 @@ const Login = withRouter(() => {
     if (selectedAuthMethod !== null) {
       setLoading({ oauth: true });
 
+      // Handles OAuth authentication
       authenticate(selectedAuthMethod)
         .then((response) => {
           if (response.status === 200) {
@@ -92,7 +93,7 @@ const Login = withRouter(() => {
     setLoginDetail({});
     setLoading({});
     message.error('Failed to authenticate.', 5);
-    history.replace('/login');
+    history.replace(paths.LOGIN);
   };
 
   useEffect(() => {
@@ -103,34 +104,24 @@ const Login = withRouter(() => {
       setLoginCredentials(false);
 
       getCookie(authType)
-        .then((response) => {
-          if (response.status === 200) {
-            getMe().then((meResponse) => {
-              if (meResponse.status === 200) {
-                auth.signIn(meResponse.data.email, () => {
-                  // Send them back to the page they tried to visit when they were
-                  // redirected to the login page. Use { replace: true } so we don't create
-                  // another entry in the history stack for the login page.  This means that
-                  // when they get to the protected page and click the back button, they
-                  // won't end up back on the login page, which is also really nice for the
-                  // user experience.
-                  // navigate(from, { replace: true });
-                  history.replace(from);
-                });
-              } else {
+        .then((cookieResponse) => {
+          if (cookieResponse.status === 200) {
+            auth.getUser((response) => {
+              if (response.status !== 200) {
                 loginFailed();
               }
             });
-          } else if (response.status === 400) {
-            setLoginDetail(response.data.detail);
+          } else if (cookieResponse.status === 400) {
+            setLoginDetail(cookieResponse.data.detail);
             setLoading({});
+            setSelectedAuthMethod(null);
           } else {
             loginFailed();
+            setSelectedAuthMethod(null);
           }
-          setSelectedAuthMethod(null);
         });
     }
-  }, [code, from, history, provider, refreshOAuthCallback, state, loginCredentials]);
+  }, [code, history, provider, refreshOAuthCallback, state, loginCredentials]);
 
   const formFilled = async () => {
     await form.validateFields().then(() => {
@@ -140,7 +131,7 @@ const Login = withRouter(() => {
 
   const getLoginDetail = () => {
     if (loginDetail === 'LOGIN_BAD_CREDENTIALS') {
-      return 'Username or password is incorrect';
+      return 'Email or password is incorrect';
     }
 
     if (loginDetail === 'LOGIN_USER_NOT_VERIFIED') {
@@ -149,10 +140,13 @@ const Login = withRouter(() => {
     return null;
   };
 
+  const inputIcon = (visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />);
+
   const usernameAndPassword = () => {
     if (!authMethods.includes('username_and_password')) {
       return null;
     }
+
     return (
       <Form
         name="normal_login"
@@ -163,23 +157,23 @@ const Login = withRouter(() => {
       >
         <Form.Item
           name="username"
-          rules={[{ required: true, message: 'Please input your Username!' }]}
+          rules={[{ required: true, message: 'Please input your email.' }]}
         >
           <Input
             prefix={<UserOutlined className="site-form-item-icon" />}
-            placeholder="Username"
+            placeholder="Email"
             type="email"
           />
         </Form.Item>
         <Form.Item
           name="password"
-          rules={[{ required: true, message: 'Please input your Password!' }]}
+          rules={[{ required: true, message: 'Please input your password.' }]}
         >
           <Input.Password
             prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
             placeholder="Password"
-            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+            iconRender={() => inputIcon()}
           />
         </Form.Item>
         <Form.Item>
@@ -299,6 +293,6 @@ const Login = withRouter(() => {
       {oauthMethods()}
     </div>
   );
-});
+}
 
 export default Login;

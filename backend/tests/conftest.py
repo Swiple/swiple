@@ -10,7 +10,7 @@ from opensearchpy import OpenSearch
 from app.core.users import current_active_user
 from app.db.client import get_client
 from app.main import app
-from app.models.auth import User
+from app.models.users import User
 from app.scripts.setup_opensearch import create_indicies
 from tests.data import create_test_data
 from tests.fake_opensearch import FakeOpenSearch

@@ -23,6 +23,8 @@ services:
     volumes:
       - $PWD/backend/app/:/code/app/
       - $HOME/.aws:$HOME/.aws
+      - $HOME/.config/gcloud:/root/.config/gcloud
+      - $HOME\AppData\Roaming\gcloud:/root/.config/gcloud
     depends_on: *swiple-depends-on
 
   scheduler:
@@ -39,6 +41,8 @@ services:
     volumes:
       - $PWD/backend/app/:/code/app/
       - $HOME/.aws:$HOME/.aws
+      - $HOME/.config/gcloud:/root/.config/gcloud
+      - $HOME\AppData\Roaming\gcloud:/root/.config/gcloud
     depends_on: *swiple-depends-on
 
   swiple_ui:
@@ -59,7 +63,9 @@ services:
     image: swiple-api:latest
     command: bash -c "
         export PYTHONPATH=$PYTHONPATH:/code
-        && python3 /code/app/scripts/setup_opensearch.py
+        && cd app
+        && reindexer init-index
+        && reindexer run
         && python3 /code/app/scripts/create_admin_user.py
         && python3 /code/app/sample_data/load_data.py
       "
@@ -84,7 +90,7 @@ services:
     volumes:
       - ./docker/postgres-data:/var/lib/postgresql/data
   opensearch-node1:
-    image: opensearchproject/opensearch:1.3.1
+    image: opensearchproject/opensearch:2.3.0
     restart: unless-stopped
     container_name: opensearch-node1
     environment:
@@ -116,7 +122,7 @@ services:
       timeout: 30s
       retries: 10
   opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:1.3.0
+    image: opensearchproject/opensearch-dashboards:2.3.0
     container_name: opensearch-dashboards
     restart: unless-stopped
     ports:
@@ -140,15 +146,15 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
 
-  demo:
+  integration_test:
     profiles:
       - demo
     env_file: docker/.env
-    container_name: demo
+    container_name: integration_test
     image: swiple-api:latest
     command: bash -c "
       export PYTHONPATH=$PYTHONPATH:/code
-      && python3 /code/app/scripts/demo_video_setup.py
+      && python3 /code/app/scripts/manual_integration_test.py
       "
     depends_on: *swiple-depends-on
     volumes:

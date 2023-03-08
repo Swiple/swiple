@@ -16,11 +16,6 @@ Secrets from **AWS Secret Manager**, **GCP Secret Manager** & **Azure Key Vault*
 
 
 ## AWS Secrets Manager Setup
-To use AWS Secrets Manager, you will need to install the `aws-secrets` dependency group. For example:
-```bash
-poetry install --with postgres,redshift,mysql,trino,athena,snowflake --with aws-secrets
-```
-
 
 Instead of providing your raw secret, you can now provide the AWS Secrets Manager ARN like so (latest version): <br/>
 `secret|arn:aws:secretsmanager:123456789012:secret:my_secret-1zAyu6`

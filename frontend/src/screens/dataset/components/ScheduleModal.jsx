@@ -144,10 +144,6 @@ function ScheduleModal({
 
   const cronColumns = [
     {
-      title: 'Second',
-      dataIndex: 'second',
-    },
-    {
       title: 'Minute',
       dataIndex: 'minute',
     },
@@ -183,25 +179,25 @@ function ScheduleModal({
 
   const cronExamples = [
     {
-      second: '0', minute: '0', hour: '10', day: '*', week: '*', day_of_week: '*', month: '*', year: '*', meaning: 'Run at 10:00 am (UTC+0) every day',
+      minute: '0', hour: '10', day: '*', week: '*', day_of_week: '*', month: '*', year: '*', meaning: 'Run at 10:00 am (UTC+0) every day',
     },
     {
-      second: '0', minute: '15', hour: '12', day: '*', week: '*', day_of_week: '*', month: '*', year: '*', meaning: 'Run at 12:15 pm (UTC+0) every day',
+      minute: '15', hour: '12', day: '*', week: '*', day_of_week: '*', month: '*', year: '*', meaning: 'Run at 12:15 pm (UTC+0) every day',
     },
     {
-      second: '0', minute: '0', hour: '18', day: '*', week: '*', day_of_week: 'MON-FRI', month: '*', year: '*', meaning: 'Run at 6:00 pm (UTC+0) every Monday through Friday',
+      minute: '0', hour: '18', day: '*', week: '*', day_of_week: 'MON-FRI', month: '*', year: '*', meaning: 'Run at 6:00 pm (UTC+0) every Monday through Friday',
     },
     {
-      second: '0', minute: '0', hour: '8', day: '1', week: '*', day_of_week: '*', month: '*', year: '*', meaning: 'Run at 8:00 am (UTC+0) every 1st day of the month',
+      minute: '0', hour: '8', day: '1', week: '*', day_of_week: '*', month: '*', year: '*', meaning: 'Run at 8:00 am (UTC+0) every 1st day of the month',
     },
     {
-      second: '0', minute: '0/15', hour: '*', day: '*', week: '*', day_of_week: '*', month: '*', year: '*', meaning: 'Run every 15 minutes',
+      minute: '0/15', hour: '*', day: '*', week: '*', day_of_week: '*', month: '*', year: '*', meaning: 'Run every 15 minutes',
     },
     {
-      second: '0', minute: '0/10', hour: '*', day: '*', week: '*', day_of_week: 'MON-FRI', month: '*', year: '*', meaning: 'Run every 10 minutes Monday through Friday',
+      minute: '0/10', hour: '*', day: '*', week: '*', day_of_week: 'MON-FRI', month: '*', year: '*', meaning: 'Run every 10 minutes Monday through Friday',
     },
     {
-      second: '0', minute: '0/5', hour: '8-17', day: '*', week: '*', day_of_week: 'MON-FRI', month: '*', year: '*', meaning: 'Run every 5 minutes Monday through Friday between 8:00 am and 5:55 pm (UTC+0)',
+      minute: '0/5', hour: '8-17', day: '*', week: '*', day_of_week: 'MON-FRI', month: '*', year: '*', meaning: 'Run every 5 minutes Monday through Friday between 8:00 am and 5:55 pm (UTC+0)',
     },
   ];
 
@@ -216,6 +212,8 @@ function ScheduleModal({
                 label="Second"
                 tooltip="second (0-59)"
                 rules={[{ required: true, message: '' }]}
+                hidden
+                initialValue="0"
               >
                 <Input />
               </Form.Item>
@@ -301,6 +299,8 @@ function ScheduleModal({
               name={['trigger', 'seconds']}
               label="Seconds"
               tooltip="Number of seconds to wait"
+              hidden
+              initialValue="0"
             >
               <InputNumber />
             </Form.Item>

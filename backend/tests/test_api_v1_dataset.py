@@ -1,8 +1,10 @@
+import datetime
 from unittest.mock import MagicMock
 import httpx
 import pytest
 from fastapi import status
 from opensearchpy import OpenSearch, RequestError
+from pydantic.errors import Decimal
 from pytest_mock import MockerFixture
 import requests
 
@@ -19,8 +21,27 @@ def dataset_repository(opensearch_client: OpenSearch):
 
 
 @pytest.fixture
+def mock_sa_connection(mocker: MockerFixture) -> MagicMock:
+    return mocker.patch("sqlalchemy.engine.Engine.connect", MagicMock())
+
+
+@pytest.fixture
 def get_dataset_sample_mock(mocker: MockerFixture) -> MagicMock:
     return mocker.patch("app.api.api_v1.endpoints.dataset.get_dataset_sample")
+
+
+@pytest.fixture
+def sample_columns_and_rows(mocker: MockerFixture) -> MagicMock:
+    mock = mocker.patch("app.core.sample.get_columns_and_rows")
+    mock.return_value = _get_columns_and_rows_return_values()
+    return mock
+
+
+@pytest.fixture
+def empty_table_sample_columns_and_rows(mocker: MockerFixture) -> MagicMock:
+    mock = mocker.patch("app.core.sample.get_columns_and_rows")
+    mock.return_value = ([], [])
+    return mock
 
 
 @pytest.fixture
@@ -89,9 +110,9 @@ class TestListDatasets:
                 "datasource_name": "postgres",
                 "database": "postgres",
                 "connector_type": "RuntimeDataConnector",
-                "dataset_name": "postgres_table_products",
+                "dataset_name": "schema.postgres_table_products",
                 "description": None,
-                "runtime_parameters": {"schema": "products", "query": None},
+                "runtime_parameters": None,
                 "engine": "PostgreSQL",
                 "sample": None,
                 "created_by": "admin@email.com",
@@ -104,9 +125,9 @@ class TestListDatasets:
                 "datasource_name": "postgres",
                 "database": "postgres",
                 "connector_type": "RuntimeDataConnector",
-                "dataset_name": "postgres_table_orders",
+                "dataset_name": "postgres_view_orders",
                 "description": None,
-                "runtime_parameters": {"schema": "orders", "query": None},
+                "runtime_parameters": {"schema": "schema", "query": " select * from schema.orders limit 100 ; "},
                 "engine": "PostgreSQL",
                 "sample": None,
                 "created_by": "admin@email.com",
@@ -119,9 +140,9 @@ class TestListDatasets:
                 "datasource_name": "mysql",
                 "database": "mysql",
                 "connector_type": "RuntimeDataConnector",
-                "dataset_name": "mysql_table_products",
+                "dataset_name": "schema.mysql_table_products",
                 "description": None,
-                "runtime_parameters": {"schema": "products", "query": None},
+                "runtime_parameters": None,
                 "engine": "MySQL",
                 "sample": None,
                 "created_by": "admin@email.com",
@@ -177,9 +198,9 @@ class TestGetDataset:
             "datasource_name": "postgres",
             "database": "postgres",
             "connector_type": "RuntimeDataConnector",
-            "dataset_name": "postgres_table_products",
+            "dataset_name": "schema.postgres_table_products",
             "description": None,
-            "runtime_parameters": {"schema": "products", "query": None},
+            "runtime_parameters": None,
             "engine": "PostgreSQL",
             "sample": None,
             "created_by": "admin@email.com",
@@ -201,8 +222,7 @@ class TestCreateDataset:
                 "datasource_id": DATASOURCES["postgres"].key,
                 "datasource_name": DATASOURCES["postgres"].datasource_name,
                 "database": DATASOURCES["postgres"].database,
-                "dataset_name": "postgres_table_products",
-                "runtime_parameters": {"schema": "products"},
+                "dataset_name": "schema.postgres_table_products",
             },
         )
 
@@ -210,7 +230,7 @@ class TestCreateDataset:
         json = response.json()
         assert (
             json["detail"]
-            == "dataset 'postgres.products.postgres_table_products' already exists"
+            == "dataset 'postgres.schema.postgres_table_products' already exists"
         )
 
     @pytest.mark.user
@@ -233,7 +253,7 @@ class TestCreateDataset:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
         json = response.json()
-        json["detail"] == "get_sample_error"
+        assert json["detail"] == "get_sample_error"
 
     @pytest.mark.user
     async def test_allowed(
@@ -279,7 +299,7 @@ class TestUpdateDataset:
                 "datasource_id": DATASOURCES["postgres"].key,
                 "datasource_name": DATASOURCES["postgres"].datasource_name,
                 "database": DATASOURCES["postgres"].database,
-                "dataset_name": "postgres_table_products",
+                "dataset_name": "schema.postgres_table_products",
                 "runtime_parameters": {"schema": "products"},
             },
         )
@@ -294,14 +314,14 @@ class TestUpdateDataset:
                 "datasource_id": DATASOURCES["mysql"].key,
                 "datasource_name": DATASOURCES["postgres"].datasource_name,
                 "database": DATASOURCES["postgres"].database,
-                "dataset_name": "postgres_table_products",
+                "dataset_name": "schema.postgres_table_products",
                 "runtime_parameters": {"schema": "products"},
             },
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         json = response.json()
-        json["detail"] == "updates to dataset datasource_id are not supported"
+        assert json["detail"] == "updates to dataset datasource_id are not supported"
 
     @pytest.mark.user
     async def test_conflicting_name(self, test_client: httpx.AsyncClient):
@@ -311,7 +331,7 @@ class TestUpdateDataset:
                 "datasource_id": DATASOURCES["postgres"].key,
                 "datasource_name": DATASOURCES["postgres"].datasource_name,
                 "database": DATASOURCES["postgres"].database,
-                "dataset_name": DATASETS["postgres_table_orders"].dataset_name,
+                "dataset_name": DATASETS["postgres_view_orders"].dataset_name,
                 "runtime_parameters": {"schema": "orders"},
             },
         )
@@ -320,12 +340,13 @@ class TestUpdateDataset:
         json = response.json()
         assert (
             json["detail"]
-            == "dataset 'postgres.orders.postgres_table_orders' already exists"
+            == "dataset 'postgres.orders.postgres_view_orders' already exists"
         )
 
     @pytest.mark.user
     async def test_allowed(
-        self, test_client: httpx.AsyncClient, dataset_repository: DatasetRepository
+        self, test_client: httpx.AsyncClient, dataset_repository: DatasetRepository, mock_sa_connection,
+        sample_columns_and_rows
     ):
         response = await test_client.put(
             f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}",
@@ -333,8 +354,7 @@ class TestUpdateDataset:
                 "datasource_id": DATASOURCES["postgres"].key,
                 "datasource_name": DATASOURCES["postgres"].datasource_name,
                 "database": DATASOURCES["postgres"].database,
-                "dataset_name": "updated_name",
-                "runtime_parameters": {"schema": "products_bis"},
+                "dataset_name": "schema.updated_name",
             },
         )
 
@@ -344,14 +364,12 @@ class TestUpdateDataset:
             DATASETS["postgres_table_products"].key
         )
 
-        assert updated_dataset.dataset_name == "updated_name"
+        assert updated_dataset.dataset_name == "schema.updated_name"
         assert (
-            updated_dataset.create_date
-            == DATASETS["postgres_table_products"].create_date
+            updated_dataset.create_date == DATASETS["postgres_table_products"].create_date
         )
         assert (
-            updated_dataset.modified_date
-            != DATASETS["postgres_table_products"].modified_date
+            updated_dataset.modified_date != DATASETS["postgres_table_products"].modified_date
         )
 
 
@@ -419,15 +437,14 @@ class TestCreateSample:
                 "datasource_id": DATASOURCES["postgres"].key,
                 "datasource_name": DATASOURCES["postgres"].datasource_name,
                 "database": DATASOURCES["postgres"].database,
-                "dataset_name": "postgres_table_users",
-                "runtime_parameters": {"schema": "users"},
+                "dataset_name": "schema.postgres_table_users",
             },
         )
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
         json = response.json()
-        json["detail"] == "get_sample_error"
+        assert json["detail"] == "get_sample_error"
 
     @pytest.mark.user
     async def test_allowed(
@@ -484,17 +501,30 @@ class TestUpdateSample:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
         json = response.json()
-        json["detail"] == "get_sample_error"
+        assert json["detail"] == "get_sample_error"
 
     @pytest.mark.user
-    async def test_allowed(
+    async def test_get_table_sample_exception(
+        self, test_client: httpx.AsyncClient, mock_sa_connection, empty_table_sample_columns_and_rows
+    ):
+        response = await test_client.put(
+            f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/sample",
+            json={},
+        )
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+        json = response.json()
+        assert json["detail"] == "No columns included in statement."
+
+    @pytest.mark.user
+    async def test_physical_table_sample(
         self,
-        get_dataset_sample_mock: MagicMock,
         test_client: httpx.AsyncClient,
         dataset_repository: DatasetRepository,
+        mock_sa_connection,
+        sample_columns_and_rows
     ):
-        get_dataset_sample_mock.return_value = Sample(columns=[], rows=[])
-
         response = await test_client.put(
             f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/sample",
             json={},
@@ -508,7 +538,35 @@ class TestUpdateSample:
             DATASETS["postgres_table_products"].key
         )
 
-        assert updated_dataset.sample == Sample(columns=[], rows=[])
+        assert updated_dataset.sample == Sample(
+            columns=['o_orderkey', 'o_custkey', 'o_orderstatus', 'o_totalprice', 'o_orderdate', 'o_orderpriority',
+                     'o_clerk', 'o_shippriority', 'o_comment'],
+            rows=[
+                {
+                    'key': 0,
+                    'o_orderkey': 4200001,
+                    'o_custkey': 13726,
+                    'o_orderstatus': 'F',
+                    'o_totalprice': 99406.41,
+                    'o_orderdate': '1994-02-21',
+                    'o_orderpriority': '3-MEDIUM',
+                    'o_clerk': 'Clerk#000000128',
+                    'o_shippriority': 0,
+                    'o_comment': 'eep. final deposits are after t',
+                },
+                {
+                    'key': 1,
+                    'o_orderkey': 4200002,
+                    'o_custkey': 129376,
+                    'o_orderstatus': 'O',
+                    'o_totalprice': 256838.41,
+                    'o_orderdate': '1997-04-14',
+                    'o_orderpriority': '4-NOT SPECIFIED',
+                    'o_clerk': 'Clerk#000000281',
+                    'o_shippriority': 0,
+                }
+            ]
+        )
         assert (
             updated_dataset.create_date
             == DATASETS["postgres_table_products"].create_date
@@ -516,6 +574,64 @@ class TestUpdateSample:
         assert (
             updated_dataset.modified_date
             != DATASETS["postgres_table_products"].modified_date
+        )
+
+    @pytest.mark.user
+    async def test_query_sample(
+        self,
+        test_client: httpx.AsyncClient,
+        dataset_repository: DatasetRepository,
+        mock_sa_connection,
+        sample_columns_and_rows
+    ):
+        response = await test_client.put(
+            f"/api/v1/datasets/{DATASETS['postgres_view_orders'].key}/sample",
+            json={},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        json = response.json()
+        assert json["key"] == DATASETS["postgres_view_orders"].key
+
+        updated_dataset = dataset_repository.get(
+            DATASETS["postgres_view_orders"].key
+        )
+        assert updated_dataset.sample == Sample(
+            columns=['o_orderkey', 'o_custkey', 'o_orderstatus', 'o_totalprice', 'o_orderdate', 'o_orderpriority',
+                     'o_clerk', 'o_shippriority', 'o_comment'],
+            rows=[
+                {
+                    'key': 0,
+                    'o_orderkey': 4200001,
+                    'o_custkey': 13726,
+                    'o_orderstatus': 'F',
+                    'o_totalprice': 99406.41,
+                    'o_orderdate': '1994-02-21',
+                    'o_orderpriority': '3-MEDIUM',
+                    'o_clerk': 'Clerk#000000128',
+                    'o_shippriority': 0,
+                    'o_comment': 'eep. final deposits are after t',
+                },
+                {
+                    'key': 1,
+                    'o_orderkey': 4200002,
+                    'o_custkey': 129376,
+                    'o_orderstatus': 'O',
+                    'o_totalprice': 256838.41,
+                    'o_orderdate': '1997-04-14',
+                    'o_orderpriority': '4-NOT SPECIFIED',
+                    'o_clerk': 'Clerk#000000281',
+                    'o_shippriority': 0,
+                }
+            ]
+        )
+        assert (
+            updated_dataset.create_date
+            == DATASETS["postgres_view_orders"].create_date
+        )
+        assert (
+            updated_dataset.modified_date
+            != DATASETS["postgres_view_orders"].modified_date
         )
 
 
@@ -588,3 +704,31 @@ class TestCreateSuggestions:
         assert response.status_code == status.HTTP_200_OK
         json = response.json()
         assert json == []
+
+
+def _get_columns_and_rows_return_values():
+    return (
+        ['o_orderkey', 'o_custkey', 'o_orderstatus', 'o_totalprice', 'o_orderdate', 'o_orderpriority', 'o_clerk',
+         'o_shippriority', 'o_comment'],
+        [
+            (
+                Decimal('4200001'),
+                Decimal('13726'), 'F',
+                Decimal('99406.41'),
+                datetime.date(1994, 2, 21),
+                '3-MEDIUM',
+                'Clerk#000000128',
+                Decimal('0'),
+                'eep. final deposits are after t',
+            ),
+            (
+                Decimal('4200002'),
+                Decimal('129376'),
+                'O',
+                Decimal('256838.41'),
+                datetime.date(1997, 4, 14),
+                '4-NOT SPECIFIED', 'Clerk#000000281',
+                Decimal('0'),
+            )
+        ]
+    )
