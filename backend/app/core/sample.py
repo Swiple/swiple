@@ -60,7 +60,7 @@ def get_sample_query_results(query: str, url: str) -> Sample:
     except ProgrammingError as e:
         raise GetSampleException(e.orig.pgerror) from e
     except OperationalError as e:
-        raise GetSampleException(e.orig) from e
+        raise GetSampleException(error_msg_from_exception(e)) from e
     except DatabaseError as e:
         raise GetSampleException(error_msg_from_exception(e)) from e
 
