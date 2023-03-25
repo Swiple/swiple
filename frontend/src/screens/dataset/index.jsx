@@ -8,6 +8,7 @@ import {
   Layout,
   message,
   Modal,
+  notification,
   Row,
   Skeleton,
   Space,
@@ -42,6 +43,7 @@ import {
   enableExpectation,
   deleteAction,
   getActions,
+  getTask,
 } from '../../Api';
 import Section from '../../components/Section';
 import CodeEditor from './components/CodeEditor';
@@ -647,19 +649,69 @@ const Dataset = withRouter(() => {
     modified_date: moment(item.modified_date).local().fromNow(),
   }));
 
+  const pollTaskStatus = (taskId, onSuccess, onFailure) => {
+    getTask(taskId)
+      .then((response) => {
+        if (response.data.status === 'SUCCESS') {
+          onSuccess(response);
+        } else if (response.data.status === 'FAILURE' || response.data.status === 'ERROR') {
+          onFailure(response);
+        } else {
+          // Poll every 5 seconds
+          setTimeout(() => pollTaskStatus(taskId, onSuccess, onFailure), 2000);
+        }
+      })
+      .catch((error) => {
+        onFailure(error);
+      });
+  };
+
   const analyzeDataset = () => new Promise((resolve) => {
-    postRunnerValidateDataset(datasetId).then(() => {
-      setRefreshValidationStats(true);
-      setRefreshExpectations(true);
-      resolve();
+    postRunnerValidateDataset(datasetId).then((response) => {
+      const onSuccess = (response) => {
+        console.log('Task completed successfully:', response);
+        setRefreshValidationStats(true);
+        setRefreshExpectations(true);
+        resolve();
+      };
+
+      const onFailure = (error) => {
+        notification.error({
+          message: error.data.result.exc_type.toString(),
+          description: error.data.result.exc_message.toString(),
+          duration: null,
+        });
+        resolve();
+      };
+
+      if (response.data && response.data.task_id) {
+        pollTaskStatus(response.data.task_id, onSuccess, onFailure);
+      } else {
+        console.error('No task_id received:', response);
+        resolve();
+      }
     });
   });
 
   const suggestExpectationsForDataset = () => new Promise((resolve) => {
     setSuggestions([]);
-    suggestExpectations(datasetId).then(() => {
-      setRefreshSuggestions(true);
-      resolve();
+    suggestExpectations(datasetId).then((response) => {
+      const onSuccess = () => {
+        setRefreshSuggestions(true);
+        resolve();
+      };
+
+      const onFailure = (error) => {
+        console.error('Task failed or encountered an error:', error);
+        resolve();
+      };
+
+      if (response.data && response.data.task_id) {
+        pollTaskStatus(response.data.task_id, onSuccess, onFailure);
+      } else {
+        console.error('No task_id received:', response);
+        resolve();
+      }
     });
   });
 

@@ -154,6 +154,13 @@ export const suggestExpectations = (datasetId) => axios.post(
   .then((response) => response)
   .catch((error) => errorHandler(error));
 
+export const getDatasetTasks = (key, status = null) => axios.get(
+  `${BASE_URL}/datasets/${key}/tasks`,
+  { params: { status } },
+)
+  .then((response) => response)
+  .catch((error) => errorHandler(error));
+
 // ========================================================
 // Schedule
 // ========================================================
@@ -429,4 +436,12 @@ export const patchUser = (data, key) => axios.patch(
 
 export const deleteUser = (key) => axios.delete(`${BASE_URL}/user/${key}`)
   .then((data) => data.data)
+  .catch((error) => errorHandler(error));
+
+// ========================================================
+// Tasks
+// ========================================================
+
+export const getTask = (key) => axios.get(`${BASE_URL}/tasks/${key}`)
+  .then((response) => response)
   .catch((error) => errorHandler(error));
