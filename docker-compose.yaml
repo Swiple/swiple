@@ -72,6 +72,27 @@ services:
     depends_on: *swiple-depends-on
     volumes:
       - ./backend/app/sample_data/:/code/app/sample_data/
+
+  rabbit:
+    image: rabbitmq:3.9
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  celery_worker:
+    container_name: celery_worker
+    env_file: docker/.env
+    command: watchmedo auto-restart --directory=/code/app/ --pattern=*.py --recursive -- celery --app=app.worker.app.celery_app worker -l info -c 4 -Ofair --without-heartbeat --without-gossip --without-mingle
+    image: swiple-api:latest
+    volumes:
+      - $PWD/backend/app/:/code/app/
+      - $HOME/.aws:$HOME/.aws
+    environment:
+      <<: *aws-creds
+    depends_on:
+      - rabbit
+      - swiple_api
+
   postgres:
     container_name: postgresql
     image: postgres:10.5

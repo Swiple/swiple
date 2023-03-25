@@ -25,7 +25,9 @@ FROM python-base as builder-base
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     curl \
-    build-essential
+    build-essential \
+    libcurl4-openssl-dev \
+    libssl-dev
 
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -
@@ -42,6 +44,10 @@ RUN poetry install --with postgres,redshift,mysql,trino,athena,snowflake,bigquer
 ###############################################
 FROM python-base as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    curl
 
 WORKDIR $PYSETUP_PATH
 COPY app $PYSETUP_PATH/app

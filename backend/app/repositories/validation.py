@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
 from app.repositories.base import BaseRepository, get_repository
-from fastapi import HTTPException, status
 from app.models.validation import Validation
 from app.settings import settings
 

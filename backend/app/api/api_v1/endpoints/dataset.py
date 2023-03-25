@@ -7,19 +7,19 @@ from fastapi.responses import JSONResponse
 from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
 from app.core.sample import GetSampleException, get_dataset_sample
 from app.core.users import current_active_user
-from app.db.client import get_client
 from app.models.dataset import BaseDataset, Dataset, DatasetCreate, DatasetUpdate, Sample
-from app.models.validation import Validation
-from app.repositories.base import NotFoundError
+from app.models.task import TaskStatus, TaskIdResponse, TaskResultResponse
 from app.repositories.dataset import DatasetRepository, get_dataset_repository
 from app.repositories.datasource import DatasourceRepository, get_datasource_repository
 from app.repositories.expectation import ExpectationRepository, get_expectation_repository
+from app.repositories.task import get_task_repository, TaskRepository
 from app.repositories.validation import get_validation_repository, ValidationRepository
 from app.settings import settings
 from app.models.users import UserDB
-from app.core.runner import create_dataset_suggestions, run_dataset_validation
-from opensearchpy import OpenSearch, RequestError
+from opensearchpy import RequestError
 import requests
+from app.worker.tasks.validation import run_validation
+from app.worker.tasks.suggestions import run_suggestions
 
 router = APIRouter(
     dependencies=[Depends(current_active_user)]
@@ -190,32 +190,38 @@ def update_sample(
     return dataset
 
 
-@router.post("/{key}/validate", response_model=Validation)
-def validate_dataset(key: str, client: OpenSearch = Depends(get_client)):
-    try:
-        validation: Validation = run_dataset_validation(key, client)
-    except NotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
+@router.post("/{key}/validate", response_model=TaskIdResponse)
+def validate_dataset(
+    key: str,
+    repository: DatasetRepository = Depends(get_dataset_repository),
+):
+    get_by_key_or_404(key, repository)
+    task = run_validation.delay(dataset_id=key)
+    return JSONResponse({"task_id": task.id})
 
-    return validation
+
+@router.get("/{key}/tasks", response_model=list[TaskResultResponse])
+def get_tasks_by_dataset_id(
+    key: str,
+    status: Optional[TaskStatus] = None,
+    dataset_repository: DatasetRepository = Depends(get_dataset_repository),
+    repository: TaskRepository = Depends(get_task_repository),
+):
+    get_by_key_or_404(key, dataset_repository)
+    return repository.query_by_dataset_id(
+        key,
+        status=status,
+    )
 
 
-@router.post("/{key}/suggest")
+@router.post("/{key}/suggest", response_model=TaskIdResponse)
 def create_suggestions(
     key: str,
-    client: OpenSearch = Depends(get_client),
     repository: DatasetRepository = Depends(get_dataset_repository),
-    expectation_repository: ExpectationRepository = Depends(get_expectation_repository),
 ):
-    dataset = get_by_key_or_404(key, repository)
-
-    results = create_dataset_suggestions(key, client)
-    expectations = [expectation_repository._get_object_from_dict(e) for e in results]
-
-    expectation_repository.delete_by_filter(dataset_id=dataset.key, suggested=True, enabled=False)
-    expectation_repository.bulk_create(expectations)
-
-    return expectations
+    get_by_key_or_404(key, repository)
+    task = run_suggestions.delay(dataset_id=key)
+    return JSONResponse({"task_id": task.id})
 
 
 def should_update_sample(dataset: Dataset, dataset_update: DatasetUpdate):
