@@ -1,15 +1,7 @@
-import os
-from dotenv import load_dotenv
-# Load environment variables from .env file
-dotenv_path = os.path.join(os.path.dirname(__file__), '../../../docker/.env-local')
-load_dotenv(dotenv_path)
-
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Dict, Any
-
 from pydantic import Extra
-
 from app.models.base_model import BaseModel
 
 
