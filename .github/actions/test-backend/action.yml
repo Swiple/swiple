@@ -13,6 +13,13 @@ runs:
       shell: bash
       working-directory: backend
       run: |
+        apt-get update \
+        && apt-get install --no-install-recommends -y \
+        curl \
+        build-essential \
+        libcurl4-openssl-dev \
+        libssl-dev
+        
         python -m pip install --upgrade pip poetry
         poetry install --with postgres,redshift,mysql,trino,athena,bigquery,snowflake,aws-secrets,gcp,azure-secrets,dev
     - name: Test with pytest
