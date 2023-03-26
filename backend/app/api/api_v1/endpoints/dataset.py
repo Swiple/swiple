@@ -197,7 +197,7 @@ def validate_dataset(
 ):
     get_by_key_or_404(key, repository)
     task = run_validation.delay(dataset_id=key)
-    return JSONResponse({"task_id": task.id})
+    return {"task_id": task.id}
 
 
 @router.get("/{key}/tasks", response_model=list[TaskResultResponse])
@@ -221,7 +221,7 @@ def create_suggestions(
 ):
     get_by_key_or_404(key, repository)
     task = run_suggestions.delay(dataset_id=key)
-    return JSONResponse({"task_id": task.id})
+    return {"task_id": task.id}
 
 
 def should_update_sample(dataset: Dataset, dataset_update: DatasetUpdate):
