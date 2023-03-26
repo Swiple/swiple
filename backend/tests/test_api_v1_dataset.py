@@ -12,6 +12,7 @@ from app.core.runner import Runner
 from app.core.sample import GetSampleException
 from app.models.dataset import Sample
 from app.repositories.dataset import DatasetRepository
+from app.worker.tasks.validation import run_validation
 from tests.data import DATASETS, DATASOURCES, create_validation_object
 
 
@@ -49,6 +50,18 @@ def runner_mock(mocker: MockerFixture) -> MagicMock:
     class_mock = mocker.patch("app.core.runner.Runner", spec=Runner)
     instance_mock = class_mock.return_value
     return instance_mock
+
+
+@pytest.fixture
+def celery_delay_mock(mocker: MockerFixture) -> MagicMock:
+    class MockTask:
+        def __init__(self, task_id):
+            self.id = task_id
+
+    mock_task_id = "a9cadbea-3676-44b0-be2b-26ea60267f50"
+    mock = mocker.patch("celery.app.task.Task.delay")
+    mock.return_value = MockTask(mock_task_id)
+    return mock
 
 
 @pytest.mark.asyncio
@@ -654,14 +667,8 @@ class TestValidateDataset:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     @pytest.mark.user
-    async def test_allowed(
-        self, runner_mock: MagicMock, test_client: httpx.AsyncClient
-    ):
-        validation = create_validation_object(
-            DATASOURCES["postgres"].key, DATASETS["postgres_table_products"].key
-        )
-        runner_mock.validate.return_value = validation
-
+    async def test_allowed(self, celery_delay_mock, runner_mock: MagicMock, test_client: httpx.AsyncClient):
+        mock_task_id = celery_delay_mock.return_value.id
         response = await test_client.post(
             f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/validate",
             json={},
@@ -669,7 +676,7 @@ class TestValidateDataset:
 
         assert response.status_code == status.HTTP_200_OK
         json = response.json()
-        assert json == validation.dict()
+        assert json == {'task_id': mock_task_id}
 
 
 @pytest.mark.asyncio
@@ -692,10 +699,9 @@ class TestCreateSuggestions:
 
     @pytest.mark.user
     async def test_allowed(
-        self, runner_mock: MagicMock, test_client: httpx.AsyncClient
+        self, celery_delay_mock, runner_mock: MagicMock, test_client: httpx.AsyncClient
     ):
-        runner_mock.profile.return_value = []
-
+        mock_task_id = celery_delay_mock.return_value.id
         response = await test_client.post(
             f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/suggest",
             json={},
@@ -703,7 +709,7 @@ class TestCreateSuggestions:
 
         assert response.status_code == status.HTTP_200_OK
         json = response.json()
-        assert json == []
+        assert json == {'task_id': mock_task_id}
 
 
 def _get_columns_and_rows_return_values():
