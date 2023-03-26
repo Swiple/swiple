@@ -668,8 +668,7 @@ const Dataset = withRouter(() => {
 
   const analyzeDataset = () => new Promise((resolve) => {
     postRunnerValidateDataset(datasetId).then((response) => {
-      const onSuccess = (response) => {
-        console.log('Task completed successfully:', response);
+      const onSuccess = () => {
         setRefreshValidationStats(true);
         setRefreshExpectations(true);
         resolve();
