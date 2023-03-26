@@ -9,15 +9,9 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.9"
-    - name: Install curl dependencies
+    - name: Install packages
       shell: bash
-      run: |
-        apt-get update \
-        && apt-get install --no-install-recommends -y \
-        curl \
-        build-essential \
-        libcurl4-openssl-dev \
-        libssl-dev
+      run: sudo apt-get install libcurl4-gnutls-dev libgnutls28-dev
     - name: Install dependencies
       shell: bash
       working-directory: backend
