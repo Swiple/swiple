@@ -11,7 +11,9 @@ runs:
         python-version: "3.9"
     - name: Install packages
       shell: bash
-      run: sudo apt-get install libcurl4-gnutls-dev libgnutls28-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install libcurl4-gnutls-dev libgnutls28-dev
     - name: Install dependencies
       shell: bash
       working-directory: backend
