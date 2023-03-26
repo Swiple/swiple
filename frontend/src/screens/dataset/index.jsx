@@ -675,9 +675,12 @@ const Dataset = withRouter(() => {
       };
 
       const onFailure = (error) => {
+        const excType = error?.data?.result?.exc_type?.toString() || 'Unknown Error';
+        const excMessage = error?.data?.result?.exc_message?.toString() || 'An unknown error occurred while processing the task.';
+
         notification.error({
-          message: error.data.result.exc_type.toString(),
-          description: error.data.result.exc_message.toString(),
+          message: excType,
+          description: excMessage,
           duration: null,
         });
         resolve();
@@ -686,7 +689,6 @@ const Dataset = withRouter(() => {
       if (response.data && response.data.task_id) {
         pollTaskStatus(response.data.task_id, onSuccess, onFailure);
       } else {
-        console.error('No task_id received:', response);
         resolve();
       }
     });
