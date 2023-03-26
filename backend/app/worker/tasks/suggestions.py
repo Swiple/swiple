@@ -15,4 +15,3 @@ def run_suggestions(dataset_id):
         enabled=False,
     )
     expectation_repository.bulk_create(expectations)
-    return {"dataset_id": dataset_id}
