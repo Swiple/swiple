@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from opensearchpy import RequestError
 from sqlalchemy import create_engine
+from starlette.datastructures import MutableHeaders
 
 from app.api.shortcuts import get_by_key_or_404
 from app.core.users import current_active_user
@@ -142,10 +143,13 @@ def delete_datasource(
     dataset_repository.delete_by_datasource(key)
 
     # TODO: use an internal function for this rather than making an HTTP request
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
+
     requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"datasource_id": key},
-        headers=request.headers,
+        headers=dict(mutable_headers),
         cookies=request.cookies,
     )
 

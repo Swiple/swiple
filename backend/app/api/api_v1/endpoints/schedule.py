@@ -4,6 +4,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
 from fastapi import Request
+from starlette.datastructures import MutableHeaders
+
 from app.settings import settings
 from app.core.users import current_active_user
 from app.core.schedulers.scheduler import Schedule
@@ -35,6 +37,8 @@ def list_schedules(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="expected either 'dataset_id' or 'datasource_id'"
         )
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
 
     response = requests.get(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
@@ -42,7 +46,7 @@ def list_schedules(
             "dataset_id": dataset_id,
             "datasource_id": datasource_id
         },
-        headers=request.headers,
+        headers=dict(mutable_headers),
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -58,11 +62,13 @@ def create_schedule(
         request: Request,
 ):
     payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
     response = requests.post(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"dataset_id": dataset_id},
         data=payload,
-        headers=request.headers,
+        headers=dict(mutable_headers),
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -76,9 +82,11 @@ def get_schedule(
         schedule_id: str,
         request: Request,
 ):
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
     response = requests.get(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
-        headers=request.headers,
+        headers=dict(mutable_headers),
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -94,10 +102,12 @@ def update_schedule(
         request: Request,
 ):
     payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
     response = requests.put(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
         data=payload,
-        headers=request.headers,
+        headers=dict(mutable_headers),
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -111,9 +121,11 @@ def delete_schedule(
         schedule_id: str,
         request: Request,
 ):
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
     response = requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
-        headers=request.headers,
+        headers=dict(mutable_headers),
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -142,18 +154,21 @@ def delete_schedules(
 
     response = None
 
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
+
     if dataset_id:
         response = requests.delete(
             url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
             params={"dataset_id": dataset_id},
-            headers=request.headers,
+            headers=dict(mutable_headers),
             cookies=request.cookies,
         )
     elif datasource_id:
         response = requests.delete(
             url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
             params={"datasource_id": datasource_id},
-            headers=request.headers,
+            headers=dict(mutable_headers),
             cookies=request.cookies,
         )
 
@@ -169,10 +184,12 @@ def next_schedule_run_times(
         request: Request,
 ):
     payload = json.dumps(jsonable_encoder(schedule.dict(exclude_none=True)))
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
     response = requests.post(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/next-run-times",
         data=payload,
-        headers=request.headers,
+        headers=dict(mutable_headers),
         cookies=request.cookies,
     )
     return JSONResponse(
