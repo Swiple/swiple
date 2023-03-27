@@ -149,7 +149,7 @@ def delete_datasource(
     requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"datasource_id": key},
-        headers=dict(mutable_headers),
+        headers=mutable_headers,
         cookies=request.cookies,
     )
 

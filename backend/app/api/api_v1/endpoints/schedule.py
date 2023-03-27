@@ -46,7 +46,7 @@ def list_schedules(
             "dataset_id": dataset_id,
             "datasource_id": datasource_id
         },
-        headers=dict(mutable_headers),
+        headers=mutable_headers,
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -68,7 +68,7 @@ def create_schedule(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"dataset_id": dataset_id},
         data=payload,
-        headers=dict(mutable_headers),
+        headers=mutable_headers,
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -86,7 +86,7 @@ def get_schedule(
     mutable_headers = MutableHeaders(request.headers)
     response = requests.get(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
-        headers=dict(mutable_headers),
+        headers=mutable_headers,
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -107,7 +107,7 @@ def update_schedule(
     response = requests.put(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
         data=payload,
-        headers=dict(mutable_headers),
+        headers=mutable_headers,
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -125,7 +125,7 @@ def delete_schedule(
     mutable_headers = MutableHeaders(request.headers)
     response = requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/{schedule_id}",
-        headers=dict(mutable_headers),
+        headers=mutable_headers,
         cookies=request.cookies,
     )
     return JSONResponse(
@@ -161,14 +161,14 @@ def delete_schedules(
         response = requests.delete(
             url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
             params={"dataset_id": dataset_id},
-            headers=dict(mutable_headers),
+            headers=mutable_headers,
             cookies=request.cookies,
         )
     elif datasource_id:
         response = requests.delete(
             url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
             params={"datasource_id": datasource_id},
-            headers=dict(mutable_headers),
+            headers=mutable_headers,
             cookies=request.cookies,
         )
 
@@ -189,7 +189,7 @@ def next_schedule_run_times(
     response = requests.post(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules/next-run-times",
         data=payload,
-        headers=dict(mutable_headers),
+        headers=mutable_headers,
         cookies=request.cookies,
     )
     return JSONResponse(
