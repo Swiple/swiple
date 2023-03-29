@@ -6,15 +6,17 @@ from copy import deepcopy
 
 from app.models.dataset import DatasetCreate
 from app.models.datasource import DatasourceInput, Engine, PostgreSQL, Athena
+from app.models.task import TaskIdResponse, TaskResultResponse, TaskStatus
 from app.settings import settings
 from app.db.client import client
 from app.models.expectation import ExpectationInput
+import time
+import os
 import uuid
 import random
 import pytz
 import requests
 import json
-import os
 
 api_url = f"{settings.SWIPLE_API_URL}{settings.API_VERSION}"
 
@@ -53,10 +55,10 @@ class IntegrationTest:
         self.cookies = response.cookies.get_dict()
 
     def add_datasource(self):
-        datasource_name = os.environ["DATASOURCE_NAME"]
+        datasource_name = os.environ.get("DATASOURCE_NAME", "integrations_test")
         self._datasource_exists(datasource_name=datasource_name)
 
-        if os.environ["ENGINE"] == Engine.ATHENA.value:
+        if os.environ.get("ENGINE") == Engine.ATHENA.value:
             datasource: DatasourceInput = DatasourceInput(
                 __root__=Athena(
                     engine=Engine.ATHENA,
@@ -71,11 +73,11 @@ class IntegrationTest:
                 __root__=PostgreSQL(
                     engine=Engine.POSTGRESQL,
                     datasource_name=datasource_name,
-                    username=os.environ["USERNAME"],
-                    password=os.environ["PASSWORD"],
-                    database=os.environ["DATABASE"],
-                    host=os.environ["HOST"],
-                    port=int(os.environ["PORT"]),
+                    username=os.environ.get("USERNAME", "postgres"),
+                    password=os.environ.get("PASSWORD", "postgres"),
+                    database=os.environ.get("DATABASE", "postgres"),
+                    host=os.environ.get("HOST", "postgres"),
+                    port=int(os.environ.get("PORT", "5432")),
                 )
             )
         response = requests.post(
@@ -99,8 +101,8 @@ class IntegrationTest:
             DatasetCreate(
                 datasource_id=datasource_id,
                 datasource_name=datasource_name,
-                database=os.environ["DATABASE"],
-                dataset_name=os.environ["DATASET_NAME"],
+                database=os.environ.get("DATABASE", "postgres"),
+                dataset_name=os.environ.get("DATASET_NAME", "sample_data.customer"),
             ),
         ]
 
@@ -120,6 +122,27 @@ class IntegrationTest:
 
         return dataset_responses
 
+    def poll_task(self, url):
+        polling_interval = 2
+
+        while True:
+            response = requests.get(
+                url=url,
+                cookies=self.cookies,
+                headers={'Content-Type': 'application/json'},
+            )
+            task_response = response.json()
+            task_result = TaskResultResponse(**task_response)
+
+            if task_result.status == TaskStatus.SUCCESS:
+                print("Task succeeded!")
+                break
+            elif task_result.status == TaskStatus.FAILURE:
+                raise Exception("Task failed!")
+            else:
+                print(f"Task status: {task_result.status}. Retrying in {polling_interval} seconds.")
+                time.sleep(polling_interval)
+
     def suggest(self, datasets):
         suggestion_responses = []
 
@@ -130,9 +153,14 @@ class IntegrationTest:
                 headers={'Content-Type': 'application/json'},
                 json=dataset,
             )
+            suggestion_task_id_response = TaskIdResponse(**response.json())
 
             assert response.status_code == 200, json.loads(response.text)["detail"]
-            print(f"Successfully added suggestions for dataset '{dataset['dataset_name']}'")
+            print(f"Successfully started generating suggestions for dataset '{dataset['dataset_name']}'")
+
+            # Polls until SUCCESS or FAILURE
+            task_endpoint = f"{api_url}/tasks/{suggestion_task_id_response.task_id}"
+            self.poll_task(url=task_endpoint)
 
             suggestions = requests.get(
                 f"{api_url}/expectations",
@@ -188,6 +216,23 @@ class IntegrationTest:
 
         print("Successfully enabled suggestions")
 
+    def get_suggestions(self, datasets):
+        for dataset in datasets:
+            response = requests.get(
+                f"{api_url}/expectations",
+                cookies=self.cookies,
+                headers={'Content-Type': 'application/json'},
+                params={
+                    "dataset_id": dataset["key"],
+                    "enabled": True,
+                    "include_history": True,
+                },
+            )
+
+            assert response.status_code == 200, json.loads(response.text)["detail"]
+            assert len(response.json()) > 0, f"No suggestions for dataset '{dataset['dataset_name']}'"
+            print("Successfully listed suggestions")
+
     def validate(self, datasets):
         for dataset in datasets:
             response = requests.post(
@@ -195,9 +240,29 @@ class IntegrationTest:
                 cookies=self.cookies,
                 headers={'Content-Type': 'application/json'},
             )
+            validation_task_id_response = TaskIdResponse(**response.json())
 
             assert response.status_code == 200, json.loads(response.text)["detail"]
-            print(f"Successfully validated dataset '{dataset['dataset_name']}'")
+            print(f"Successfully started validation for dataset '{dataset['dataset_name']}'")
+
+            # Polls until SUCCESS or FAILURE
+            task_endpoint = f"{api_url}/tasks/{validation_task_id_response.task_id}"
+            self.poll_task(url=task_endpoint)
+
+    def list_validations(self, datasets):
+        for dataset in datasets:
+            response = requests.get(
+                f"{api_url}/validations",
+                cookies=self.cookies,
+                headers={'Content-Type': 'application/json'},
+                params={
+                    "dataset_id": dataset["key"],
+                }
+            )
+
+            assert response.status_code == 200, json.loads(response.text)["detail"]
+            assert len(response.json()) > 0, f"No validations for dataset '{dataset['dataset_name']}'"
+            print("Successfully listed validations")
 
     def insert_raw_validations(self, validations):
         bulk(
@@ -250,17 +315,15 @@ class IntegrationTest:
 
     def add_resources(self):
         datasource = self.add_datasource()
-        print(datasource)
-
         datasets = self.add_datasets(
             datasource_id=datasource["key"],
             datasource_name=datasource["datasource_name"],
         )
-        print(datasets)
-
         suggestions = self.suggest(datasets=datasets)
         self.enable_suggestions(suggestions=suggestions)
+        self.get_suggestions(datasets)
         self.validate(datasets=datasets)
+        self.list_validations(datasets)
 
     def _datasource_exists(self, datasource_name):
         response = client.search(
