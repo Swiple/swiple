@@ -51,3 +51,8 @@ class TaskReadyResponse(BaseModel):
 
 class TaskIdResponse(BaseModel):
     task_id: str
+
+
+class Task(BaseModel):
+    result: TaskResult
+    timestamp: str

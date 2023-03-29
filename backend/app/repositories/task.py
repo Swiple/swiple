@@ -42,11 +42,10 @@ class TaskRepository(BaseRepository[TaskResult]):
         })
 
     def _get_object_from_dict(self, d: dict[str, Any], *, id: Optional[str] = None) -> TaskResult:
-        print(d)
-        result = d["result"]
         if id is not None:
-            result["task_id"] = id.replace(self.id_prefix, "")
-        return self.model_class.parse_obj(result)
+            d = d["result"]
+            d["task_id"] = id.replace(self.id_prefix, "")
+        return self.model_class.parse_obj(d)
 
 
 get_task_repository = get_repository(TaskRepository)
