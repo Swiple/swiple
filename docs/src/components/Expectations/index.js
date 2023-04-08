@@ -25,7 +25,7 @@ export default function ExpectationsList() {
   }
 
   return (
-    <section style={{ paddingTop: '4rem', paddingBottom: '4rem'}}>
+    <section style={{ paddingTop: '4rem', paddingBottom: '4rem', backgroundColor: '#F5F7FA'}}>
       <div className="container">
         <div className="row" style={{paddingLeft: 16, marginBottom: 16 }}>
           <h1 style={{ margin: 0, alignSelf: 'flex-end' }}>Expectations</h1>
