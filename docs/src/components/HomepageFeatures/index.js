@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import styles from './styles.module.css';
 import { isMobile } from 'react-device-detect';
@@ -117,18 +117,27 @@ function Image({ Svg, type }) {
   );
 }
 
-const isSmallScreen = () => {
-  return isMobile || window.innerWidth <= 996;
-};
-
-
 function Feature({ Svg, title, type, subtitle, description, idx }) {
+  const [isSmallScreen, setIsSmallScreen] = useState(isMobile);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth <= 996);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const text = <Text title={title} subtitle={subtitle} description={description} idx={idx} />;
   const image = <Image Svg={Svg} type={type} />;
 
-  const renderForSmallScreen = isSmallScreen()
-  const LeftSide = idx % 2 === 0 || renderForSmallScreen ? text : image;
-  const RightSide = idx % 2 === 0 || renderForSmallScreen ? image : text;
+  const LeftSide = idx % 2 === 0 || isSmallScreen ? text : image;
+  const RightSide = idx % 2 === 0 || isSmallScreen ? image : text;
 
   return (
     <>
@@ -140,6 +149,7 @@ function Feature({ Svg, title, type, subtitle, description, idx }) {
     </>
   );
 }
+
 
 
 
