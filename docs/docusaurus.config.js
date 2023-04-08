@@ -2,12 +2,11 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Build Trust in Every Dataset',
-  tagline: 'With Swiple, quickly identify and resolve data issues with continuous observability. Avoid the impact of bad data on your business with the only platform that proactively detects issues.',
+  title: 'Data Quality in Hours Not Months',
+  tagline: 'The data quality automation plugin for data teams. Experience data quality observability in your ELT/ETL pipeline that would usually take a year to build, in just a few hours.',
   url: 'https://swiple.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -69,6 +68,12 @@ const config = {
             position: 'right',
             image: '',
           },
+          {
+            href: 'https://calendly.com/swiple/swiple-cloud-demo',
+            label: 'Book a demo',
+            position: 'right',
+            className: 'book-a-demo',
+          },
         ],
       },
       footer: {
@@ -114,11 +119,15 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Swiple, Ltd. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Swiple, Ltd.`,
+      },
+      colorMode: {
+        defaultMode: 'light',
+        disableSwitch: true,
+        respectPrefersColorScheme: false,
       },
       prism: {
         theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
       },
     }),
 };
