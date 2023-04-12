@@ -9,11 +9,13 @@ from app.models.expectation import (
     ExpectTableColumnsToMatchOrderedList,
     Expectation,
 )
+from app.models.task import TaskResult, Task
 from app.models.validation import Validation
 from app.repositories.base import M, R
 from app.repositories.dataset import DatasetRepository
 from app.repositories.datasource import DatasourceRepository
 from app.repositories.expectation import ExpectationRepository
+from app.repositories.task import TaskRepository
 from app.repositories.validation import ValidationRepository
 
 DATASOURCES: dict[str, Datasource] = {
@@ -167,11 +169,64 @@ VALIDATIONS: dict[str, Validation] = {
     ),
 }
 
+CELERY_TASKS: dict[str, Task] = {
+    "postgres_table_products": Task(
+        **{
+            "result": {
+                "status": "SUCCESS",
+                "result": None,
+                "traceback": None,
+                "children": [],
+                "date_done": "2023-03-26T17:30:56.259829",
+                "name": "validation.run",
+                "args": [],
+                "kwargs": {
+                    "dataset_id": "5b65eae9-600e-4933-9bad-78477e0ab98e"
+                },
+                "worker": "celery@58f6e7042088",
+                "retries": 0,
+                "queue": "swiple-job-queue",
+                "task_id": "c4690c54-ac50-4eaf-8a3f-104f0aef7ce7"
+            },
+            "timestamp": "2023-03-26T17:30:56.263Z"
+        }
+    ),
+    "postgres_view_orders": Task(
+        **{
+            "result": {
+                "status": "FAILURE",
+                "result": {
+                    "pid": 21,
+                    "hostname": "celery@58f6e7042088",
+                    "exc_message": [],
+                    "exc_module": "app.repositories.base",
+                    "exc_type": "NotFoundError"
+                },
+                "traceback": """Traceback (most recent call last):""",
+                "children": [],
+                "date_done": "2023-03-26T15:42:16.080941",
+                "name": "validation.run",
+                "args": [],
+                "kwargs": {
+                    "dataset_id": "4b252091-6d0d-4beb-9552-3764cfe8cbae"
+                },
+                "worker": "celery@58f6e7042088",
+                "retries": 0,
+                "queue": "swiple-job-queue",
+                "task_id": "a9cadbea-3676-44b0-be2b-26ea60267f50"
+            },
+            "timestamp": "2023-03-26T15:42:16.136Z"
+        }
+    )
+
+}
+
 TEST_DATA: dict[Type[R], dict[str, M]] = {
     DatasourceRepository: DATASOURCES,
     DatasetRepository: DATASETS,
     ExpectationRepository: EXPECTATIONS,
     ValidationRepository: VALIDATIONS,
+    TaskRepository: CELERY_TASKS,
 }
 
 

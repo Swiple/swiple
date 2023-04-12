@@ -12,8 +12,7 @@ from app.core.runner import Runner
 from app.core.sample import GetSampleException
 from app.models.dataset import Sample
 from app.repositories.dataset import DatasetRepository
-from app.worker.tasks.validation import run_validation
-from tests.data import DATASETS, DATASOURCES, create_validation_object
+from tests.data import DATASETS, DATASOURCES
 
 
 @pytest.fixture
