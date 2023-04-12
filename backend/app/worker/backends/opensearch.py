@@ -1,6 +1,4 @@
 """OpenSearch result store backend."""
-import json
-
 from datetime import datetime
 
 from kombu.utils.encoding import bytes_to_str
@@ -82,7 +80,7 @@ class OpenSearchBackend(KeyValueStoreBackend):
         if os_max_retries is not None:
             self.os_max_retries = os_max_retries
 
-        self.os_save_meta_as_text = _get('opensearch_save_meta_as_text', True)
+        self.os_save_meta_as_text = _get('opensearch_save_meta_as_text', False)
         self._server = None
 
     def exception_safe_to_retry(self, exc):
@@ -104,9 +102,7 @@ class OpenSearchBackend(KeyValueStoreBackend):
             res = self._get(key)
             try:
                 if res['found']:
-                    result_dict = res['_source']['result']
-                    result_str = json.dumps(result_dict)
-                    return result_str
+                    return res['_source']['result']
             except (TypeError, KeyError):
                 pass
         except opensearchpy.exceptions.NotFoundError:
@@ -123,9 +119,8 @@ class OpenSearchBackend(KeyValueStoreBackend):
         )
 
     def _set_with_state(self, key, value, state):
-        value_dict = json.loads(value)
         body = {
-            'result': value_dict,
+            'result': value,
             'timestamp': '{}Z'.format(
                 datetime.utcnow().isoformat()[:-3]
             ),
@@ -173,7 +168,7 @@ class OpenSearchBackend(KeyValueStoreBackend):
             return self._index(id, body, **kwargs)
 
         try:
-            meta_present_on_backend = res_get['_source']['result']
+            meta_present_on_backend = self.decode_result(res_get['_source']['result'])
         except (TypeError, KeyError):
             pass
         else:

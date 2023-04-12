@@ -19,7 +19,6 @@ class TaskRepository(BaseRepository[TaskResult]):
                 "task_id": id,
                 "status": 'PENDING',
             })
-
         return self._get_object_from_dict(result_dict)
 
     def query_by_dataset_id(self, dataset_id: str, status=None) -> list[TaskResult]:
