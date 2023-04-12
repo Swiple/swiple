@@ -2,8 +2,7 @@ from typing import Any, Optional
 from app.repositories.base import BaseRepository, get_repository
 from app.settings import settings
 from app.models.task import TaskResult
-from app.repositories.base import NotFoundError, OSNotFoundError
-from app.worker.app import celery_app
+from app.repositories.base import OSNotFoundError
 
 
 class TaskRepository(BaseRepository[TaskResult]):
@@ -13,17 +12,15 @@ class TaskRepository(BaseRepository[TaskResult]):
 
     def get(self, id: str) -> TaskResult:
         try:
-            task = celery_app.AsyncResult(id)
-        except OSNotFoundError as e:
-            raise NotFoundError() from e
+            res = self.client.get(index=self.index, id=f"{self.id_prefix}{id}")
+            result_dict = res['_source']['result']
+        except OSNotFoundError:
+            return self._get_object_from_dict({
+                "task_id": id,
+                "status": 'PENDING',
+            })
 
-        return self._get_object_from_dict({
-            "task_id": task.task_id,
-            "status": task.state,
-            "kwargs": task.kwargs,
-            "result": task.result,
-            "date_done": task.date_done,
-        })
+        return self._get_object_from_dict(result_dict)
 
     def query_by_dataset_id(self, dataset_id: str, status=None) -> list[TaskResult]:
         # Construct the must array
