@@ -1,5 +1,4 @@
 import base64
-import json
 from enum import Enum
 from typing import Annotated, Optional, Literal, Union
 
@@ -37,14 +36,24 @@ class DatasourceBase(BaseModel, KeyModel, CreateUpdateDateModel):
 class Athena(DatasourceBase):
     engine: Literal[Engine.ATHENA]
     database: str
+    role_arn: Optional[str] = Field(
+        placeholder="arn:aws:iam::<YOUR_ACCOUNT_ID>:role/<YOUR_ROLE_NAME>",
+        description="The Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that Athena uses to access your data on your behalf."
+    )
     region: str = Field(placeholder="us-east-1", description="AWS Region")
     s3_staging_dir: str = Field(regex="^s3://", placeholder="s3://YOUR_S3_BUCKET/path/to/", description="Navigate to 'Athena' in the AWS Console then select 'Settings' to find the 'Query result location'.")
 
     def connection_string(self):
+        base_url = f"awsathena+rest://@athena.{self.region}.amazonaws.com/"
+        params = {
+            "s3_staging_dir": self.s3_staging_dir,
+            "role_arn": self.role_arn,
+        }
         if self.database:
-            return f"awsathena+rest://@athena.{self.region}.amazonaws.com/{self.database}?s3_staging_dir={self.s3_staging_dir}"
-        else:
-            return f"awsathena+rest://@athena.{self.region}.amazonaws.com/?s3_staging_dir={self.s3_staging_dir}"
+            base_url += self.database
+
+        query_string = "&".join([f"{k}={v}" for k, v in params.items() if v])
+        return f"{base_url}?{query_string}"
 
     def expectation_meta(self):
         return {
@@ -52,6 +61,7 @@ class Athena(DatasourceBase):
             "database": self.database,
             "region": self.region,
             "s3_staging_dir": self.s3_staging_dir,
+            "role_arn": self.role_arn,
         }
 
 
@@ -119,24 +129,18 @@ class Snowflake(DatasourceBase):
     role: Optional[str]
 
     def connection_string(self, schema=None):
-        connection = f"snowflake://{self.user}:{self.password.get_decrypted_value()}@{self.account}/{self.database}"
+        base_url = f"snowflake://{self.user}:{self.password.get_decrypted_value()}@{self.account}/{self.database}"
+        params = {
+            "warehouse": self.warehouse,
+            "role": self.role,
+            "application": "swiple",
+        }
 
         if schema:
-            connection = f"{connection}/{schema}"
+            base_url += f"/{schema}"
 
-        if self.warehouse:
-            connection = f"{connection}?warehouse={self.warehouse}"
-
-        if self.role and self.warehouse:
-            connection = f"{connection}&role={self.role}"
-
-        if self.role and not self.warehouse:
-            connection = f"{connection}?role={self.role}"
-
-        if not self.role and not self.warehouse:
-            return f"{connection}?application=swiple"
-
-        return f"{connection}&application=swiple"
+        query_string = "&".join([f"{k}={v}" for k, v in params.items() if v])
+        return f"{base_url}?{query_string}"
 
     def expectation_meta(self):
         return {
