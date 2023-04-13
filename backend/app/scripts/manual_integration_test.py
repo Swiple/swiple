@@ -61,8 +61,9 @@ class IntegrationTest:
                 __root__=Athena(
                     engine=Engine.ATHENA,
                     datasource_name=datasource_name,
-                    database=os.environ["DATABASE"],
-                    region=os.environ["REGION"],
+                    role_arn=os.environ.get("ROLE_ARN", None),
+                    database=os.environ.get("DATABASE", "sample_data"),
+                    region=os.environ.get("REGION", "us-east-1"),
                     s3_staging_dir=os.environ["S3_STAGING_DIR"],
                 )
             )
