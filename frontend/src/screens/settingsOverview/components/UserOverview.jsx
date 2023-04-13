@@ -98,7 +98,7 @@ export default function userOverview() {
     {
       title: 'Email',
       dataIndex: 'email',
-      render: (text) => (
+      render: (text, record) => (
         <Row>
           <Space>
             <Text>{text}</Text>
@@ -110,6 +110,18 @@ export default function userOverview() {
                   }}
                   >
                     You
+                  </Tag>
+                )
+                : null
+            }
+            {
+              record.is_admin_user
+                ? (
+                  <Tag style={{
+                    border: 0, fontWeight: 'bold',
+                  }}
+                  >
+                    Admin user
                   </Tag>
                 )
                 : null
@@ -136,17 +148,23 @@ export default function userOverview() {
     {
       title: '',
       render: (text, record) => (
-        <Dropdown
-          trigger={['click']}
-          overlay={userMenu(record)}
-          placement="bottomRight"
-          arrow
-        >
-          <Button
-            type="text"
-            icon={<EllipsisOutlined rotate={90} style={{ fontWeight: 'bold', fontSize: '25px' }} />}
-          />
-        </Dropdown>
+        <div>
+          {
+            record.is_admin_user !== true ? (
+              <Dropdown
+                trigger={['click']}
+                overlay={userMenu(record)}
+                placement="bottomRight"
+                arrow
+              >
+                <Button
+                  type="text"
+                  icon={<EllipsisOutlined rotate={90} style={{ fontWeight: 'bold', fontSize: '25px' }} />}
+                />
+              </Dropdown>
+            ) : null
+          }
+        </div>
       ),
     },
   ];

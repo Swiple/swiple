@@ -2,7 +2,15 @@ from fastapi_users import models
 
 
 class User(models.BaseUser):
-    pass
+    is_admin_user: bool = False
+
+
+class AdminUserCreate(models.BaseUserCreate):
+    is_admin_user: bool = False
+
+
+class AdminUserUpdate(models.BaseUserUpdate):
+    is_admin_user: bool = False
 
 
 class UserCreate(models.BaseUserCreate):
@@ -14,4 +22,4 @@ class UserUpdate(models.BaseUserUpdate):
 
 
 class UserDB(User, models.BaseUserDB):
-    pass
+    is_admin_user: bool = False
