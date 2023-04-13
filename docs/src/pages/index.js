@@ -5,33 +5,35 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './index.module.css';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
-import SupportedDatabases from '@site/src/components/SupportedDatabases';
 import ExpectationsList from '../components/Expectations';
-import { CloudTwoTone } from "@ant-design/icons";
-
+import Carousel from '../components/Carousel';
+import Pricing from '../components/Pricing';
+import HeroGradient from '../components/HeroGradient';
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
+    <header className={clsx(styles.heroBanner)}>
+      <HeroGradient />
       <div className="container">
-        <h1 className="hero__title">{siteConfig.title}</h1>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
+        <h1 className="hero__title" style={{ color: '#fff' }}>
+          Data Quality in Hours<br />Not Months
+        </h1>
+
+        <p className="hero__subtitle" style={{color: '#fff'}}>
+          {siteConfig.tagline}
+        </p>
         <div>
           <Link
             className="button button--secondary button--lg margin-right--md"
             to="https://calendly.com/swiple/swiple-cloud-demo"
           >
             <div style={{display: "flex"}}>
-              Book a Swiple Cloud Demo
-              <CloudTwoTone
-                style={{ fontSize: "28px", marginLeft: 10}}
-                twoToneColor="#1FD1A9"
-              />
+              Book a demo 🚀
             </div>
           </Link>
           <Link
-            className={clsx("button button--outline button--secondary button--lg margin-right--md", styles.buttonStar)}
+            className={clsx("button button--secondary button--lg margin-right--md", styles.buttonStar)}
             to="/docs/getting-started/quick-start">
             Run locally in 4 steps 💻
           </Link>
@@ -66,9 +68,10 @@ With automated data analysis and profiling, scheduling and alerting, teams can r
     >
       <HomepageHeader />
       <main>
+        <Carousel />
         <HomepageFeatures />
         <ExpectationsList />
-        <SupportedDatabases />
+        <Pricing />
       </main>
     </Layout>
   );
