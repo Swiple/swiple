@@ -1,6 +1,6 @@
 import re
 from typing import Optional, Union
-from fastapi import Depends, Request
+from fastapi import Depends, Request, HTTPException, status
 from fastapi_users import BaseUserManager, FastAPIUsers, models
 from fastapi_users.authentication import AuthenticationBackend, CookieTransport, JWTStrategy
 from fastapi_users.manager import InvalidPasswordException
@@ -44,6 +44,53 @@ class UserManager(BaseUserManager[UserCreate, UserDB]):
     async def on_after_request_verify(self, user: UserDB, token: str, request: Optional[Request] = None):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
         return token
+
+    async def delete(self, user: models.UD) -> None:
+        """
+        Delete a user.
+
+        :param user: The user to delete.
+        """
+        if user.email == settings.ADMIN_EMAIL:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Deleting the admin user is forbidden."
+            )
+        return await super().delete(user)
+
+    async def update(
+        self,
+        user_update: models.UU,
+        user: models.UD,
+        safe: bool = False,
+        request: Optional[Request] = None,
+        **kwargs,
+    ) -> models.UD:
+        """
+        Update a user.
+
+        Triggers the on_after_update handler on success
+
+        :param user_update: The UserUpdate model containing
+        the changes to apply to the user.
+        :param user: The current user to update.
+        :param safe: If True, sensitive values like is_superuser or is_verified
+        will be ignored during the update, defaults to False
+        :param request: Optional FastAPI request that
+        triggered the operation, defaults to None.
+        :param kwargs: Additional keyword arguments that can be passed. Currently supports:
+            - "allow_admin_update" (bool): If set to True, allows updating the admin user,
+            otherwise updating the admin user is forbidden. Defaults to False.
+        :return: The updated user.
+        """
+        allow_admin_update = kwargs.get("allow_admin_update", False)
+
+        if not allow_admin_update and user.email == settings.ADMIN_EMAIL:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Updating the admin user is forbidden."
+            )
+        return await super().update(user_update, user, safe, request)
 
 
 def get_user_db():
