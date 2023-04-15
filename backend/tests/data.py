@@ -195,13 +195,7 @@ CELERY_TASKS: dict[str, Task] = {
         **{
             "result": {
                 "status": "FAILURE",
-                "result": {
-                    "pid": 21,
-                    "hostname": "celery@58f6e7042088",
-                    "exc_message": [],
-                    "exc_module": "app.repositories.base",
-                    "exc_type": "NotFoundError"
-                },
+                "result": '''{"exc_type": "DatasourceError", "exc_message": ["Cannot initialize datasource demo, error: The given datasource could not be retrieved from the DataContext; please confirm that your configuration is accurate."], "exc_module": "great_expectations.exceptions.exceptions"}''',
                 "traceback": """Traceback (most recent call last):""",
                 "children": [],
                 "date_done": "2023-03-26T15:42:16.080941",
@@ -234,5 +228,8 @@ def create_test_data(client: OpenSearch):
     for repository_class in TEST_DATA:
         repository = repository_class(client)
         for object in TEST_DATA[repository_class].values():
-            id = getattr(object, "key", str(uuid.uuid4()))
+            if isinstance(repository, TaskRepository):
+                id = f"celery-task-meta-{object.result.task_id}"
+            else:
+                id = getattr(object, "key", str(uuid.uuid4()))
             repository.create(id, object)

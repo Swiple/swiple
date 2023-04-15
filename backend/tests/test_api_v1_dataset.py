@@ -737,3 +737,75 @@ def _get_columns_and_rows_return_values():
             )
         ]
     )
+
+
+@pytest.mark.asyncio
+class TestGetTasksByDatasetId:
+    async def test_unauthorized(self, test_client: httpx.AsyncClient):
+        response = await test_client.get(f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/tasks")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.user
+    async def test_allowed(self, test_client: httpx.AsyncClient):
+        response = await test_client.get(f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/tasks")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json == [
+            {
+                'date_done': '2023-03-26T17:30:56.259829',
+                'kwargs': {
+                    'dataset_id': '5b65eae9-600e-4933-9bad-78477e0ab98e'
+                },
+                'name': 'validation.run',
+                'result': None,
+                'retries': 0,
+                'status': 'SUCCESS',
+                'task_id': 'c4690c54-ac50-4eaf-8a3f-104f0aef7ce7',
+            }
+        ]
+
+    @pytest.mark.user
+    async def test_filter(self, test_client: httpx.AsyncClient):
+        response = await test_client.get(
+            f"/api/v1/datasets/{DATASETS['postgres_view_orders'].key}/tasks",
+            params={"status": "SUCCESS"}
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert len(json) == 0
+
+        response = await test_client.get(
+            f"/api/v1/datasets/{DATASETS['postgres_view_orders'].key}/tasks",
+            params={"status": "FAILURE"}
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json == [
+            {
+                'date_done': '2023-03-26T15:42:16.080941',
+                'kwargs': {
+                    'dataset_id': '4b252091-6d0d-4beb-9552-3764cfe8cbae'
+                },
+                'name': 'validation.run',
+                'result': {
+                    'exc_message': [
+                        'Cannot initialize datasource demo, error: The '
+                        'given datasource could not be retrieved from the '
+                        'DataContext; please confirm that your '
+                        'configuration is accurate.'
+                    ],
+                    'exc_module': 'great_expectations.exceptions.exceptions',
+                    'exc_type': 'DatasourceError'
+                },
+                'retries': 0,
+                'status': 'FAILURE',
+                'task_id': 'a9cadbea-3676-44b0-be2b-26ea60267f50',
+            }
+        ]

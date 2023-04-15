@@ -1,7 +1,8 @@
+import json
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Dict, Any
-from pydantic import Extra
+from pydantic import Extra, validator
 from app.models.base_model import BaseModel
 
 
@@ -36,6 +37,20 @@ class TaskResult(BaseModel):
     name: Optional[str]
     retries: Optional[int]
     date_done: Optional[datetime]
+
+    @validator('result', pre=True)
+    def ensure_result_is_dict(cls, value):
+        if value is None:
+            return None
+        elif isinstance(value, dict):
+            return value
+        elif isinstance(value, str):
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                raise ValueError("Invalid JSON string for 'result' field")
+        else:
+            raise ValueError("Invalid value for 'result' field")
 
     class Config:
         extra = Extra.ignore
