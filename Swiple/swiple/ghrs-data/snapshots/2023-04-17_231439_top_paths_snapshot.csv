@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,114,49
+/Swiple/swiple/blob/main/backend/Dockerfile,33,15
+/Swiple/swiple/pulls,27,8
+/Swiple/swiple/tree/main/backend,20,8
+/Swiple/swiple/tree/main/backend/app,16,7
+/Swiple/swiple/pull/79,16,4
+/Swiple/swiple/blob/main/backend/app/core/schedulers/ap_scheduler.py,14,1
+/Swiple/swiple/blob/main/backend/app/settings.py,12,3
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,12,2
+/Swiple/swiple/blob/main/backend/app/core/schedulers/scheduler.py,10,1
