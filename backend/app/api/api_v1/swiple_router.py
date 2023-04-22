@@ -12,6 +12,7 @@ from app.api.api_v1.endpoints import (
     destination,
     action,
     user,
+    task,
 )
 
 router = APIRouter()
@@ -27,3 +28,4 @@ router.include_router(schedule.router, prefix="/schedules", tags=["Schedule"])
 router.include_router(destination.router, prefix="/destinations", tags=["Destinations"])
 router.include_router(action.router, prefix="/actions", tags=["Actions"])
 router.include_router(user.router, prefix="/user", tags=["Users"])
+router.include_router(task.router, prefix="/tasks", tags=["Tasks"])

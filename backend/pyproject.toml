@@ -26,6 +26,9 @@ PyYAML = "^6.0"
 apprise = "^1.2.1"
 pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 opensearch-reindexer = "2.0.0"
+celery = {extras = ["sqs"], version = "^5.2.7"}
+pyarrow = "<8.1.0,>=8.0.0"
+watchdog = "^3.0.0"
 
 
 [tool.poetry.dev-dependencies]

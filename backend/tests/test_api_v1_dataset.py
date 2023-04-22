@@ -12,7 +12,7 @@ from app.core.runner import Runner
 from app.core.sample import GetSampleException
 from app.models.dataset import Sample
 from app.repositories.dataset import DatasetRepository
-from tests.data import DATASETS, DATASOURCES, create_validation_object
+from tests.data import DATASETS, DATASOURCES
 
 
 @pytest.fixture
@@ -49,6 +49,18 @@ def runner_mock(mocker: MockerFixture) -> MagicMock:
     class_mock = mocker.patch("app.core.runner.Runner", spec=Runner)
     instance_mock = class_mock.return_value
     return instance_mock
+
+
+@pytest.fixture
+def celery_delay_mock(mocker: MockerFixture) -> MagicMock:
+    class MockTask:
+        def __init__(self, task_id):
+            self.id = task_id
+
+    mock_task_id = "a9cadbea-3676-44b0-be2b-26ea60267f50"
+    mock = mocker.patch("celery.app.task.Task.delay")
+    mock.return_value = MockTask(mock_task_id)
+    return mock
 
 
 @pytest.mark.asyncio
@@ -654,14 +666,8 @@ class TestValidateDataset:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     @pytest.mark.user
-    async def test_allowed(
-        self, runner_mock: MagicMock, test_client: httpx.AsyncClient
-    ):
-        validation = create_validation_object(
-            DATASOURCES["postgres"].key, DATASETS["postgres_table_products"].key
-        )
-        runner_mock.validate.return_value = validation
-
+    async def test_allowed(self, celery_delay_mock, runner_mock: MagicMock, test_client: httpx.AsyncClient):
+        mock_task_id = celery_delay_mock.return_value.id
         response = await test_client.post(
             f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/validate",
             json={},
@@ -669,7 +675,7 @@ class TestValidateDataset:
 
         assert response.status_code == status.HTTP_200_OK
         json = response.json()
-        assert json == validation.dict()
+        assert json == {'task_id': mock_task_id}
 
 
 @pytest.mark.asyncio
@@ -692,10 +698,9 @@ class TestCreateSuggestions:
 
     @pytest.mark.user
     async def test_allowed(
-        self, runner_mock: MagicMock, test_client: httpx.AsyncClient
+        self, celery_delay_mock, runner_mock: MagicMock, test_client: httpx.AsyncClient
     ):
-        runner_mock.profile.return_value = []
-
+        mock_task_id = celery_delay_mock.return_value.id
         response = await test_client.post(
             f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/suggest",
             json={},
@@ -703,7 +708,7 @@ class TestCreateSuggestions:
 
         assert response.status_code == status.HTTP_200_OK
         json = response.json()
-        assert json == []
+        assert json == {'task_id': mock_task_id}
 
 
 def _get_columns_and_rows_return_values():
@@ -732,3 +737,75 @@ def _get_columns_and_rows_return_values():
             )
         ]
     )
+
+
+@pytest.mark.asyncio
+class TestGetTasksByDatasetId:
+    async def test_unauthorized(self, test_client: httpx.AsyncClient):
+        response = await test_client.get(f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/tasks")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    @pytest.mark.user
+    async def test_allowed(self, test_client: httpx.AsyncClient):
+        response = await test_client.get(f"/api/v1/datasets/{DATASETS['postgres_table_products'].key}/tasks")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json == [
+            {
+                'date_done': '2023-03-26T17:30:56.259829',
+                'kwargs': {
+                    'dataset_id': '5b65eae9-600e-4933-9bad-78477e0ab98e'
+                },
+                'name': 'validation.run',
+                'result': None,
+                'retries': 0,
+                'status': 'SUCCESS',
+                'task_id': 'c4690c54-ac50-4eaf-8a3f-104f0aef7ce7',
+            }
+        ]
+
+    @pytest.mark.user
+    async def test_filter(self, test_client: httpx.AsyncClient):
+        response = await test_client.get(
+            f"/api/v1/datasets/{DATASETS['postgres_view_orders'].key}/tasks",
+            params={"status": "SUCCESS"}
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert len(json) == 0
+
+        response = await test_client.get(
+            f"/api/v1/datasets/{DATASETS['postgres_view_orders'].key}/tasks",
+            params={"status": "FAILURE"}
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        json = response.json()
+        assert json == [
+            {
+                'date_done': '2023-03-26T15:42:16.080941',
+                'kwargs': {
+                    'dataset_id': '4b252091-6d0d-4beb-9552-3764cfe8cbae'
+                },
+                'name': 'validation.run',
+                'result': {
+                    'exc_message': [
+                        'Cannot initialize datasource demo, error: The '
+                        'given datasource could not be retrieved from the '
+                        'DataContext; please confirm that your '
+                        'configuration is accurate.'
+                    ],
+                    'exc_module': 'great_expectations.exceptions.exceptions',
+                    'exc_type': 'DatasourceError'
+                },
+                'retries': 0,
+                'status': 'FAILURE',
+                'task_id': 'a9cadbea-3676-44b0-be2b-26ea60267f50',
+            }
+        ]

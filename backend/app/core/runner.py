@@ -142,7 +142,7 @@ class Runner:
         validation = validator.validate().to_json_dict()
         validation["meta"]["run_id"]["run_time"] = utils.remove_t_from_date_string(
             validation["meta"]["run_id"]["run_time"])
-        validation["meta"]["run_id"]["run_name"] = str(uuid.uuid4())
+        validation["meta"]["run_id"]["run_name"] = self.identifiers.pop("task_id")
         validation["meta"].update(self.identifiers)
 
         for result in validation["results"]:
@@ -258,7 +258,7 @@ class Runner:
         return action_status
 
 
-def run_dataset_validation(dataset_id: str, client: OpenSearch = os_client):
+def run_dataset_validation(dataset_id: str, task_id: str, client: OpenSearch = os_client):
     dataset = DatasetRepository(client).get(dataset_id)
     datasource = DatasourceRepository(client).get(dataset.datasource_id)
     expectations = ExpectationRepository(client).query_by_filter(dataset_id=dataset.key, enabled=True)
@@ -266,6 +266,7 @@ def run_dataset_validation(dataset_id: str, client: OpenSearch = os_client):
     identifiers = {
         "datasource_id": datasource.key,
         "dataset_id": dataset.key,
+        "task_id": task_id,
     }
 
     meta = {
@@ -286,13 +287,6 @@ def run_dataset_validation(dataset_id: str, client: OpenSearch = os_client):
         expectations=runner_expectations,
         identifiers=identifiers,
     ).validate()
-
-    client.index(
-        index=settings.VALIDATION_INDEX,
-        id=str(uuid.uuid4()),
-        body=validation.dict(),
-        refresh="wait_for",
-    )
 
     return validation
 

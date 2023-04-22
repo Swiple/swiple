@@ -1,6 +1,5 @@
 from typing import List, Dict
 
-from app.core.runner import run_dataset_validation
 from app.core.schedulers.scheduler_interface import SchedulerInterface
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -12,7 +11,7 @@ from apscheduler.job import Job
 from pytz import utc
 from app.settings import settings
 import app.constants as c
-
+from app.worker.tasks.validation import run_validation
 from app.models.schedule import Schedule
 import uuid
 import datetime
@@ -55,7 +54,7 @@ class ApScheduler(SchedulerInterface):
     def add_schedule(self, schedule: Schedule, datasource_id: str, dataset_id: str):
         return self.ap_scheduler.add_job(
             id=f"{datasource_id}__{dataset_id}__{uuid.uuid4()}",
-            func=run_dataset_validation,
+            func=run_validation.delay,
             kwargs={"dataset_id": dataset_id},
             misfire_grace_time=schedule.misfire_grace_time,
             max_instances=schedule.max_instances,
@@ -114,11 +113,9 @@ class ApScheduler(SchedulerInterface):
                 "trigger": c.INTERVAL,
                 "start_date": job.trigger.start_date,
                 "end_date": job.trigger.end_date,
-                "seconds": seconds,
                 "minutes": minutes,
                 "hours": hours,
                 "days": days,
-                "weeks": weeks,
             }
         if isinstance(job.trigger, DateTrigger):
             trigger_fields["trigger"] = c.DATE
@@ -128,6 +125,8 @@ class ApScheduler(SchedulerInterface):
             trigger_fields["start_date"] = job.trigger.start_date
             trigger_fields["end_date"] = job.trigger.end_date
             for field in job.trigger.fields:
+                if field.name == "second":
+                    continue
                 trigger_fields[field.name] = str(field)
 
         job_state["trigger"] = trigger_fields

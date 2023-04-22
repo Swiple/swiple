@@ -10,7 +10,7 @@ from pydantic import (
 
 
 class Settings(BaseSettings):
-    PRODUCTION: bool
+    PRODUCTION: bool = Field(default=False)
 
     # https://swiple.io/docs/configuration/how-to-update-SECRET_KEY
     SECRET_KEY: str
@@ -80,6 +80,16 @@ class Settings(BaseSettings):
     DESTINATION_INDEX: str = "destinations"
     ACTION_INDEX: str = "actions"
     USER_INDEX: str = "user"
+    CELERY_INDEX: str = "celery"
+
+    SWIPLE_CELERY_CONFIG: dict = {
+        "broker_url": "pyamqp://localhost:5672",
+        "result_backend": "app.worker.backends.opensearch.OpenSearchBackend://_:_@_:9200/celery",
+        "task_default_queue": "swiple-job-queue",
+        "task_soft_time_limit": "5400",  # SOFT LIMIT: 90 minutes
+        "task_time_limit": "5700",  # HARD LIMIT: 95 minutes
+        "worker_prefetch_multiplier": "1",  # Disable prefetching
+    }
 
     TOKEN_URL: str = "/api/v1/token"
 

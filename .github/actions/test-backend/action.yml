@@ -6,9 +6,14 @@ runs:
 
   steps:
     - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.9"
+    - name: Install packages
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install libcurl4-gnutls-dev libgnutls28-dev
     - name: Install dependencies
       shell: bash
       working-directory: backend

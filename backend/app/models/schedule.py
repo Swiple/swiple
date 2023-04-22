@@ -19,11 +19,9 @@ class IntervalTrigger(BaseModel):
     trigger: Literal["interval"]
     start_date: Optional[datetime] = Field(description=c.START_DATE)
     end_date: Optional[datetime] = Field(description=c.END_DATE)
-    seconds: Optional[int] = Field(0, description=c.SECONDS, const=True)
     minutes: Optional[int] = Field(description=c.MINUTES)
     hours: Optional[int] = Field(description=c.HOURS)
     days: Optional[int] = Field(description=c.DAYS)
-    weeks: Optional[int] = Field(description=c.WEEKS)
 
     @validator("end_date")
     def start_date_before_end_date(cls, v, values):
@@ -39,7 +37,6 @@ class CronTrigger(BaseModel):
     trigger: Literal["cron"]
     start_date: Optional[datetime] = Field(description=c.START_DATE)
     end_date: Optional[datetime] = Field(description=c.END_DATE)
-    second: Optional[str] = Field("0", description=c.SECONDS, const=True)
     minute: Optional[str] = Field(description=c.MINUTE)
     hour: Optional[str] = Field(description=c.HOUR)
     day: Optional[str] = Field(description=c.DAY)
@@ -54,7 +51,7 @@ class CronTrigger(BaseModel):
             raise ValueError('end_date should not be before start_date')
         return v
 
-    @validator("year", "month", "day_of_week", "week", "day", "hour", "minute", "second")
+    @validator("year", "month", "day_of_week", "week", "day", "hour", "minute")
     def valid_expressions(cls, v, field):
         fields_map = {
             'year': BaseField,
@@ -64,7 +61,6 @@ class CronTrigger(BaseModel):
             'day_of_week': DayOfWeekField,
             'hour': BaseField,
             'minute': BaseField,
-            'second': BaseField
         }
         field_class = fields_map[field.name]
         field_class(field.name, v, False)

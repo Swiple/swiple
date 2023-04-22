@@ -53,6 +53,27 @@ services:
       - "3000:3000"
     depends_on:
       - "swiple_api"
+
+  rabbit:
+    image: rabbitmq:3.9
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  celery_worker:
+    container_name: celery_worker
+    env_file: docker/.env
+    command: celery --app=app.worker.app.celery_app worker -l info -c 4 -Ofair --without-heartbeat --without-gossip --without-mingle --loglevel=warning
+    image: swiple-api:latest
+    volumes:
+      - $PWD/backend/app/:/code/app/
+      - $HOME/.aws:$HOME/.aws
+    environment:
+      <<: *aws-creds
+    depends_on:
+      - rabbit
+      - swiple_api
+
   setup:
     env_file: docker/.env
     container_name: setup

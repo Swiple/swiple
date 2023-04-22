@@ -82,21 +82,9 @@ code {
   overflow: auto;
 }
 
-.ant-input {
-  border-radius: 8px;
-}
 
 .ant-form-large .ant-form-item-label > label {
   height: 0
-}
-
-.ant-select-dropdown {
-  border-radius: 8px;
-  padding: 0;
-}
-
-.ant-select:not(.ant-select-customize-input) .ant-select-selector {
-  border-radius: 8px;
 }
 
 .wrapper-class {
