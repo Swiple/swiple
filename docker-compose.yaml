@@ -73,12 +73,6 @@ services:
     volumes:
       - ./backend/app/sample_data/:/code/app/sample_data/
 
-  rabbit:
-    image: rabbitmq:3.9
-    ports:
-      - 5672:5672
-      - 15672:15672
-
   celery_worker:
     container_name: celery_worker
     env_file: docker/.env
@@ -90,7 +84,6 @@ services:
     environment:
       <<: *aws-creds
     depends_on:
-      - rabbit
       - swiple_api
 
   postgres:

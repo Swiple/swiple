@@ -83,7 +83,7 @@ class Settings(BaseSettings):
     CELERY_INDEX: str = "celery"
 
     SWIPLE_CELERY_CONFIG: dict = {
-        "broker_url": "pyamqp://localhost:5672",
+        "broker_url": "redis://redis:6379/1",
         "result_backend": "app.worker.backends.opensearch.OpenSearchBackend://_:_@_:9200/celery",
         "task_default_queue": "swiple-job-queue",
         "task_soft_time_limit": "5400",  # SOFT LIMIT: 90 minutes

@@ -54,12 +54,6 @@ services:
     depends_on:
       - "swiple_api"
 
-  rabbit:
-    image: rabbitmq:3.9
-    ports:
-      - 5672:5672
-      - 15672:15672
-
   celery_worker:
     container_name: celery_worker
     env_file: docker/.env
@@ -71,7 +65,6 @@ services:
     environment:
       <<: *aws-creds
     depends_on:
-      - rabbit
       - swiple_api
 
   setup:
