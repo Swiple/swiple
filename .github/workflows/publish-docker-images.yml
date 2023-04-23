@@ -1,6 +1,9 @@
 name: Publish Docker Images
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_call:
     secrets:
       DOCKERHUB_USERNAME:
