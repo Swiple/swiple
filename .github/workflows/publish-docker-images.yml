@@ -1,6 +1,9 @@
 name: Publish Docker Images
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_call:
     secrets:
       DOCKERHUB_USERNAME:
@@ -36,6 +39,11 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/swiple-api
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       -
         name: Cache Docker layers
         uses: actions/cache@v2
@@ -61,6 +69,7 @@ jobs:
           # More: https://github.com/moby/buildkit#--export-cache-options
           # And: https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
