@@ -58,7 +58,7 @@ services:
     container_name: celery_worker
     env_file: docker/.env
     command: celery --app=app.worker.app.celery_app worker -l info -c 4 -Ofair --without-heartbeat --without-gossip --without-mingle --loglevel=warning
-    image: swiple-api:latest
+    image: swiple/swiple-api:latest
     volumes:
       - $PWD/backend/app/:/code/app/
       - $HOME/.aws:$HOME/.aws
