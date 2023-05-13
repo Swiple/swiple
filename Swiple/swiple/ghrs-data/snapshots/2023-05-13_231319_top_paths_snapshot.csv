@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,119,60
+/Swiple/swiple/tree/main/backend/app,80,17
+/Swiple/swiple/tree/main/backend,77,19
+/Swiple/swiple/tree/main/backend/app/models,53,12
+/Swiple/swiple/blob/main/backend/Dockerfile,38,16
+/Swiple/swiple/blob/main/backend/app/models/expectation.py,32,13
+/Swiple/swiple/blob/main/backend/main.py,19,7
+/Swiple/swiple/blob/main/backend/app/models/base_model.py,17,5
+/Swiple/swiple/blob/main/backend/app/core/security.py,13,7
+/Swiple/swiple/tree/main/backend/app/core,13,6
