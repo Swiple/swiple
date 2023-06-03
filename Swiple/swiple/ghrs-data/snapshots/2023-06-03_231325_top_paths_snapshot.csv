@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,65,43
+/Swiple/swiple/tree/main/backend,30,11
+/Swiple/swiple/tree/main/backend/tests,25,2
+/Swiple/swiple/blob/main/backend/Dockerfile,17,9
+/Swiple/swiple/blob/main/backend/pyproject.toml,13,4
+/Swiple/swiple/blob/main/backend/tests/conftest.py,13,2
+/Swiple/swiple/tree/main/docs,12,6
+/Swiple/swiple/blob/main/backend/app/db/client.py,12,2
+/Swiple/swiple/blob/main/backend/tests/test_api_v1_dataset.py,12,2
+/Swiple/swiple/tree/main/backend/app,11,4
