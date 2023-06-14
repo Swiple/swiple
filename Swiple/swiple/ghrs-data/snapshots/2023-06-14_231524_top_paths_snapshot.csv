@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,35,26
+/Swiple/swiple/blob/main/backend/Dockerfile,12,8
+/Swiple/swiple/tree/main/backend/app/models,6,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/frontend/src/Auth.jsx,5,1
+/Swiple/swiple/blob/main/backend/app/core/sample.py,2,1
+/Swiple/swiple/blob/main/frontend/src/components/AvatarDropdown.jsx,2,1
+/Swiple/swiple/tree/ad972e6e11fcca409a93e1b61869c74370c4f1e3/backend/app,2,1
+/Swiple/swiple/tree/ad972e6e11fcca409a93e1b61869c74370c4f1e3/backend/app/db,2,1
+/Swiple/swiple/blob/ad972e6e11fcca409a93e1b61869c74370c4f1e3/backend/app/db/client.py,1,1
+/Swiple/swiple/blob/ad972e6e11fcca409a93e1b61869c74370c4f1e3/backend/app/repositories/dataset.py,1,1
