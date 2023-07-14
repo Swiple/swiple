@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,50,28
+/Swiple/swiple/tree/main/backend,17,6
+/Swiple/swiple/tree/main/backend/app,12,5
+/Swiple/swiple/tree/main/frontend,5,3
+/Swiple/swiple/tree/main/backend/tests,4,3
+/Swiple/swiple/blob/main/docs/static/img/supported-engines-dark.svg,4,2
+/Swiple/swiple/tree/main/backend/app/models,4,2
+/Swiple/swiple/tree/main/docs,4,2
+/Swiple/swiple/tree/main/backend/app/core,4,1
+/Swiple/swiple/blob/main/backend/tests/test_api_v1_expectation.py,3,2
