@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/blob/main/backend/Dockerfile,53,13
+/Swiple/swiple,38,26
+/Swiple/swiple/tree/main/backend,22,6
+/Swiple/swiple/blob/main/docker-compose.yaml,18,2
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,16,2
+/Swiple/swiple/tree/main/backend/app,12,4
+/Swiple/swiple/blob/main/backend/pyproject.toml,10,2
+/Swiple/swiple/blob/main/backend/main.py,8,3
+/Swiple/swiple/tree/main/backend/tests,8,2
+/Swiple/swiple/blob/main/backend/poetry.lock,6,3
