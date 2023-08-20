@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,20,18
+/Swiple/swiple/blob/main/backend/Dockerfile,20,5
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,14,1
+/Swiple/swiple/blob/main/docker-compose.yaml,14,1
+/Swiple/swiple/tree/main/backend,10,3
+/Swiple/swiple/blob/main/docker/.env-non-dev,6,1
+/Swiple/swiple/tree/main/backend/app,5,2
+/Swiple/swiple/blob/main/LICENSE.md,4,2
+/Swiple/swiple/blob/main/docker/.env-local,4,1
+/Swiple/swiple/tree/main/backend/app/scripts,3,1
