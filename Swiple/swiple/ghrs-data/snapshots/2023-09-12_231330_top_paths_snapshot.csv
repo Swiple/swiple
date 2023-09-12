@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,46,24
+/Swiple/swiple/blob/main/backend/Dockerfile,31,9
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app,15,1
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/api/api_v1/endpoints,11,1
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend,9,1
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/core/actions,9,1
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/worker,8,1
+/Swiple/swiple/tree/main/backend,7,2
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/core/actions/pager_duty_action.py,6,1
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/core,5,1
