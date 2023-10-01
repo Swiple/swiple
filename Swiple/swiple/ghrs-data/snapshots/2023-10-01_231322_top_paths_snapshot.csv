@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,46,33
+/Swiple/swiple/blob/main/backend/Dockerfile,25,7
+/Swiple/swiple/tree/main/backend,11,4
+/Swiple/swiple/tree/main/docs,7,3
+/Swiple/swiple/blob/main/backend/main.py,5,2
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,4,2
+/Swiple/swiple/tree/main/backend/app,3,1
+/Swiple/swiple/tree/main/backend/app/worker,3,1
+/Swiple/swiple/tree/main/backend/app/worker/backends,3,1
+/Swiple/swiple/tree/main/docs/docs,3,1
