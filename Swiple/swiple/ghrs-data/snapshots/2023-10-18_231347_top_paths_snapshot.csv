@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,42,30
+/Swiple/swiple/blob/main/backend/Dockerfile,28,9
+/Swiple/swiple/tree/main/backend,14,4
+/Swiple/swiple/tree/main/docs,13,3
+/Swiple/swiple/blob/main/backend/main.py,5,2
+/Swiple/swiple/blob/main/backend/pyproject.toml,5,2
+/Swiple/swiple/tree/main/backend/app,5,2
+/Swiple/swiple/tree/main/docs/src,5,2
+/Swiple/swiple/blob/main/README.md,4,1
+/Swiple/swiple/tree/main/backend/tests,4,1
