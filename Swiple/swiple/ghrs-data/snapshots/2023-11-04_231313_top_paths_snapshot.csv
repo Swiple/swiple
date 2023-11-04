@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,23,18
+/Swiple/swiple/blob/main/backend/Dockerfile,14,6
+/Swiple/swiple/blob/main/backend/app/core/exceptions.py,12,4
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/celery_worker.py,11,1
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/repositories,7,1
+/Swiple/swiple/tree/main/backend,5,1
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,4,2
+/Swiple/swiple/blob/main/docker-compose.yaml,4,2
+/Swiple/swiple/blob/main/docs/docs/tutorials/start-monitoring-your-data.md,4,2
+/Swiple/swiple/tree/main/docs,4,2
