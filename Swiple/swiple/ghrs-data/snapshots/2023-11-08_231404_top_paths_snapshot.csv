@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,26,21
+/Swiple/swiple/blob/main/backend/Dockerfile,25,9
+/Swiple/swiple/tree/main/backend/app,18,3
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/celery_worker.py,15,2
+/Swiple/swiple/tree/main/backend,12,4
+/Swiple/swiple/blob/main/backend/app/core/exceptions.py,10,3
+/Swiple/swiple/tree/main/backend/app/core,9,1
+/Swiple/swiple/blob/main/docker-compose.yaml,8,3
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app,7,2
+/Swiple/swiple/tree/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/repositories,7,1
