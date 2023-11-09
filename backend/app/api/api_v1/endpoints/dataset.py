@@ -3,6 +3,7 @@ from typing import Optional, List
 from fastapi import APIRouter, HTTPException, status, Request
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
+from starlette.datastructures import MutableHeaders
 
 from app.api.shortcuts import delete_by_key_or_404, get_by_key_or_404
 from app.core.sample import GetSampleException, get_dataset_sample
@@ -138,11 +139,14 @@ def delete_dataset(
 
     validation_repository.delete_by_dataset(dataset_id=key)
 
+    # Convert the immutable headers to mutable headers
+    mutable_headers = MutableHeaders(request.headers)
+
     # TODO: use an internal function for this rather than making an HTTP request
     requests.delete(
         url=f"{settings.SCHEDULER_API_URL}/api/v1/schedules",
         params={"dataset_id": key},
-        headers=request.headers,
+        headers=mutable_headers,
         cookies=request.cookies,
     )
 
