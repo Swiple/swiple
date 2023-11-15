@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/blob/main/backend/Dockerfile,31,11
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/core/runner.py,26,1
+/Swiple/swiple/tree/main/backend/app,24,3
+/Swiple/swiple,20,16
+/Swiple/swiple/tree/main/backend,12,4
+/Swiple/swiple/tree/main/backend/app/core,12,2
+/Swiple/swiple/tree/main/backend/app/core/actions,8,2
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/celery_worker.py,7,2
+/Swiple/swiple/tree/main/backend/app/models,7,2
+/Swiple/swiple/blob/main/.github/templates/website.yaml,6,1
