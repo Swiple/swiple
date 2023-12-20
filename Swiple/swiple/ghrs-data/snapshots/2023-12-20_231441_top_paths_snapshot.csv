@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/blob/main/backend/Dockerfile,59,17
+/Swiple/swiple,38,30
+/Swiple/swiple/blob/main/backend/app/main.py,14,2
+/Swiple/swiple/tree/main/backend,11,3
+/Swiple/swiple/blob/main/backend/app/settings.py,10,2
+/Swiple/swiple/blob/main/backend/main.py,10,2
+/Swiple/swiple/blob/main/backend/app/constants.py,6,1
+/Swiple/swiple/blob/main/backend/app/api/api_v1/scheduler_router.py,4,2
+/Swiple/swiple/blob/main/backend/app/opensearch.yaml,4,2
+/Swiple/swiple/blob/main/backend/app/utils.py,4,2
