@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/blob/main/backend/Dockerfile,48,14
+/Swiple/swiple,47,37
+/Swiple/swiple/tree/main/backend,26,8
+/Swiple/swiple/tree/main/backend/app,26,6
+/Swiple/swiple/tree/main/docker,17,5
+/Swiple/swiple/tree/main/frontend/src,10,1
+/Swiple/swiple/blob/main/docker-compose.yaml,8,4
+/Swiple/swiple/blob/main/backend/main.py,8,3
+/Swiple/swiple/blob/main/docker/.env-local,8,2
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/api/api_v1/auth_router.py,8,1
