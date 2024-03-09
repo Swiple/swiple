@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/blob/main/backend/Dockerfile,129,12
+/Swiple/swiple,38,34
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/opensearch.yaml,8,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/db/client.py,4,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/main.py,4,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/models/base_model.py,4,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/settings.py,4,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/repositories/base.py,3,1
+/Swiple/swiple/tags,2,2
+/Swiple/swiple/tree/main,2,2
