@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,50,32
+/Swiple/swiple/tree/main/backend/app,38,6
+/Swiple/swiple/tree/main/backend,35,9
+/Swiple/swiple/tree/main/backend/app/core,27,3
+/Swiple/swiple/tree/main/backend/app/db,16,4
+/Swiple/swiple/blob/main/backend/Dockerfile,15,7
+/Swiple/swiple/blob/main/backend/app/core/runner.py,14,3
+/Swiple/swiple/tree/main/backend/app/repositories,12,2
+/Swiple/swiple/blob/main/backend/app/core/exceptions.py,10,3
+/Swiple/swiple/blob/main/backend/app/db/client.py,8,3
