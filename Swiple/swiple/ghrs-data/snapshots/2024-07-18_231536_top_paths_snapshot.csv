@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/blob/main/backend/Dockerfile,66,9
+/Swiple/swiple,28,23
+/Swiple/swiple/blob/main/docker-compose.yaml,4,2
+/Swiple/swiple/blob/main/backend/app/db/client.py,4,1
+/Swiple/swiple/releases,3,2
+/Swiple/swiple/blob/main/backend/app/core/security.py,2,1
+/Swiple/swiple/blob/main/backend/app/main.py,2,1
+/Swiple/swiple/blob/main/backend/app/worker/backends/opensearch.py,2,1
+/Swiple/swiple/blob/main/backend/pyproject.toml,2,1
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,2,1
