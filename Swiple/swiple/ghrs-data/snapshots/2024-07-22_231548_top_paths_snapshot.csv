@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/blob/main/backend/Dockerfile,70,11
+/Swiple/swiple,34,28
+/Swiple/swiple/tree/main/backend,8,3
+/Swiple/swiple/blob/main/docker-compose.yaml,6,3
+/Swiple/swiple/tree/main/docker,5,2
+/Swiple/swiple/tree/main/backend/tests,5,1
+/Swiple/swiple/blob/main/backend/app/db/client.py,4,1
+/Swiple/swiple/blob/main/backend/tests/test_api_v1_health.py,4,1
+/Swiple/swiple/releases,3,2
+/Swiple/swiple/blob/main/backend/app/core/security.py,2,1
