@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,30,23
+/Swiple/swiple/blob/main/backend/Dockerfile,24,10
+/Swiple/swiple/tree/main/backend,8,3
+/Swiple/swiple/blob/main/backend/app/models/base_model.py,6,1
+/Swiple/swiple/tree/main/backend/app,5,2
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/models/destinations/email.py,2,1
+/Swiple/swiple/blob/main/backend/app/models/action.py,2,1
+/Swiple/swiple/blob/main/backend/app/models/dataset.py,2,1
+/Swiple/swiple/blob/main/backend/app/models/datasource.py,2,1
+/Swiple/swiple/blob/main/backend/app/models/validation.py,2,1
