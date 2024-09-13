@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,29,21
+/Swiple/swiple/blob/main/backend/Dockerfile,23,11
+/Swiple/swiple/blob/main/backend/app/models/base_model.py,4,1
+/Swiple/swiple/tree/main/backend,4,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/docker-compose-non-dev.yaml,2,1
+/Swiple/swiple/blob/main/backend/app/constants.py,2,1
+/Swiple/swiple/blob/main/backend/app/models/dataset.py,2,1
+/Swiple/swiple/blob/main/docker-compose.yaml,2,1
+/Swiple/swiple/blob/main/LICENSE.md,2,1
+/Swiple/swiple/fork,2,1
