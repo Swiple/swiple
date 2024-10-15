@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,26,21
+/Swiple/swiple/blob/main/backend/Dockerfile,8,6
+/Swiple/swiple/issues,2,2
+/Swiple/swiple/pulls,2,2
+/Swiple/swiple/blob/main/docker-compose.yaml,2,1
+/Swiple/swiple/tree/main/docs,2,1
+/Swiple/swiple/blob/main/backend/app/settings.py,1,1
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,1,1
+/Swiple/swiple/blob/main/docs/docs/how-to-guides/secrets-manager.md,1,1
+/Swiple/swiple/blob/main/docs/static/img/supported-engines-light.svg,1,1
