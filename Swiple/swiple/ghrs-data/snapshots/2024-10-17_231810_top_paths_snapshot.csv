@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,30,24
+/Swiple/swiple/blob/main/backend/Dockerfile,7,7
+/Swiple/swiple/releases/tag/v1.0.0,4,2
+/Swiple/swiple/issues,2,2
+/Swiple/swiple/pulls,2,2
+/Swiple/swiple/tree/main,2,1
+/Swiple/swiple/tree/main/docs,2,1
+/Swiple/swiple/blob/main/backend/app/settings.py,1,1
+/Swiple/swiple/blob/main/backend/pyproject.toml,1,1
+/Swiple/swiple/blob/main/docs/docs/how-to-guides/secrets-manager.md,1,1
