@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,27,19
+/Swiple/swiple/blob/main/backend/Dockerfile,15,12
+/Swiple/swiple/tree/main/backend,3,3
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,2,2
+/Swiple/swiple/releases,2,2
+/Swiple/swiple/tree/main,2,2
+/Swiple/swiple/tree/main/docker,2,2
+/Swiple/swiple/pulls,2,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/tests/test_api_v1_dataset.py,1,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/docker-compose-non-dev.yaml,1,1
