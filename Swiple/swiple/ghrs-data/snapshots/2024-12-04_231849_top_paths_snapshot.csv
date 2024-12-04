@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,27,23
+/Swiple/swiple/blob/main/backend/Dockerfile,14,11
+/Swiple/swiple/blob/main/backend/main.py,4,2
+/Swiple/swiple/blob/main/docker/.env-local,4,1
+/Swiple/swiple/tree/main/backend,2,2
+/Swiple/swiple/blob/main/docker/.env-non-dev,2,1
+/Swiple/swiple/blob/main/docs/docs/getting-started/quick-start.md,2,1
+/Swiple/swiple/blob/main/docs/docs/getting-started/start-developing.md,2,1
+/Swiple/swiple/blob/main/backend/app/core/exceptions.py,1,1
+/Swiple/swiple/blob/main/backend/app/core/expectations.py,1,1
