@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,29,25
+/Swiple/swiple/blob/main/backend/Dockerfile,6,6
+/Swiple/swiple/tree/main/backend,2,2
+/Swiple/swiple/blob/main/backend/app/core/exceptions.py,1,1
+/Swiple/swiple/blob/main/backend/app/core/expectations.py,1,1
+/Swiple/swiple/blob/main/backend/app/models/expectation.py,1,1
+/Swiple/swiple/blob/main/backend/main.py,1,1
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,1,1
+/Swiple/swiple/blob/main/frontend/Dockerfile,1,1
+/Swiple/swiple/blob/main/frontend/.env.production,1,1
