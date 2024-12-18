@@ -1,0 +1,7 @@
+url_path,views_total,views_unique
+/Swiple/swiple,11,11
+/Swiple/swiple/blob/main/backend/Dockerfile,6,6
+/Swiple/swiple/blob/main/docker-compose-dbs.yaml,2,1
+/Swiple/swiple/blob/main/docker-compose-non-dev.yaml,1,1
+/Swiple/swiple/blob/main/docker-compose.yaml,1,1
+/Swiple/swiple/blob/main/Makefile,1,1
