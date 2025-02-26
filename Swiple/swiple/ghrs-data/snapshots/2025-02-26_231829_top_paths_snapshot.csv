@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/blob/main/backend/Dockerfile,20,12
+/Swiple/swiple,13,11
+/Swiple/swiple/blob/main/backend/main.py,5,1
+/Swiple/swiple/blob/main/backend/app/main.py,2,1
+/Swiple/swiple/blob/main/backend/app/opensearch.yaml,2,1
+/Swiple/swiple/blob/main/backend/tests/test_api_v1_datasource.py,2,1
+/Swiple/swiple/blob/main/docker/.env,2,1
+/Swiple/swiple/blob/main/docker/.env-local,2,1
+/Swiple/swiple/tree/main,2,1
+/Swiple/swiple/blob/35c639a6773c39ef08cbf4becde6ac56f9e82e54/backend/app/models/destinations/email.py,1,1
