@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,15,13
+/Swiple/swiple/blob/main/backend/Dockerfile,12,10
+/Swiple/swiple/blob/main/backend/tests/conftest.py,7,2
+/Swiple/swiple/blob/main/backend/pyproject.toml,6,5
+/Swiple/swiple/tree/main/backend,4,4
+/Swiple/swiple/blob/main/backend/tests/test_api_v1_datasource.py,4,2
+/Swiple/swiple/blob/main/README.md,4,2
+/Swiple/swiple/tree/main,3,3
+/Swiple/swiple/blob/main/backend/tests/fake_opensearch.py,3,2
+/Swiple/swiple/blob/main/backend/tests/test_api_v1_dataset.py,3,2
