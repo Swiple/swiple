@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple,9,8
+/Swiple/swiple/actions,2,2
+/Swiple/swiple/issues,2,2
+/Swiple/swiple/actions/runs/13252374605,1,1
+/Swiple/swiple/actions/runs/13296768747,1,1
+/Swiple/swiple/actions/runs/15125136225,1,1
+/Swiple/swiple/actions/workflows/lint.yml,1,1
+/Swiple/swiple/blob/main/backend/Dockerfile,1,1
+/Swiple/swiple/commits/1.0.0,1,1
+/Swiple/swiple/releases/tag/v1.0.0,1,1
