@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/Swiple/swiple/discussions,12,4
+/Swiple/swiple,9,9
+/Swiple/swiple/pulls,5,2
+/Swiple/swiple/issues,4,3
+/Swiple/swiple/actions,2,2
+/Swiple/swiple/actions/runs/23103083395/workflow,1,1
+/Swiple/swiple/actions/runs/23121874419,1,1
+/Swiple/swiple/actions/runs/23321924202,1,1
+/Swiple/swiple/blob/8c3134b6f1b5d46a062158a7e3533ebea0ed4bdb/backend/app/worker/tasks/validation.py,1,1
+/Swiple/swiple/blob/main/backend/Dockerfile,1,1
